@@ -31,7 +31,6 @@ contract HoneyTraceStorage is Ownable {
         string honeyType;
         string metadata;
         bytes32 merkleRoot;
-        uint256 totalAmount;
         uint claimedCount;
     }
 
@@ -114,24 +113,27 @@ contract HoneyTraceStorage is Ownable {
         honeyBatch.honeyType = _honeyType;
         honeyBatch.metadata = _metadata;
         honeyBatch.merkleRoot = _merkleRoot;
-        honeyBatch.totalAmount = _amount;
 
         emit NewHoneyBatch(msg.sender, tokenId);
     }
 
     function claimHoneyToken(uint256 _honeyBatchId, string memory _secretKey, bytes32[] memory _merkleProof) external {
         HoneyBatch storage batch = honeyBatches[_honeyBatchId];
-        require(batch.claimedCount < batch.totalAmount, noTokenLeft());
+
+        address producer = honeyTokenization.tokenProducer(_honeyBatchId);
+
+        uint256 remainingTokens = honeyTokenization.balanceOf(producer, _honeyBatchId);
+
+        require(remainingTokens > 0, noTokenLeft());
 
         bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
 
         require(!claimedKeys[_honeyBatchId][leaf], keyAlreadyClaimed());
+
         require(MerkleProof.verify(_merkleProof, batch.merkleRoot, leaf), invalidMerkleProof());
 
         claimedKeys[_honeyBatchId][leaf] = true;
-        batch.claimedCount += 1;
-
-        address producer = honeyTokenization.tokenProducer(_honeyBatchId);
+        batch.claimedCount++;
 
         honeyTokenization.safeTransferFrom(producer, msg.sender, _honeyBatchId, 1, "");
 
