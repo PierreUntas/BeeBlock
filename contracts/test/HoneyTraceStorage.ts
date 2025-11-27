@@ -6,25 +6,25 @@ const {ethers} = await network.connect();
 describe("HoneyTraceStorage", function () {
     let owner: any;
     let admin: any;
-    let produce: any;
+    let producer: any;
     let customer: any;
     let honeyTraceStorage: any;
     let honeyTokenization: any;
 
     async function deployHoneyTraceStorage() {
-        const [owner, admin, produce, customer] = await ethers.getSigners();
+        const [owner, admin, producer, customer] = await ethers.getSigners();
         const HoneyTokenization = await ethers.getContractFactory("HoneyTokenization");
         const honeyTokenization = await HoneyTokenization.deploy("");
         const honeyTokenizationAddress = honeyTokenization.getAddress();
         const honeyTraceStorage = await ethers.deployContract("HoneyTraceStorage", [honeyTokenizationAddress]);
-        return {owner, admin, produce, customer, honeyTraceStorage, honeyTokenization};
+        return {owner, admin, producer, customer, honeyTraceStorage, honeyTokenization};
     }
 
     beforeEach(async function () {
         const deployment = await deployHoneyTraceStorage();
         owner = deployment.owner;
         admin = deployment.admin;
-        produce = deployment.produce;
+        producer = deployment.producer;
         customer = deployment.customer;
         honeyTraceStorage = deployment.honeyTraceStorage;
         honeyTokenization = deployment.honeyTokenization;
@@ -45,7 +45,7 @@ describe("HoneyTraceStorage", function () {
         it("Should not allow non-owner to add a new admin", async function () {
             const adminAddress = admin.getAddress();
             await expect(
-                honeyTraceStorage.connect(produce).addAdmin(adminAddress)
+                honeyTraceStorage.connect(producer).addAdmin(adminAddress)
             ).to.be.revertedWithCustomError(honeyTraceStorage, "OwnableUnauthorizedAccount");
         })
     })
@@ -54,17 +54,37 @@ describe("HoneyTraceStorage", function () {
         it("Should authorize a producer", async function () {
             await honeyTraceStorage.connect(owner).addAdmin(await admin.getAddress());
 
-            const producerAddress = await produce.getAddress();
-            await honeyTraceStorage.connect(admin).authorizeProducer(producerAddress, true);
+            const producerAddress = await producer.getAddress();
 
-            const producer = await honeyTraceStorage.getProducer(producerAddress);
-            expect(producer.authorized).to.equal(true);
+            await honeyTraceStorage.connect(admin).authorizeProducer(producerAddress, true);
+            const producerAuthorized = await honeyTraceStorage.getProducer(producerAddress);
+            expect(producerAuthorized.authorized).to.equal(true);
+
         })
         it("Should not allow non-admin to authorize a producer", async function () {
-            const producerAddress = await produce.getAddress();
+            const producerAddress = await producer.getAddress();
             await expect(
-                honeyTraceStorage.connect(produce).authorizeProducer(producerAddress, true)
+                honeyTraceStorage.connect(producer).authorizeProducer(producerAddress, true)
             ).to.be.revertedWithCustomError(honeyTraceStorage, "onlyAdminAuthorized");
+        })
+    })
+
+    describe("Producers", function () {
+        it("Should add a new producer", async function () {
+            await honeyTraceStorage.connect(owner).addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer("producer 1", "Town", "1234", "");
+
+            const newProducer = await honeyTraceStorage.getProducer(await producer.getAddress());
+
+            expect(newProducer.name).to.equal("producer 1");
+            expect(newProducer.location).to.equal("Town");
+            expect(newProducer.companyRegisterNumber).to.equal("1234");
+            expect(newProducer.metadata).to.equal("");
+        })
+        it("Should not allow non-authorized producer to add a new producer", async function () {
+            await expect(honeyTraceStorage.connect(customer).addProducer("producer 1", "Town", "1234", "")
+            ).to.be.revertedWithCustomError(honeyTraceStorage, "producerNotAuthorized");
         })
     })
 });
