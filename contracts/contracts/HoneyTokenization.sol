@@ -31,4 +31,11 @@ contract HoneyTokenization is ERC1155, Ownable {
     function uri(uint256 tokenId) public view override returns (string memory) {
         return _tokenURIs[tokenId];
     }
+
+    function transferOwnershipTo(address newOwner) external onlyOwner {
+    transferOwnership(newOwner);
+}
+
+    // Note: Producers must call setApprovalForAll(HoneyTraceStorageAddress, true)
+    // to allow the HoneyTraceStorage contract to transfer their tokens during the claim
 }
