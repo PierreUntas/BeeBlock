@@ -31,7 +31,6 @@ contract HoneyTraceStorage is Ownable {
         string honeyType;
         string metadata;
         bytes32 merkleRoot;
-        uint claimedCount;
     }
 
     struct Comment {
@@ -133,7 +132,6 @@ contract HoneyTraceStorage is Ownable {
         require(MerkleProof.verify(_merkleProof, batch.merkleRoot, leaf), invalidMerkleProof());
 
         claimedKeys[_honeyBatchId][leaf] = true;
-        batch.claimedCount++;
 
         honeyTokenization.safeTransferFrom(producer, msg.sender, _honeyBatchId, 1, "");
 
