@@ -1,7 +1,29 @@
 import {expect} from "chai";
 import {network} from "hardhat";
+import { MerkleTree } from 'merkletreejs';
+import {keccak256} from "ethers";
 
 const {ethers} = await network.connect();
+
+function generateTestBatch(amount: number) {
+    const secretKeys = [];
+    for (let i = 0; i < amount; i++) {
+        secretKeys.push(ethers.hexlify(ethers.randomBytes(32)));
+    }
+
+    const leaves = secretKeys.map(key => keccak256(ethers.toUtf8Bytes(key)));
+
+    const merkleTree = new MerkleTree(leaves, keccak256, {sortPairs: true});
+    const merkleRoot = merkleTree.getHexRoot();
+
+    const keyWithProofs = secretKeys.map((key, index) => ({
+        secretKey: key,
+        leaf: leaves[index],
+        proof: merkleTree.getHexProof(leaves[index])
+    }));
+
+    return {merkleTree, merkleRoot, leaves, keyWithProofs, secretKeys};
+}
 
 describe("HoneyTraceStorage", function () {
     let owner: any;
@@ -17,6 +39,9 @@ describe("HoneyTraceStorage", function () {
         const honeyTokenization = await HoneyTokenization.deploy("");
         const honeyTokenizationAddress = honeyTokenization.getAddress();
         const honeyTraceStorage = await ethers.deployContract("HoneyTraceStorage", [honeyTokenizationAddress]);
+
+        await honeyTokenization.transferOwnership(await honeyTraceStorage.getAddress());
+
         return {owner, admin, producer, customer, honeyTraceStorage, honeyTokenization};
     }
 
@@ -32,7 +57,7 @@ describe("HoneyTraceStorage", function () {
 
     describe("Deployment", function () {
         it("Should deploy the HoneyTraceStorage contract", async function () {
-            expect(await honeyTokenization.owner()).to.equal(await owner.getAddress());
+            expect(await honeyTokenization.owner()).to.equal(await honeyTraceStorage.getAddress());
         })
     })
 
@@ -87,4 +112,34 @@ describe("HoneyTraceStorage", function () {
             ).to.be.revertedWithCustomError(honeyTraceStorage, "producerNotAuthorized");
         })
     })
+
+    describe("Honey Batches", function () {
+        beforeEach(async function () {
+            await honeyTraceStorage.connect(owner).addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer("producer 1", "Town", "1234", "");
+        })
+
+        it("Should add a new honey batch", async function () {
+            const batch = generateTestBatch(10);
+
+            await expect(honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                '{"origin":"France"}',
+                10,
+                batch.merkleRoot
+            )).to.emit(honeyTraceStorage, "NewHoneyBatch").withArgs(
+                await producer.getAddress(), 1);
+
+            const honeyBatch = await honeyTraceStorage.getHoneyBatch(1);
+            expect(honeyBatch.id).to.equal(1);
+            expect(honeyBatch.honeyType).to.equal("Miel d'Acacia");
+            expect(honeyBatch.merkleRoot).to.equal(batch.merkleRoot);
+
+            const producerBalance = await honeyTokenization.balanceOf(await producer.getAddress(), 1 );
+            expect(producerBalance).to.equal(10);
+        });
+    })
 });
+
+// Penser à vérifier les évènements
