@@ -1,6 +1,6 @@
 import {expect} from "chai";
 import {network} from "hardhat";
-import { MerkleTree } from 'merkletreejs';
+import {MerkleTree} from 'merkletreejs';
 import {keccak256} from "ethers";
 
 const {ethers} = await network.connect();
@@ -136,9 +136,40 @@ describe("HoneyTraceStorage", function () {
             expect(honeyBatch.honeyType).to.equal("Miel d'Acacia");
             expect(honeyBatch.merkleRoot).to.equal(batch.merkleRoot);
 
-            const producerBalance = await honeyTokenization.balanceOf(await producer.getAddress(), 1 );
+            const producerBalance = await honeyTokenization.balanceOf(await producer.getAddress(), 1);
             expect(producerBalance).to.equal(10);
         });
+
+        it("Should allow customer to claim token", async function () {
+            const batch = generateTestBatch(10);
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                "ipfs://metadata",
+                10,
+                batch.merkleRoot
+            );
+
+            await honeyTokenization.connect(producer).setApprovalForAll(honeyTraceStorage.getAddress(), true);
+
+            const key = batch.keyWithProofs[0];
+
+            await expect(honeyTraceStorage.connect(customer).claimHoneyToken(
+                    1,
+                    key.secretKey,
+                    key.proof
+                )
+            ).to.emit(honeyTraceStorage, "HoneyTokenClaimed").withArgs(customer.getAddress(), 1, key.leaf);
+
+            const customerBalance = await honeyTokenization.balanceOf(await customer.getAddress(), 1);
+            expect(customerBalance).to.equal(1);
+
+            const isClaimed = await honeyTraceStorage.isKeyClaimed(1, key.secretKey);
+            expect(isClaimed).to.equal(true);
+        })
+
+        // it("Should allow token owner to add comment", async function () {
+        //
+        // })
     })
 });
 
