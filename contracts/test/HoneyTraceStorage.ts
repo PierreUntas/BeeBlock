@@ -166,10 +166,59 @@ describe("HoneyTraceStorage", function () {
             const isClaimed = await honeyTraceStorage.isKeyClaimed(1, key.secretKey);
             expect(isClaimed).to.equal(true);
         })
+    })
 
-        // it("Should allow token owner to add comment", async function () {
-        //
-        // })
+    describe("Comments", function () {
+        beforeEach(async function () {
+            await honeyTraceStorage.connect(owner).addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer("Producer 1", "Paris", "123456", "");
+
+            const batch = generateTestBatch(10);
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                "ipfs://metadata",
+                10,
+                batch.merkleRoot
+            );
+
+            await honeyTokenization.connect(producer).setApprovalForAll(
+                await honeyTraceStorage.getAddress(),
+                true
+            );
+
+            await honeyTraceStorage.connect(customer).claimHoneyToken(
+                1,
+                batch.keyWithProofs[0].secretKey,
+                batch.keyWithProofs[0].proof
+            );
+        });
+
+        it("Should allow token holder to add comment", async function () {
+            await expect(
+                honeyTraceStorage.connect(customer).addComment(
+                    1,
+                    5,
+                    "ipfs://metadata"
+                )
+            ).to.emit(honeyTraceStorage, "NewComment")
+                .withArgs(await customer.getAddress(), 1, 5);
+
+            const comments = await honeyTraceStorage.getHoneyBatchComments(1);
+            expect(comments.length).to.equal(1);
+            expect(comments[0].rating).to.equal(5);
+            expect(comments[0].metadata).to.equal("ipfs://metadata");
+        });
+
+        it("Should not allow token non-holder to add comment", async function () {
+            await expect(
+                honeyTraceStorage.connect(admin).addComment(
+                    1,
+                    5,
+                    "ipfs://metadata"
+                )
+            ).to.be.revertedWithCustomError(honeyTraceStorage, "notAllowedToComment");
+        });
     })
 });
 
