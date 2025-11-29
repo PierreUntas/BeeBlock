@@ -30,11 +30,12 @@ describe("HoneyTraceStorage", function () {
     let admin: any;
     let producer: any;
     let customer: any;
+    let customer2: any;
     let honeyTraceStorage: any;
     let honeyTokenization: any;
 
     async function deployHoneyTraceStorage() {
-        const [owner, admin, producer, customer] = await ethers.getSigners();
+        const [owner, admin, producer, customer, customer2] = await ethers.getSigners();
         const HoneyTokenization = await ethers.getContractFactory("HoneyTokenization");
         const honeyTokenization = await HoneyTokenization.deploy("");
         const honeyTokenizationAddress = honeyTokenization.getAddress();
@@ -42,7 +43,7 @@ describe("HoneyTraceStorage", function () {
 
         await honeyTokenization.transferOwnership(await honeyTraceStorage.getAddress());
 
-        return {owner, admin, producer, customer, honeyTraceStorage, honeyTokenization};
+        return {owner, admin, producer, customer, customer2, honeyTraceStorage, honeyTokenization};
     }
 
     beforeEach(async function () {
@@ -51,6 +52,7 @@ describe("HoneyTraceStorage", function () {
         admin = deployment.admin;
         producer = deployment.producer;
         customer = deployment.customer;
+        customer2 = deployment.customer2;
         honeyTraceStorage = deployment.honeyTraceStorage;
         honeyTokenization = deployment.honeyTokenization;
     })
@@ -181,7 +183,7 @@ describe("HoneyTraceStorage", function () {
 
             await expect(honeyTraceStorage.connect(producer).addHoneyBatch(
                 "Miel d'Acacia",
-                '{"origin":"France"}',
+                "ipfs://metadata",
                 10,
                 batch.merkleRoot
             )).to.emit(honeyTraceStorage, "NewHoneyBatch").withArgs(
@@ -201,14 +203,13 @@ describe("HoneyTraceStorage", function () {
 
             await expect(
                 honeyTraceStorage.connect(customer).addHoneyBatch(
-                    "Fake Honey",
-                    "{}",
+                    "Miel d'Acacia",
+                    "ipfs://metadata",
                     5,
                     batch.merkleRoot
                 )
             ).to.be.revertedWithCustomError(honeyTraceStorage, "producerNotAuthorized");
         });
-
 
         it("Should create multiple batches with incremental IDs", async function () {
             const batch1 = generateTestBatch(5);
@@ -369,19 +370,17 @@ describe("HoneyTraceStorage", function () {
 
             const batch2 = generateTestBatch(5);
             await honeyTraceStorage.connect(admin).addHoneyBatch(
-                "Test Honey",
-                "{}",
+                "Miel d'Acacia",
+                "ipfs://metadata",
                 5,
                 batch2.merkleRoot
             );
-
-            // Not call setApprovalForAll
 
             const keyData = batch2.keyWithProofs[0];
 
             await expect(
                 honeyTraceStorage.connect(customer).claimHoneyToken(
-                    2, // nouveau batch ID
+                    2,
                     keyData.secretKey,
                     keyData.proof
                 )
@@ -416,12 +415,21 @@ describe("HoneyTraceStorage", function () {
     });
 
     describe("Comments", function () {
+        let batchId: number;
+
         beforeEach(async function () {
-            await honeyTraceStorage.connect(owner).addAdmin(await admin.getAddress());
+            await honeyTraceStorage.addAdmin(await admin.getAddress());
             await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
-            await honeyTraceStorage.connect(producer).addProducer("Producer 1", "Paris", "123456", "");
+            await honeyTraceStorage.connect(producer).addProducer(
+                "Producer 1",
+                "Paris",
+                "123456",
+                "ipfs://metadata"
+            );
 
             const batch = generateTestBatch(10);
+            batchId = 1;
+
             await honeyTraceStorage.connect(producer).addHoneyBatch(
                 "Miel d'Acacia",
                 "ipfs://metadata",
@@ -435,7 +443,7 @@ describe("HoneyTraceStorage", function () {
             );
 
             await honeyTraceStorage.connect(customer).claimHoneyToken(
-                1,
+                batchId,
                 batch.keyWithProofs[0].secretKey,
                 batch.keyWithProofs[0].proof
             );
@@ -444,29 +452,261 @@ describe("HoneyTraceStorage", function () {
         it("Should allow token holder to add comment", async function () {
             await expect(
                 honeyTraceStorage.connect(customer).addComment(
-                    1,
+                    batchId,
                     5,
                     "ipfs://metadata"
                 )
-            ).to.emit(honeyTraceStorage, "NewComment")
-                .withArgs(await customer.getAddress(), 1, 5);
+            )
+                .to.emit(honeyTraceStorage, "NewComment")
+                .withArgs(await customer.getAddress(), batchId, 5);
 
-            const comments = await honeyTraceStorage.getHoneyBatchComments(1);
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
             expect(comments.length).to.equal(1);
+            expect(comments[0].consumer).to.equal(await customer.getAddress());
             expect(comments[0].rating).to.equal(5);
             expect(comments[0].metadata).to.equal("ipfs://metadata");
         });
 
-        it("Should not allow token non-holder to add comment", async function () {
+        it("Should not allow non-holder to add comment", async function () {
             await expect(
-                honeyTraceStorage.connect(admin).addComment(
-                    1,
+                honeyTraceStorage.connect(customer2).addComment(
+                    batchId,
                     5,
-                    "ipfs://metadata"
+                    "ipfs://metadata2"
                 )
             ).to.be.revertedWithCustomError(honeyTraceStorage, "notAllowedToComment");
         });
-    })
-});
 
-// Penser à vérifier les évènements
+        it("Should allow multiple comments from token holder", async function () {
+            await honeyTraceStorage.connect(customer).addComment(
+                batchId,
+                5,
+                "ipfs://metadata"
+            );
+
+            await honeyTraceStorage.connect(customer).addComment(
+                batchId,
+                4,
+                "ipfs://metadata2"
+            );
+
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            expect(comments.length).to.equal(2);
+            expect(comments[0].metadata).to.equal("ipfs://metadata");
+            expect(comments[1].metadata).to.equal("ipfs://metadata2");
+        });
+
+        it("Should allow multiple token holders to comment", async function () {
+
+            const batch = generateTestBatch(10);
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel de Lavande",
+                "ipfs://metadata2",
+                10,
+                batch.merkleRoot
+            );
+
+            await honeyTraceStorage.connect(customer2).claimHoneyToken(
+                2,
+                batch.keyWithProofs[0].secretKey,
+                batch.keyWithProofs[0].proof
+            );
+
+            await honeyTraceStorage.connect(customer).addComment(batchId, 5, "ipfs://metadata");
+            await honeyTraceStorage.connect(customer2).addComment(2, 4, "ipfs://metadata2");
+
+            const comments1 = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            const comments2 = await honeyTraceStorage.getHoneyBatchComments(2);
+
+            expect(comments1.length).to.equal(1);
+            expect(comments2.length).to.equal(1);
+        });
+
+        it("Should accept all rating values (0-5)", async function () {
+            for (let rating = 0; rating <= 5; rating++) {
+                await honeyTraceStorage.connect(customer).addComment(
+                    batchId,
+                    rating,
+                    `Rating ${rating}`
+                );
+            }
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            expect(comments.length).to.equal(6);
+        });
+    });
+
+    describe("HoneyTokenization Contract", function () {
+        it("Should return correct URI for token", async function () {
+            await honeyTraceStorage.addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer(
+                "Producer 1",
+                "Paris",
+                "123456",
+                "");
+
+            const batch = generateTestBatch(5);
+            const customUri = "ipfs://metadata";
+
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                customUri,
+                5,
+                batch.merkleRoot
+            );
+
+            const uri = await honeyTokenization.uri(1);
+            expect(uri).to.equal(customUri);
+        });
+
+        it("Should track token producer correctly", async function () {
+            await honeyTraceStorage.addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer("Test", "Test", "123", "");
+
+            const batch = generateTestBatch(5);
+
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                "ipfs://metadata",
+                5,
+                batch.merkleRoot
+            );
+
+            const tokenProducer = await honeyTokenization.tokenProducer(1);
+            expect(tokenProducer).to.equal(await producer.getAddress());
+        });
+
+        it("Should not allow direct minting (only through HoneyTraceStorage)", async function () {
+            await expect(
+                honeyTokenization.connect(producer).mintHoneyBatch(
+                    await producer.getAddress(),
+                    10,
+                    "ipfs://test"
+                )
+            ).to.be.revertedWithCustomError(honeyTokenization, "OwnableUnauthorizedAccount");
+        });
+    });
+
+    describe("Advanced Cases", function () {
+        beforeEach(async function () {
+            await honeyTraceStorage.addAdmin(await admin.getAddress());
+            await honeyTraceStorage.connect(admin).authorizeProducer(await producer.getAddress(), true);
+            await honeyTraceStorage.connect(producer).addProducer(
+                "Producer 1",
+                "Paris",
+                "123456",
+                "ipfs://metadata"
+            );
+        });
+
+        it("Should be gas efficient for large batches (1000 tokens)", async function () {
+            console.log("\x1b[90m      Testing gas efficiency...\x1b[0m");
+
+            // Générer un GROS lot de 1000 tokens
+            const largeBatch = generateTestBatch(1000);
+
+            // Créer le batch et mesurer le gas
+            const tx = await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel de Lavande",
+                "ipfs://metadata",
+                1000,
+                largeBatch.merkleRoot
+            );
+
+            const receipt = await tx.wait();
+            const gasUsed = receipt?.gasUsed || 0n;
+
+            const honeyBatch = await honeyTraceStorage.getHoneyBatch(1);
+            expect(honeyBatch.id).to.equal(1);
+            expect(honeyBatch.honeyType).to.equal("Miel de Lavande");
+
+            const producerBalance = await honeyTokenization.balanceOf(
+                await producer.getAddress(),
+                1
+            );
+            expect(producerBalance).to.equal(1000);
+
+            expect(gasUsed).to.be.lessThan(500000n);
+
+            console.log(`\x1b[90m      1000 tokens batch created with only ${gasUsed.toString()} gas !\x1b[90m`);
+            console.log(`\x1b[90m      Merkle Tree = ${((1 - Number(gasUsed) / 20000000) * 100).toFixed(1)}% of economy vs direct storage\x1b[90m`);
+        });
+
+        it("Should handle producer transferring tokens manually and adjust claims accordingly", async function () {
+
+            const batch = generateTestBatch(10);
+            await honeyTraceStorage.connect(producer).addHoneyBatch(
+                "Miel d'Acacia",
+                "ipfs://metadata",
+                10,
+                batch.merkleRoot
+            );
+
+            let producerBalance = await honeyTokenization.balanceOf(
+                await producer.getAddress(),
+                1
+            );
+            expect(producerBalance).to.equal(10);
+
+            await honeyTokenization.connect(producer).safeTransferFrom(
+                await producer.getAddress(),
+                await customer.getAddress(),
+                1,
+                3,
+                "0x"
+            );
+
+            producerBalance = await honeyTokenization.balanceOf(
+                await producer.getAddress(),
+                1
+            );
+            const customerBalance = await honeyTokenization.balanceOf(
+                await customer.getAddress(),
+                1
+            );
+
+            expect(producerBalance).to.equal(7);
+            expect(customerBalance).to.equal(3);
+
+            await honeyTokenization.connect(producer).setApprovalForAll(
+                await honeyTraceStorage.getAddress(),
+                true
+            );
+
+            for (let i = 0; i < 7; i++) {
+                await honeyTraceStorage.connect(customer2).claimHoneyToken(
+                    1,
+                    batch.keyWithProofs[i].secretKey,
+                    batch.keyWithProofs[i].proof
+                );
+            }
+
+            producerBalance = await honeyTokenization.balanceOf(
+                await producer.getAddress(),
+                1
+            );
+            expect(producerBalance).to.equal(0);
+
+            await expect(
+                honeyTraceStorage.connect(customer2).claimHoneyToken(
+                    1,
+                    batch.keyWithProofs[7].secretKey,
+                    batch.keyWithProofs[7].proof
+                )
+            ).to.be.revertedWithCustomError(honeyTraceStorage, "noTokenLeft");
+
+            const finalCustomerBalance = await honeyTokenization.balanceOf(
+                await customer.getAddress(),
+                1
+            );
+            const finalCustomer2Balance = await honeyTokenization.balanceOf(
+                await customer2.getAddress(),
+                1
+            );
+
+            expect(finalCustomerBalance).to.equal(3);
+            expect(finalCustomer2Balance).to.equal(7);
+        });
+    });
+});
