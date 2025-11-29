@@ -43,7 +43,7 @@ contract HoneyTraceStorage is Ownable {
     mapping(address => Producer) producers;
     mapping(uint => HoneyBatch) honeyBatches;
     mapping(uint => Comment[]) honeyBatchesComments;
-    mapping(address => bool) admins;
+    mapping(address => bool) public admins;
 
     IHoneyTokenization public honeyTokenization;
 
@@ -164,5 +164,9 @@ contract HoneyTraceStorage is Ownable {
     function isKeyClaimed(uint256 _honeyBatchId, string memory _secretKey) external view returns (bool) {
         bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
         return claimedKeys[_honeyBatchId][leaf];
+    }
+
+    function isAdmin(address _address) external view returns (bool) {
+        return admins[_address];
     }
 }
