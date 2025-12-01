@@ -71,22 +71,14 @@ contract HoneyTokenization is ERC1155, Ownable {
     }
 
     /**
-     * @dev Transfers ownership of this contract to a new address
-     * @param newOwner Address of the new owner
-     *
-     * This is a convenience function to transfer ownership with a more explicit name.
-     * Typically used during deployment to transfer ownership to HoneyTraceStorage.
-     *
-     * Requirements:
-     * - Caller must be the current owner
-     */
-    function transferOwnershipTo(address newOwner) external onlyOwner {
-        transferOwnership(newOwner);
-    }
-
-    /**
-     * @notice Producers must call setApprovalForAll(HoneyTraceStorageAddress, true)
+      * @notice Producers must call setApprovalForAll(HoneyTraceStorageAddress, true)
      * @dev This approval allows the HoneyTraceStorage contract to transfer tokens
      * from the producer to consumers during the claim process
+     *
+     * Without this approval, the claim function will revert with:
+     * "ERC1155: caller is not token owner or approved"
+     *
+     * Example usage:
+     * honeyTokenization.setApprovalForAll(honeyTraceStorageAddress, true);
      */
 }
