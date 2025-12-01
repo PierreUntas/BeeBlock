@@ -42,14 +42,10 @@ contract HoneyTokenization is ERC1155, Ownable {
      * @dev Mints a new honey batch and assigns it to a producer
      * @param _producer Address that will receive and own the minted tokens
      * @param _amount Number of tokens to mint for this batch
-     * @param _uri Metadata URI specific to this batch (e.g., IPFS hash)
+     * @param _uri Metadata URI specific to this batch
      * @return newTokenId The ID of the newly created token
      *
-     * Requirements:
-     * - Caller must be the contract owner (HoneyTraceStorage)
-     * - Amount must be greater than 0
-     *
-     * Emits a {HoneyBatchMinted} event
+     * Requirement: Caller must be the contract owner (HoneyTraceStorage)
      */
     function mintHoneyBatch(address _producer, uint _amount, string memory _uri) external onlyOwner returns (uint256) {
         _currentTokenId++;
@@ -92,8 +88,5 @@ contract HoneyTokenization is ERC1155, Ownable {
      * @notice Producers must call setApprovalForAll(HoneyTraceStorageAddress, true)
      * @dev This approval allows the HoneyTraceStorage contract to transfer tokens
      * from the producer to consumers during the claim process
-     *
-     * Without this approval, the claim function will revert with:
-     * "ERC1155: caller is not token owner or approved"
      */
 }
