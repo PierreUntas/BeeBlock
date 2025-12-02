@@ -38,6 +38,9 @@ contract HoneyTokenization is ERC1155, Ownable {
      */
     constructor(string memory uriIpfs) ERC1155(uriIpfs) Ownable(msg.sender) {}
 
+    /// @dev Thrown when a string parameter length is invalid
+    error InvalidStringLength();
+
     /**
      * @dev Mints a new honey batch and assigns it to a producer
      * @param _producer Address that will receive and own the minted tokens
@@ -48,12 +51,14 @@ contract HoneyTokenization is ERC1155, Ownable {
      * Requirement: Caller must be the contract owner (HoneyTraceStorage)
      */
     function mintHoneyBatch(address _producer, uint _amount, string memory _uri) external onlyOwner returns (uint256) {
+        if (bytes(_uri).length < 10 || bytes(_uri).length > 256) revert InvalidStringLength();
+
         _currentTokenId++;
         uint256 newTokenId = _currentTokenId;
 
         tokenProducer[newTokenId] = _producer;
-        _mint(_producer, newTokenId, _amount, "");
         _tokenURIs[newTokenId] = _uri;
+        _mint(_producer, newTokenId, _amount, "");
 
         emit HoneyBatchMinted(_producer, newTokenId, _amount);
         return newTokenId;
