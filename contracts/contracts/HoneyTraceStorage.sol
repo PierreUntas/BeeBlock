@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /**
  * @title IHoneyTokenization
@@ -27,7 +28,15 @@ interface IHoneyTokenization {
  *
  * Token distribution uses Merkle Tree proofs for gas-efficient and secure claiming.
  */
-contract HoneyTraceStorage is Ownable {
+contract HoneyTraceStorage is Ownable, ReentrancyGuard {
+
+    // ============ CONSTANTS ============
+
+    /// @dev Maximum number of tokens that can be minted in a single batch
+    uint256 public constant MAX_BATCH_SIZE = 100_000;
+
+    /// @dev Maximum number of comments a user can add per batch
+    uint256 public constant MAX_COMMENTS_PER_USER = 10;
 
     // ============ STRUCTS ============
 
@@ -104,6 +113,14 @@ contract HoneyTraceStorage is Ownable {
      */
     mapping(uint256 => mapping(bytes32 => bool)) private claimedKeys;
 
+    /**
+     * @dev Mapping to track number of comments per user per batch
+        * First key: batch ID
+        * Second key: user address
+        * Value: number of comments made by the user for that batch
+     */
+    mapping(uint => mapping(address => uint)) public commentCount;
+
     // ============ EVENTS ============
 
     /**
@@ -118,6 +135,12 @@ contract HoneyTraceStorage is Ownable {
      * @param isAuthorized New authorization status
      */
     event AuthorizationProducer(address indexed producer, bool isAuthorized);
+
+    /**
+    * @dev Emitted when an admin is removed
+     * @param admin Address of the removed admin
+     */
+    event AdminRemoved(address indexed admin);
 
     /**
      * @dev Emitted when a producer registers their information
@@ -171,6 +194,18 @@ contract HoneyTraceStorage is Ownable {
     /// @dev Thrown when trying to claim but no tokens are left
     error noTokenLeft();
 
+    /// @dev Thrown when the batch size exceeds the maximum allowed
+    error batchSizeTooLarge();
+
+    /// @dev Thrown when the rating provided is not between 0 and 5
+    error ratingMustBeBetween0And5();
+
+    /// @dev Thrown when the comment limit per user per batch is reached
+    error commentLimitReached();
+
+    /// @dev Thrown when a string parameter length is invalid
+    error InvalidStringLength();
+
     // ============ MODIFIERS ============
 
     /**
@@ -219,6 +254,20 @@ contract HoneyTraceStorage is Ownable {
     }
 
     /**
+    * @dev Remove an admin to the system
+     * @param _admin Address to be removed from admin privileges
+     *
+     * Requirements:
+     * - Caller must be the contract owner
+     *
+     * Emits a {AdminRemoved} event
+     */
+    function removeAdmin(address _admin) external onlyOwner {
+        admins[_admin] = false;
+        emit AdminRemoved(_admin);
+    }
+
+    /**
      * @dev Authorizes or revokes authorization for a producer
      * @param _producer Address of the producer
      * @param _isAuthorized True to authorize, false to revoke
@@ -255,6 +304,11 @@ contract HoneyTraceStorage is Ownable {
         string memory _companyRegisterNumber,
         string memory _metadata
     ) external onlyAuthorizedProducer {
+        if (bytes(_name).length == 0 || bytes(_name).length > 256) revert InvalidStringLength();
+        if (bytes(_location).length == 0 || bytes(_location).length > 256) revert InvalidStringLength();
+        if (bytes(_companyRegisterNumber).length == 0 || bytes(_companyRegisterNumber).length > 64) revert InvalidStringLength();
+        if (bytes(_metadata).length > 1024) revert InvalidStringLength();
+
         Producer storage producer = producers[msg.sender];
         producer.name = _name;
         producer.location = _location;
@@ -286,6 +340,10 @@ contract HoneyTraceStorage is Ownable {
         uint256 _amount,
         bytes32 _merkleRoot
     ) external onlyAuthorizedProducer {
+        if (bytes(_honeyType).length == 0 || bytes(_honeyType).length > 64) revert InvalidStringLength();
+        if (bytes(_metadata).length == 0 || bytes(_metadata).length > 1024) revert InvalidStringLength();
+        require(_amount <= MAX_BATCH_SIZE, batchSizeTooLarge());
+
         uint tokenId = honeyTokenization.mintHoneyBatch(
             msg.sender,
             _amount,
@@ -326,9 +384,8 @@ contract HoneyTraceStorage is Ownable {
         uint256 _honeyBatchId,
         string memory _secretKey,
         bytes32[] memory _merkleProof
-    ) external {
+    ) external nonReentrant {
         HoneyBatch storage batch = honeyBatches[_honeyBatchId];
-
         address producer = honeyTokenization.tokenProducer(_honeyBatchId);
 
         // Check 1: Verify tokens are available
@@ -345,10 +402,11 @@ contract HoneyTraceStorage is Ownable {
         // Mark key as claimed
         claimedKeys[_honeyBatchId][leaf] = true;
 
+        emit HoneyTokenClaimed(msg.sender, _honeyBatchId, leaf);
+
         // Transfer token from producer to consumer
         honeyTokenization.safeTransferFrom(producer, msg.sender, _honeyBatchId, 1, "");
 
-        emit HoneyTokenClaimed(msg.sender, _honeyBatchId, leaf);
     }
 
     /**
@@ -368,10 +426,15 @@ contract HoneyTraceStorage is Ownable {
         string memory _metadata
     ) external {
         require(honeyTokenization.balanceOf(msg.sender, _honeyBatchId) > 0, notAllowedToComment());
+        require(_rating <= 5, ratingMustBeBetween0And5());
+        require(commentCount[_honeyBatchId][msg.sender] < MAX_COMMENTS_PER_USER, commentLimitReached());
+        if (bytes(_metadata).length < 5 || bytes(_metadata).length > 500) revert InvalidStringLength();
 
         honeyBatchesComments[_honeyBatchId].push(
             Comment(msg.sender, _honeyBatchId, _rating, _metadata)
         );
+
+        commentCount[_honeyBatchId][msg.sender]++;
 
         emit NewComment(msg.sender, _honeyBatchId, _rating);
     }
@@ -397,12 +460,38 @@ contract HoneyTraceStorage is Ownable {
     }
 
     /**
-     * @dev Returns all comments for a specific batch
+     * @dev Returns all comments for a specific batch (paginated)
      * @param _honeyBatchId ID of the batch
-     * @return Array of Comment structs
+     * @param offset Starting index for pagination
+     * @param limit Maximum number of comments to return
      */
-    function getHoneyBatchComments(uint _honeyBatchId) external view returns (Comment[] memory) {
-        return honeyBatchesComments[_honeyBatchId];
+    function getHoneyBatchComments(
+        uint _honeyBatchId,
+        uint offset,
+        uint limit
+    ) external view returns (Comment[] memory) {
+        uint total = honeyBatchesComments[_honeyBatchId].length;
+
+        if (offset >= total) {
+            return new Comment[](0);
+        }
+
+        uint end = offset + limit > total ? total : offset + limit;
+        uint resultLength = end - offset;
+
+        Comment[] memory result = new Comment[](resultLength);
+        for (uint i = 0; i < resultLength; i++) {
+            result[i] = honeyBatchesComments[_honeyBatchId][offset + i];
+        }
+
+        return result;
+    }
+
+    /**
+    * @dev Returns the total number of comments for a batch
+     */
+    function getHoneyBatchCommentsCount(uint _honeyBatchId) external view returns (uint) {
+        return honeyBatchesComments[_honeyBatchId].length;
     }
 
     /**

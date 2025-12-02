@@ -217,14 +217,14 @@ describe("HoneyTraceStorage", function () {
 
             await honeyTraceStorage.connect(producer).addHoneyBatch(
                 "Miel d'Acacia",
-                "{}",
+                "ipfs://metadata",
                 5,
                 batch1.merkleRoot
             );
 
             await honeyTraceStorage.connect(producer).addHoneyBatch(
                 "Miel de Lavande",
-                "{}",
+                "ipfs://metadata2",
                 10,
                 batch2.merkleRoot
             );
@@ -244,7 +244,7 @@ describe("HoneyTraceStorage", function () {
             await expect(
                 honeyTraceStorage.connect(producer).addHoneyBatch(
                     "Miel de Châtaignier",
-                    "{}",
+                    "ipfs://metadata",
                     5,
                     batch.merkleRoot
                 )
@@ -460,7 +460,7 @@ describe("HoneyTraceStorage", function () {
                 .to.emit(honeyTraceStorage, "NewComment")
                 .withArgs(await customer.getAddress(), batchId, 5);
 
-            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId, 0, 100);
             expect(comments.length).to.equal(1);
             expect(comments[0].consumer).to.equal(await customer.getAddress());
             expect(comments[0].rating).to.equal(5);
@@ -490,7 +490,7 @@ describe("HoneyTraceStorage", function () {
                 "ipfs://metadata2"
             );
 
-            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId, 0, 100);
             expect(comments.length).to.equal(2);
             expect(comments[0].metadata).to.equal("ipfs://metadata");
             expect(comments[1].metadata).to.equal("ipfs://metadata2");
@@ -515,8 +515,8 @@ describe("HoneyTraceStorage", function () {
             await honeyTraceStorage.connect(customer).addComment(batchId, 5, "ipfs://metadata");
             await honeyTraceStorage.connect(customer2).addComment(2, 4, "ipfs://metadata2");
 
-            const comments1 = await honeyTraceStorage.getHoneyBatchComments(batchId);
-            const comments2 = await honeyTraceStorage.getHoneyBatchComments(2);
+            const comments1 = await honeyTraceStorage.getHoneyBatchComments(batchId, 0, 100);
+            const comments2 = await honeyTraceStorage.getHoneyBatchComments(2, 0, 100);
 
             expect(comments1.length).to.equal(1);
             expect(comments2.length).to.equal(1);
@@ -530,7 +530,7 @@ describe("HoneyTraceStorage", function () {
                     `Rating ${rating}`
                 );
             }
-            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId);
+            const comments = await honeyTraceStorage.getHoneyBatchComments(batchId, 0, 100);
             expect(comments.length).to.equal(6);
         });
     });
