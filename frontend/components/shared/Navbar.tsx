@@ -20,6 +20,7 @@ export default function Navbar() {
                 <div className="absolute top-14 right-0 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-md min-w-[200px]">
                     <div className="flex flex-col p-2 gap-1">
                         <a href="/" className="p-3 hover:bg-[#666666] hover:text-white rounded-lg transition text-[#000000]">Home</a>
+                        <a href="/owner" className="p-3 hover:bg-[#666666] hover:text-white rounded-lg transition text-[#000000]">Owner</a>
                         <a href="/admin" className="p-3 hover:bg-[#666666] hover:text-white rounded-lg transition text-[#000000]">Admin</a>
                         <a href="/explore" className="p-3 hover:bg-[#666666] hover:text-white rounded-lg transition text-[#000000]">Explore</a>
                         <a href="/explore/batch/1" className="p-3 hover:bg-[#666666] hover:text-white rounded-lg transition text-[#000000]">Explore Batch</a>
