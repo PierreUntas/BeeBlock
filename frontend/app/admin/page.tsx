@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
+import Navbar from '@/components/shared/Navbar';
+import Image from 'next/image';
 
 export default function AdminPage() {
     const { address } = useAccount();
@@ -32,7 +34,6 @@ export default function AdminPage() {
             setIsOwner(address.toLowerCase() === (ownerAddress as string).toLowerCase());
         }
     }, [address, ownerAddress]);
-
 
     const handleAddAdmin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,112 +69,118 @@ export default function AdminPage() {
         }
     };
 
-    const handleCheckAdmin = () => {
-        if (checkAdminAddress) {
-            refetchIsAdmin();
-        }
-    };
-
     if (!address) {
         return (
-            <div className="container mx-auto p-6">
-                <p className="text-center text-red-600">Veuillez connecter votre wallet</p>
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <p className="text-center text-[#000000] font-[Olney_Light] text-xl opacity-70">Veuillez connecter votre wallet</p>
+                </div>
             </div>
         );
     }
 
     if (!isOwner) {
         return (
-            <div className="container mx-auto p-6">
-                <p className="text-center text-red-600">Accès refusé : vous n'êtes pas le propriétaire du contrat</p>
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <p className="text-center text-[#000000] font-[Olney_Light] text-xl opacity-70">Accès refusé : vous n'êtes pas le propriétaire du contrat</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div className="container mx-auto p-6 max-w-4xl">
-            <h1 className="text-3xl font-bold mb-8">Gestion des Admins</h1>
+        <div className="min-h-screen bg-yellow-bee">
+            <Navbar />
+            <div className="container mx-auto p-6 max-w-xl">
+                <h1 className="text-4xl font-[Carbon_Phyber] mb-6 text-center text-[#000000]">Gestion des Admins</h1>
 
-            {/* Ajouter un admin */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Ajouter un Admin</h2>
-                <form onSubmit={handleAddAdmin} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Adresse de l'admin</label>
-                        <input
-                            type="text"
-                            value={newAdminAddress}
-                            onChange={(e) => setNewAdminAddress(e.target.value)}
-                            placeholder="0x..."
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"
-                            pattern="^0x[a-fA-F0-9]{40}$"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={isAddingAdmin}
-                        className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-medium py-2 px-4 rounded-lg disabled:opacity-50"
-                    >
-                        {isAddingAdmin ? 'Ajout en cours...' : 'Ajouter Admin'}
-                    </button>
-                </form>
-            </div>
+                {/* Ajouter un admin */}
+                <div className="bg-yellow-bee rounded-lg p-4 mb-4 opacity-70">
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Ajouter un Admin</h2>
+                    <form onSubmit={handleAddAdmin} className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse de l'admin</label>
+                            <input
+                                type="text"
+                                value={newAdminAddress}
+                                onChange={(e) => setNewAdminAddress(e.target.value)}
+                                placeholder="0x..."
+                                className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                                pattern="^0x[a-fA-F0-9]{40}$"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isAddingAdmin}
+                            className="w-full bg-[#666666] text-white font-[Olney_Light] py-1.5 px-4 rounded-lg text-sm disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
+                        >
+                            {isAddingAdmin ? 'Ajout en cours...' : 'Ajouter Admin'}
+                        </button>
+                    </form>
+                </div>
 
-            {/* Retirer un admin */}
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Retirer un Admin</h2>
-                <form onSubmit={handleRemoveAdmin} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Adresse de l'admin</label>
-                        <input
-                            type="text"
-                            value={removeAdminAddress}
-                            onChange={(e) => setRemoveAdminAddress(e.target.value)}
-                            placeholder="0x..."
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
-                            pattern="^0x[a-fA-F0-9]{40}$"
-                            required
-                        />
-                    </div>
-                    <button
-                        type="submit"
-                        disabled={isRemovingAdmin}
-                        className="w-full bg-red-500 hover:bg-red-600 text-white font-medium py-2 px-4 rounded-lg disabled:opacity-50"
-                    >
-                        {isRemovingAdmin ? 'Suppression en cours...' : 'Retirer Admin'}
-                    </button>
-                </form>
-            </div>
+                {/* Retirer un admin */}
+                <div className="bg-yellow-bee rounded-lg p-4 mb-4 opacity-70">
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Retirer un Admin</h2>
+                    <form onSubmit={handleRemoveAdmin} className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse de l'admin</label>
+                            <input
+                                type="text"
+                                value={removeAdminAddress}
+                                onChange={(e) => setRemoveAdminAddress(e.target.value)}
+                                placeholder="0x..."
+                                className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                                pattern="^0x[a-fA-F0-9]{40}$"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isRemovingAdmin}
+                            className="w-full bg-[#666666] text-white font-[Olney_Light] py-1.5 px-4 rounded-lg text-sm disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
+                        >
+                            {isRemovingAdmin ? 'Suppression en cours...' : 'Retirer Admin'}
+                        </button>
+                    </form>
+                </div>
 
-            {/* Vérifier le statut d'admin */}
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h2 className="text-xl font-semibold mb-4">Vérifier le Statut Admin</h2>
-                <div className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium mb-2">Adresse à vérifier</label>
-                        <div className="flex gap-2">
+                {/* Vérifier le statut d'admin */}
+                <div className="bg-yellow-bee rounded-lg p-4 opacity-70">
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Vérifier le Statut Admin</h2>
+                    <div className="space-y-3">
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse à vérifier</label>
                             <input
                                 type="text"
                                 value={checkAdminAddress}
                                 onChange={(e) => setCheckAdminAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                             />
-                            <button
-                                onClick={handleCheckAdmin}
-                                className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-6 rounded-lg"
-                            >
-                                Vérifier
-                            </button>
                         </div>
+                        {checkAdminAddress && isAdminResult !== undefined && (
+                            <div className="p-3 rounded-lg font-[Olney_Light] text-sm border border-[#000000] text-[#000000]">
+                                {isAdminResult ? '✓ Cette adresse est admin' : '✗ Cette adresse n\'est pas admin'}
+                            </div>
+                        )}
                     </div>
-                    {checkAdminAddress && isAdminResult !== undefined && (
-                        <div className={`p-4 rounded-lg ${isAdminResult ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                            {isAdminResult ? '✓ Cette adresse est admin' : '✗ Cette adresse n\'est pas admin'}
-                        </div>
-                    )}
+                </div>
+
+                {/* Logo */}
+                <div className="flex justify-center mt-8 mb-6">
+                    <Image
+                        src="/logo-png-noir.png"
+                        alt="Logo"
+                        width={120}
+                        height={120}
+                        className="opacity-70"
+                    />
                 </div>
             </div>
         </div>
