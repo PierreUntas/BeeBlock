@@ -3,13 +3,13 @@ import React, { PropsWithChildren } from "react";
 import "@rainbow-me/rainbowkit/styles.css";
 import { getDefaultConfig, RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
-import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
+import { sepolia } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
 
 const config = getDefaultConfig({
     appName: "BeeBlock",
     projectId: "dadb200892fc0800f89f564492f096da",
-    chains: [mainnet, polygon, optimism, arbitrum, base],
+    chains: [sepolia],
     ssr: true,
 });
 
@@ -21,7 +21,7 @@ const RainbowKitAndWagmiProvider = ({ children }: PropsWithChildren<{}>) => {
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider
                     theme={lightTheme({
-                        accentColor: '#000000',
+                        accentColor: '#fbbf24',
                         accentColorForeground: 'white',
                         borderRadius: 'medium',
                     })}
