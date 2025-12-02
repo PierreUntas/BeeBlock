@@ -5,11 +5,11 @@ import {PropsWithChildren} from "react";
 const Layout = ({ children }: PropsWithChildren<{}>) => {
     return (
         <div className="app">
-            <Header />
+            {/*<Header />*/}
             <main className="main">
                 {children}
             </main>
-            <Footer />
+            {/*<Footer />*/}
         </div>
     )
 }

@@ -1,7 +1,7 @@
 "use client";
 import React, { PropsWithChildren } from "react";
 import "@rainbow-me/rainbowkit/styles.css";
-import { getDefaultConfig, RainbowKitProvider } from "@rainbow-me/rainbowkit";
+import { getDefaultConfig, RainbowKitProvider, lightTheme } from "@rainbow-me/rainbowkit";
 import { WagmiProvider } from "wagmi";
 import { mainnet, polygon, optimism, arbitrum, base } from "wagmi/chains";
 import { QueryClientProvider, QueryClient } from "@tanstack/react-query";
@@ -19,7 +19,15 @@ const RainbowKitAndWagmiProvider = ({ children }: PropsWithChildren<{}>) => {
     return (
         <WagmiProvider config={config}>
             <QueryClientProvider client={queryClient}>
-                <RainbowKitProvider>{children}</RainbowKitProvider>
+                <RainbowKitProvider
+                    theme={lightTheme({
+                        accentColor: '#000000',
+                        accentColorForeground: 'white',
+                        borderRadius: 'medium',
+                    })}
+                >
+                    {children}
+                </RainbowKitProvider>
             </QueryClientProvider>
         </WagmiProvider>
     );
