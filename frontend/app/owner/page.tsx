@@ -8,67 +8,64 @@ import Image from 'next/image';
 
 export default function AdminPage() {
     const { address } = useAccount();
-    const [newProducerAddress, setNewProducerAddress] = useState('');
-    const [removeProducerAddress, setRemoveProducerAddress] = useState('');
-    const [checkProducerAddress, setCheckProducerAddress] = useState('');
-    const [isAdmin, setIsAdmin] = useState(false);
+    const [newAdminAddress, setNewAdminAddress] = useState('');
+    const [removeAdminAddress, setRemoveAdminAddress] = useState('');
+    const [checkAdminAddress, setCheckAdminAddress] = useState('');
+    const [isOwner, setIsOwner] = useState(false);
 
-    const { writeContract, isPending: isAuthorizingProducer } = useWriteContract();
-    const { writeContract: writeRevokeProducer, isPending: isRevokingProducer } = useWriteContract();
+    const { writeContract, isPending: isAddingAdmin } = useWriteContract();
+    const { writeContract: writeRemoveAdmin, isPending: isRemovingAdmin } = useWriteContract();
 
-    const { data: isAdminResult } = useReadContract({
+    const { data: ownerAddress } = useReadContract({
+        address: HONEY_TRACE_STORAGE_ADDRESS,
+        abi: HONEY_TRACE_STORAGE_ABI,
+        functionName: 'owner',
+    });
+
+    const { data: isAdminResult, refetch: refetchIsAdmin } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'isAdmin',
-        args: address ? [address] : undefined,
-    });
-
-    const { data: producerData } = useReadContract({
-        address: HONEY_TRACE_STORAGE_ADDRESS,
-        abi: HONEY_TRACE_STORAGE_ABI,
-        functionName: 'getProducer',
-        args: checkProducerAddress ? [checkProducerAddress as `0x${string}`] : undefined,
+        args: checkAdminAddress ? [checkAdminAddress as `0x${string}`] : undefined,
     });
 
     useEffect(() => {
-        if (isAdminResult !== undefined) {
-            setIsAdmin(isAdminResult as boolean);
+        if (address && ownerAddress) {
+            setIsOwner(address.toLowerCase() === (ownerAddress as string).toLowerCase());
         }
-    }, [isAdminResult]);
+    }, [address, ownerAddress]);
 
-    const isProducerAuthorized = producerData ? (producerData as any).authorized : undefined;
-
-    const handleAuthorizeProducer = async (e: React.FormEvent) => {
+    const handleAddAdmin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!newProducerAddress) return;
+        if (!newAdminAddress) return;
 
         try {
             await writeContract({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
-                functionName: 'authorizeProducer',
-                args: [newProducerAddress as `0x${string}`, true],
+                functionName: 'addAdmin',
+                args: [newAdminAddress as `0x${string}`],
             });
-            setNewProducerAddress('');
+            setNewAdminAddress('');
         } catch (error) {
-            console.error('Erreur lors de l\'autorisation du producteur:', error);
+            console.error('Erreur lors de l\'ajout de l\'admin:', error);
         }
     };
 
-    const handleRevokeProducer = async (e: React.FormEvent) => {
+    const handleRemoveAdmin = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!removeProducerAddress) return;
+        if (!removeAdminAddress) return;
 
         try {
-            await writeRevokeProducer({
+            await writeRemoveAdmin({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
-                functionName: 'authorizeProducer',
-                args: [removeProducerAddress as `0x${string}`, false],
+                functionName: 'removeAdmin',
+                args: [removeAdminAddress as `0x${string}`],
             });
-            setRemoveProducerAddress('');
+            setRemoveAdminAddress('');
         } catch (error) {
-            console.error('Erreur lors de la révocation du producteur:', error);
+            console.error('Erreur lors de la suppression de l\'admin:', error);
         }
     };
 
@@ -83,12 +80,12 @@ export default function AdminPage() {
         );
     }
 
-    if (!isAdmin) {
+    if (!isOwner) {
         return (
             <div className="min-h-screen bg-yellow-bee">
                 <Navbar />
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="text-center text-[#000000] font-[Olney_Light] text-xl opacity-70">Accès refusé : vous n'êtes pas admin</p>
+                    <p className="text-center text-[#000000] font-[Olney_Light] text-xl opacity-70">Accès refusé : vous n'êtes pas le propriétaire du contrat</p>
                 </div>
             </div>
         );
@@ -98,18 +95,18 @@ export default function AdminPage() {
         <div className="min-h-screen bg-yellow-bee">
             <Navbar />
             <div className="container mx-auto p-6 max-w-xl">
-                <h1 className="text-4xl font-[Carbon_Phyber] mb-6 text-center text-[#000000]">Gestion des Producteurs</h1>
+                <h1 className="text-4xl font-[Carbon_Phyber] mb-6 text-center text-[#000000]">Gestion des Admins</h1>
 
-                {/* Autoriser un producteur */}
+                {/* Ajouter un admin */}
                 <div className="bg-yellow-bee rounded-lg p-4 mb-4 opacity-70">
-                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Autoriser un Producteur</h2>
-                    <form onSubmit={handleAuthorizeProducer} className="space-y-3">
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Ajouter un Admin</h2>
+                    <form onSubmit={handleAddAdmin} className="space-y-3">
                         <div>
-                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse du producteur</label>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse de l'admin</label>
                             <input
                                 type="text"
-                                value={newProducerAddress}
-                                onChange={(e) => setNewProducerAddress(e.target.value)}
+                                value={newAdminAddress}
+                                onChange={(e) => setNewAdminAddress(e.target.value)}
                                 placeholder="0x..."
                                 className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 pattern="^0x[a-fA-F0-9]{40}$"
@@ -118,24 +115,24 @@ export default function AdminPage() {
                         </div>
                         <button
                             type="submit"
-                            disabled={isAuthorizingProducer}
+                            disabled={isAddingAdmin}
                             className="w-full bg-[#666666] text-white font-[Olney_Light] py-1.5 px-4 rounded-lg text-sm disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
                         >
-                            {isAuthorizingProducer ? 'Autorisation en cours...' : 'Autoriser Producteur'}
+                            {isAddingAdmin ? 'Ajout en cours...' : 'Ajouter Admin'}
                         </button>
                     </form>
                 </div>
 
-                {/* Révoquer un producteur */}
+                {/* Retirer un admin */}
                 <div className="bg-yellow-bee rounded-lg p-4 mb-4 opacity-70">
-                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Révoquer un Producteur</h2>
-                    <form onSubmit={handleRevokeProducer} className="space-y-3">
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Retirer un Admin</h2>
+                    <form onSubmit={handleRemoveAdmin} className="space-y-3">
                         <div>
-                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse du producteur</label>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse de l'admin</label>
                             <input
                                 type="text"
-                                value={removeProducerAddress}
-                                onChange={(e) => setRemoveProducerAddress(e.target.value)}
+                                value={removeAdminAddress}
+                                onChange={(e) => setRemoveAdminAddress(e.target.value)}
                                 placeholder="0x..."
                                 className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 pattern="^0x[a-fA-F0-9]{40}$"
@@ -144,32 +141,32 @@ export default function AdminPage() {
                         </div>
                         <button
                             type="submit"
-                            disabled={isRevokingProducer}
+                            disabled={isRemovingAdmin}
                             className="w-full bg-[#666666] text-white font-[Olney_Light] py-1.5 px-4 rounded-lg text-sm disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
                         >
-                            {isRevokingProducer ? 'Révocation en cours...' : 'Révoquer Producteur'}
+                            {isRemovingAdmin ? 'Suppression en cours...' : 'Retirer Admin'}
                         </button>
                     </form>
                 </div>
 
-                {/* Vérifier le statut de producteur */}
+                {/* Vérifier le statut d'admin */}
                 <div className="bg-yellow-bee rounded-lg p-4 opacity-70">
-                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Vérifier le Statut Producteur</h2>
+                    <h2 className="text-xl font-[Carbon_bl] mb-3 text-[#000000]">Vérifier le Statut Admin</h2>
                     <div className="space-y-3">
                         <div>
                             <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">Adresse à vérifier</label>
                             <input
                                 type="text"
-                                value={checkProducerAddress}
-                                onChange={(e) => setCheckProducerAddress(e.target.value)}
+                                value={checkAdminAddress}
+                                onChange={(e) => setCheckAdminAddress(e.target.value)}
                                 placeholder="0x..."
                                 className="w-full px-3 py-1.5 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                             />
                         </div>
-                        {checkProducerAddress && isProducerAuthorized !== undefined && (
+                        {checkAdminAddress && isAdminResult !== undefined && (
                             <div className="p-3 rounded-lg font-[Olney_Light] text-sm border border-[#000000] text-[#000000]">
-                                {isProducerAuthorized ? '✓ Cette adresse est autorisée comme producteur' : '✗ Cette adresse n\'est pas autorisée comme producteur'}
+                                {isAdminResult ? '✓ Cette adresse est admin' : '✗ Cette adresse n\'est pas admin'}
                             </div>
                         )}
                     </div>
