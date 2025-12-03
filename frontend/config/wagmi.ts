@@ -3,6 +3,7 @@ import { sepolia } from 'wagmi/chains';
 import { injected, walletConnect } from 'wagmi/connectors';
 
 const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || '';
+const rpcUrl = process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA;
 
 export const config = createConfig({
     chains: [sepolia],
@@ -11,6 +12,6 @@ export const config = createConfig({
         ...(projectId ? [walletConnect({ projectId })] : []),
     ],
     transports: {
-        [sepolia.id]: http(process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA),
+        [sepolia.id]: http(rpcUrl),
     },
 });

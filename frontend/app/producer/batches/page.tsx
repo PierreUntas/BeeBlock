@@ -1,12 +1,15 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract, usePublicClient } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
+import { publicClient } from '@/lib/client';
+
+
 
 interface BatchInfo {
     tokenId: bigint;
@@ -18,7 +21,6 @@ interface BatchInfo {
 
 export default function ProducerBatchesPage() {
     const { address } = useAccount();
-    const publicClient = usePublicClient();
     const [batches, setBatches] = useState<BatchInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
