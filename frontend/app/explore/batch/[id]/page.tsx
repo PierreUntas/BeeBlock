@@ -155,7 +155,7 @@ export default function BatchDetailsPage() {
     }
 
     return (
-        <div className="min-h-screen bg-yellow-bee">
+        <div className="min-h-screen bg-yellow-bee pt-14">
             <Navbar />
             <div className="container mx-auto p-6 max-w-4xl">
                 <Link
@@ -196,6 +196,30 @@ export default function BatchDetailsPage() {
                             </span>
                         </div>
                     )}
+                </div>
+
+                <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
+                    <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
+                        Informations du lot
+                    </h2>
+                    <div className="space-y-3">
+                        <div>
+                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
+                                Métadonnées
+                            </p>
+                            <div className="bg-yellow-bee/50 rounded p-3 font-mono text-sm text-[#000000]">
+                                {batch.metadata}
+                            </div>
+                        </div>
+                        <div>
+                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
+                                Merkle Root
+                            </p>
+                            <p className="text-sm font-mono text-[#000000] break-all">
+                                {batch.merkleRoot}
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
@@ -243,30 +267,6 @@ export default function BatchDetailsPage() {
                     >
                         Voir tous ses lots →
                     </Link>
-                </div>
-
-                <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
-                    <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
-                        Informations du lot
-                    </h2>
-                    <div className="space-y-3">
-                        <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                Métadonnées
-                            </p>
-                            <div className="bg-yellow-bee/50 rounded p-3 font-mono text-sm text-[#000000]">
-                                {batch.metadata}
-                            </div>
-                        </div>
-                        <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                Merkle Root
-                            </p>
-                            <p className="text-sm font-mono text-[#000000] break-all">
-                                {batch.merkleRoot}
-                            </p>
-                        </div>
-                    </div>
                 </div>
 
                 {comments.length > 0 && (

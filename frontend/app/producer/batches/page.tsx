@@ -130,7 +130,7 @@ export default function ProducerBatchesPage() {
     }
 
     return (
-        <div className="min-h-screen bg-yellow-bee">
+        <div className="min-h-screen bg-yellow-bee pt-14">
             <Navbar />
             <div className="container mx-auto p-6 max-w-4xl">
                 <div className="flex justify-between items-center mb-6">
@@ -189,7 +189,7 @@ export default function ProducerBatchesPage() {
 
                                 <div className="flex gap-2">
                                     <Link
-                                        href={`/batch/${batch.tokenId}`}
+                                        href={`/explore/batch/${batch.tokenId}`}
                                         className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-[#555555] transition-colors border border-[#000000] text-center text-sm"
                                     >
                                         Voir les détails
