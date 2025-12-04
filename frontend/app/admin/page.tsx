@@ -95,7 +95,7 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-yellow-bee">
+        <div className="min-h-screen bg-yellow-bee pt-14">
             <Navbar />
             <div className="container mx-auto p-6 max-w-xl">
                 <h1 className="text-4xl font-[Carbon_Phyber] mb-6 text-center text-[#000000]">Gestion des Producteurs</h1>

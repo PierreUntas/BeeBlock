@@ -115,7 +115,7 @@ export default function ExplorePage() {
     const uniqueHoneyTypes = Array.from(new Set(batches.map(b => b.honeyType)));
 
     return (
-        <div className="min-h-screen bg-yellow-bee">
+        <div className="min-h-screen bg-yellow-bee pt-14">
             <Navbar />
             <div className="container mx-auto p-6 max-w-6xl">
                 <div className="mb-8">

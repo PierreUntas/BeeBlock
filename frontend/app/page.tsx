@@ -17,7 +17,7 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-yellow-bee">
+        <div className="min-h-screen  bg-yellow-bee">
             <Navbar />
 
             {isLoading ? (
