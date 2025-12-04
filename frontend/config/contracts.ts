@@ -819,5 +819,21 @@ export const HONEY_TOKENIZATION_ABI = [
         ],
         "stateMutability": "view",
         "type": "function"
+    },
+    // 👇 AJOUTEZ CETTE FONCTION
+    {
+        inputs: [{ name: 'operator', type: 'address' }, { name: 'approved', type: 'bool' }],
+        name: 'setApprovalForAll',
+        outputs: [],
+        stateMutability: 'nonpayable',
+        type: 'function'
+    },
+    // 👇 ET CELLE-CI POUR LA VÉRIFICATION
+    {
+        inputs: [{ name: 'account', type: 'address' }, { name: 'operator', type: 'address' }],
+        name: 'isApprovedForAll',
+        outputs: [{ name: '', type: 'bool' }],
+        stateMutability: 'view',
+        type: 'function'
     }
 ] as const;
