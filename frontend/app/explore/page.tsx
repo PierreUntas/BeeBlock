@@ -2,11 +2,24 @@
 
 import { useState, useEffect } from 'react';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
+import { getFromIPFSGateway } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient } from '@/lib/client';
+
+interface BatchIPFSData {
+    identifiant: string;
+    typeMiel: string;
+    periodeRecolte: string;
+    dateMiseEnPot: string;
+    lieuMiseEnPot: string;
+    certifications: string[];
+    composition: string;
+    formatPot: string;
+    etiquetage: string;
+}
 
 interface BatchInfo {
     tokenId: bigint;
@@ -15,6 +28,7 @@ interface BatchInfo {
     metadata: string;
     totalSupply: bigint;
     remainingTokens: bigint;
+    ipfsData?: BatchIPFSData;
 }
 
 interface ProducerInfo {
@@ -26,6 +40,7 @@ export default function ExplorePage() {
     const [batches, setBatches] = useState<BatchInfo[]>([]);
     const [producers, setProducers] = useState<Map<string, ProducerInfo>>(new Map());
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
     const [filterType, setFilterType] = useState<string>('all');
 
     useEffect(() => {
@@ -36,7 +51,6 @@ export default function ExplorePage() {
             }
 
             try {
-                // Récupérer tous les événements NewHoneyBatch
                 const logs = await publicClient.getLogs({
                     address: HONEY_TRACE_STORAGE_ADDRESS,
                     event: parseAbiItem('event NewHoneyBatch(address indexed producer, uint indexed honeyBatchId)'),
@@ -47,12 +61,10 @@ export default function ExplorePage() {
                 const batchesData: BatchInfo[] = [];
                 const producersMap = new Map<string, ProducerInfo>();
 
-                // Pour chaque événement, récupérer les détails
                 for (const log of logs) {
                     const tokenId = log.args.honeyBatchId as bigint;
                     const producerAddress = log.args.producer as `0x${string}`;
 
-                    // Récupérer les infos du batch
                     const batchInfo = await publicClient.readContract({
                         address: HONEY_TRACE_STORAGE_ADDRESS,
                         abi: HONEY_TRACE_STORAGE_ABI,
@@ -60,7 +72,6 @@ export default function ExplorePage() {
                         args: [tokenId]
                     }) as any;
 
-                    // Récupérer le solde restant
                     const balance = await publicClient.readContract({
                         address: HONEY_TOKENIZATION_ADDRESS,
                         abi: HONEY_TOKENIZATION_ABI,
@@ -68,7 +79,6 @@ export default function ExplorePage() {
                         args: [producerAddress, tokenId]
                     }) as bigint;
 
-                    // Récupérer les infos du producteur si pas déjà fait
                     if (!producersMap.has(producerAddress)) {
                         const producerData = await publicClient.readContract({
                             address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -93,11 +103,28 @@ export default function ExplorePage() {
                     });
                 }
 
-                // Trier par tokenId décroissant
                 batchesData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
-
                 setBatches(batchesData);
                 setProducers(producersMap);
+
+                // Charger les données IPFS pour chaque lot
+                setIsLoadingIPFS(true);
+                for (let i = 0; i < batchesData.length; i++) {
+                    if (batchesData[i].metadata) {
+                        try {
+                            const batchIPFSData = await getFromIPFSGateway(batchesData[i].metadata);
+                            setBatches(prev => prev.map(b =>
+                                b.tokenId === batchesData[i].tokenId
+                                    ? { ...b, ipfsData: batchIPFSData }
+                                    : b
+                            ));
+                        } catch (error) {
+                            console.error(`Erreur chargement IPFS lot ${batchesData[i].tokenId}:`, error);
+                        }
+                    }
+                }
+                setIsLoadingIPFS(false);
+
             } catch (error) {
                 console.error('Erreur lors du chargement des lots:', error);
             } finally {
@@ -127,7 +154,6 @@ export default function ExplorePage() {
                     </p>
                 </div>
 
-                {/* Filtres */}
                 <div className="mb-6 flex gap-2 flex-wrap">
                     <button
                         onClick={() => setFilterType('all')}
@@ -154,6 +180,12 @@ export default function ExplorePage() {
                     ))}
                 </div>
 
+                {isLoadingIPFS && (
+                    <div className="text-center text-[#000000] font-[Olney_Light] mb-4 opacity-70">
+                        Chargement des données IPFS...
+                    </div>
+                )}
+
                 {isLoading ? (
                     <div className="text-center py-12">
                         <p className="text-[#000000] font-[Olney_Light] opacity-70">
@@ -162,59 +194,72 @@ export default function ExplorePage() {
                     </div>
                 ) : filteredBatches.length === 0 ? (
                     <div className="bg-yellow-bee rounded-lg p-8 opacity-70 text-center border border-[#000000]">
-                        <p className="text-[#000000] font-[Olney_Light]">
+                        <p className="text-[#000000] font-[Olney_Light] text-lg">
                             Aucun lot trouvé
                         </p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {filteredBatches.map((batch) => {
-                            const producerInfo = producers.get(batch.producer);
-                            return (
-                                <Link
-                                    key={batch.tokenId.toString()}
-                                    href={`/explore/batch/${batch.tokenId}`}
-                                    className="block"
-                                >
-                                    <div className="bg-yellow-bee rounded-lg p-5 opacity-70 hover:opacity-100 transition-opacity border border-[#000000] h-full">
-                                        <div className="flex justify-between items-start mb-3">
-                                            <div>
-                                                <h2 className="text-xl font-[Carbon_bl] text-[#000000] mb-1">
-                                                    {batch.honeyType}
-                                                </h2>
-                                                <p className="text-xs font-[Olney_Light] text-[#000000]/60">
-                                                    Lot #{batch.tokenId.toString()}
-                                                </p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="text-2xl font-[Carbon_Phyber] text-[#000000]">
-                                                    {batch.remainingTokens.toString()}
-                                                </p>
-                                                <p className="text-xs font-[Olney_Light] text-[#000000]/60">
-                                                    disponibles
-                                                </p>
-                                            </div>
-                                        </div>
+                        {filteredBatches.map((batch) => (
+                            <Link
+                                key={batch.tokenId.toString()}
+                                href={`/explore/batch/${batch.tokenId}`}
+                                className="bg-yellow-bee rounded-lg p-4 opacity-70 border border-[#000000] hover:opacity-100 transition-opacity"
+                            >
+                                <div className="mb-3">
+                                    <h3 className="text-2xl font-[Carbon_bl] text-[#000000] mb-1">
+                                        {batch.honeyType}
+                                    </h3>
+                                    {batch.ipfsData?.identifiant && (
+                                        <p className="text-xs font-[Olney_Light] text-[#000000]/60">
+                                            {batch.ipfsData.identifiant}
+                                        </p>
+                                    )}
+                                </div>
 
-                                        <div className="mb-3 pt-3 border-t border-[#000000]/20">
-                                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                                Producteur :
-                                            </p>
-                                            <p className="text-sm font-[Olney_Light] text-[#000000]">
-                                                {producerInfo?.name || 'Chargement...'}
-                                            </p>
-                                            <p className="text-xs font-[Olney_Light] text-[#000000]/60">
-                                                {producerInfo?.location || ''}
-                                            </p>
-                                        </div>
+                                {batch.ipfsData?.periodeRecolte && (
+                                    <p className="text-sm font-[Olney_Light] text-[#000000]/80 mb-2">
+                                        📅 {batch.ipfsData.periodeRecolte}
+                                    </p>
+                                )}
 
-                                        <div className="text-xs font-[Olney_Light] text-[#000000]/40 text-right">
-                                            Cliquez pour voir les détails →
-                                        </div>
+                                {batch.ipfsData?.formatPot && (
+                                    <p className="text-sm font-[Olney_Light] text-[#000000]/80 mb-2">
+                                        📦 {batch.ipfsData.formatPot}
+                                    </p>
+                                )}
+
+                                {batch.ipfsData?.certifications && batch.ipfsData.certifications.length > 0 && (
+                                    <div className="flex flex-wrap gap-1 mb-3">
+                                        {batch.ipfsData.certifications.map((cert, index) => (
+                                            <span
+                                                key={index}
+                                                className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded"
+                                            >
+                                                {cert}
+                                            </span>
+                                        ))}
                                     </div>
-                                </Link>
-                            );
-                        })}
+                                )}
+
+                                <div className="border-t border-[#000000]/20 pt-3 mt-3">
+                                    <p className="text-sm font-[Olney_Light] text-[#000000]/60 mb-1">
+                                        Producteur
+                                    </p>
+                                    <p className="text-sm font-[Olney_Light] text-[#000000] mb-2">
+                                        {producers.get(batch.producer)?.name}
+                                    </p>
+                                    <div className="flex justify-between items-center">
+                                        <p className="text-xs font-[Olney_Light] text-[#000000]/60">
+                                            Lot #{batch.tokenId.toString()}
+                                        </p>
+                                        <p className="text-sm font-[Olney_Light] text-[#000000]">
+                                            {batch.remainingTokens.toString()} tokens
+                                        </p>
+                                    </div>
+                                </div>
+                            </Link>
+                        ))}
                     </div>
                 )}
 
