@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
+import { getFromIPFSGateway } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -17,11 +18,37 @@ interface BatchDetails {
     remainingTokens: bigint;
 }
 
+interface BatchIPFSData {
+    identifiant: string;
+    typeMiel: string;
+    periodeRecolte: string;
+    dateMiseEnPot: string;
+    lieuMiseEnPot: string;
+    certifications: string[];
+    composition: string;
+    formatPot: string;
+    etiquetage: string;
+}
+
 interface ProducerInfo {
     name: string;
     location: string;
     companyRegisterNumber: string;
     metadata: string;
+}
+
+interface ProducerIPFSData {
+    labelsCertifications: string[];
+    anneeCreation: number;
+    description: string;
+    photos: string[];
+    logo: string;
+    contact: {
+        email: string;
+        telephone: string;
+        adresseCourrier: string;
+    };
+    siteWeb: string;
 }
 
 interface Comment {
@@ -36,9 +63,12 @@ export default function BatchDetailsPage() {
     const batchId = params.id as string;
 
     const [batch, setBatch] = useState<BatchDetails | null>(null);
+    const [batchIPFSData, setBatchIPFSData] = useState<BatchIPFSData | null>(null);
     const [producer, setProducer] = useState<ProducerInfo | null>(null);
+    const [producerIPFSData, setProducerIPFSData] = useState<ProducerIPFSData | null>(null);
     const [comments, setComments] = useState<Comment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
 
     useEffect(() => {
         const fetchBatchDetails = async () => {
@@ -71,14 +101,29 @@ export default function BatchDetailsPage() {
                     args: [producerAddress, tokenId]
                 }) as bigint;
 
-                setBatch({
+                const batchData = {
                     tokenId,
                     producer: producerAddress,
                     honeyType: batchInfo.honeyType,
                     metadata: batchInfo.metadata,
                     merkleRoot: batchInfo.merkleRoot,
                     remainingTokens: balance
-                });
+                };
+
+                setBatch(batchData);
+
+                // Charger les données IPFS du lot
+                if (batchInfo.metadata) {
+                    setIsLoadingIPFS(true);
+                    try {
+                        const ipfsData = await getFromIPFSGateway(batchInfo.metadata);
+                        setBatchIPFSData(ipfsData);
+                    } catch (error) {
+                        console.error('Erreur chargement IPFS du lot:', error);
+                    } finally {
+                        setIsLoadingIPFS(false);
+                    }
+                }
 
                 const producerData = await publicClient.readContract({
                     address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -87,12 +132,24 @@ export default function BatchDetailsPage() {
                     args: [producerAddress]
                 }) as any;
 
-                setProducer({
+                const producerInfo = {
                     name: producerData.name,
                     location: producerData.location,
                     companyRegisterNumber: producerData.companyRegisterNumber,
                     metadata: producerData.metadata
-                });
+                };
+
+                setProducer(producerInfo);
+
+                // Charger les données IPFS du producteur
+                if (producerData.metadata) {
+                    try {
+                        const producerIpfsData = await getFromIPFSGateway(producerData.metadata);
+                        setProducerIPFSData(producerIpfsData);
+                    } catch (error) {
+                        console.error('Erreur chargement IPFS du producteur:', error);
+                    }
+                }
 
                 const commentsCount = await publicClient.readContract({
                     address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -165,6 +222,12 @@ export default function BatchDetailsPage() {
                     ← Retour à l'exploration
                 </Link>
 
+                {isLoadingIPFS && (
+                    <div className="text-center text-[#000000] font-[Olney_Light] mb-4 opacity-70">
+                        Chargement des données IPFS...
+                    </div>
+                )}
+
                 <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
                     <div className="flex justify-between items-start mb-4">
                         <div>
@@ -174,6 +237,11 @@ export default function BatchDetailsPage() {
                             <p className="text-sm font-[Olney_Light] text-[#000000]/60">
                                 Lot #{batch.tokenId.toString()}
                             </p>
+                            {batchIPFSData?.identifiant && (
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Identifiant: {batchIPFSData.identifiant}
+                                </p>
+                            )}
                         </div>
                         <div className="text-right">
                             <p className="text-sm font-[Olney_Light] text-[#000000]/60 mb-1">
@@ -203,19 +271,86 @@ export default function BatchDetailsPage() {
                         Informations du lot
                     </h2>
                     <div className="space-y-3">
-                        <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                Métadonnées
-                            </p>
-                            <div className="bg-yellow-bee/50 rounded p-3 font-mono text-sm text-[#000000]">
-                                {batch.metadata}
+                        {batchIPFSData?.periodeRecolte && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Période de récolte
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {batchIPFSData.periodeRecolte}
+                                </p>
                             </div>
+                        )}
+                        {batchIPFSData?.dateMiseEnPot && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Date de mise en pot
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {new Date(batchIPFSData.dateMiseEnPot).toLocaleDateString('fr-FR')}
+                                </p>
+                            </div>
+                        )}
+                        {batchIPFSData?.lieuMiseEnPot && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Lieu de mise en pot
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {batchIPFSData.lieuMiseEnPot}
+                                </p>
+                            </div>
+                        )}
+                        {batchIPFSData?.composition && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Composition
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {batchIPFSData.composition}
+                                </p>
+                            </div>
+                        )}
+                        {batchIPFSData?.formatPot && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Format
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {batchIPFSData.formatPot}
+                                </p>
+                            </div>
+                        )}
+                        {batchIPFSData?.certifications && batchIPFSData.certifications.length > 0 && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Certifications
+                                </p>
+                                <div className="flex flex-wrap gap-2 mt-1">
+                                    {batchIPFSData.certifications.map((cert, index) => (
+                                        <span
+                                            key={index}
+                                            className="px-2 py-1 bg-[#000000]/10 rounded text-xs font-[Olney_Light] text-[#000000]"
+                                        >
+                                            {cert}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        <div>
+                            <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                CID Metadata (IPFS)
+                            </p>
+                            <p className="text-xs font-mono text-[#000000] break-all">
+                                {batch.metadata}
+                            </p>
                         </div>
                         <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
+                            <p className="text-sm font-[Olney_Light] text-[#000000]/60">
                                 Merkle Root
                             </p>
-                            <p className="text-sm font-mono text-[#000000] break-all">
+                            <p className="text-xs font-mono text-[#000000] break-all">
                                 {batch.merkleRoot}
                             </p>
                         </div>
@@ -228,34 +363,46 @@ export default function BatchDetailsPage() {
                     </h2>
                     <div className="space-y-3">
                         <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
+                            <p className="text-sm font-[Olney_Light] text-[#000000]/60">
                                 Nom
                             </p>
-                            <p className="text-lg font-[Olney_Light] text-[#000000]">
+                            <p className="text-base font-[Olney_Light] text-[#000000]">
                                 {producer.name}
                             </p>
                         </div>
                         <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
+                            <p className="text-sm font-[Olney_Light] text-[#000000]/60">
                                 Localisation
                             </p>
-                            <p className="text-lg font-[Olney_Light] text-[#000000]">
+                            <p className="text-base font-[Olney_Light] text-[#000000]">
                                 {producer.location}
                             </p>
                         </div>
+                        {producerIPFSData?.description && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Description
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {producerIPFSData.description}
+                                </p>
+                            </div>
+                        )}
+                        {producerIPFSData?.contact?.email && (
+                            <div>
+                                <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                    Contact
+                                </p>
+                                <p className="text-base font-[Olney_Light] text-[#000000]">
+                                    {producerIPFSData.contact.email}
+                                </p>
+                            </div>
+                        )}
                         <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                N° SIRET
+                            <p className="text-sm font-[Olney_Light] text-[#000000]/60">
+                                Adresse
                             </p>
-                            <p className="text-lg font-[Olney_Light] text-[#000000]">
-                                {producer.companyRegisterNumber}
-                            </p>
-                        </div>
-                        <div>
-                            <p className="text-xs font-[Olney_Light] text-[#000000]/60 mb-1">
-                                Adresse Ethereum
-                            </p>
-                            <p className="text-sm font-mono text-[#000000] break-all">
+                            <p className="text-xs font-mono text-[#000000] break-all">
                                 {batch.producer}
                             </p>
                         </div>
@@ -276,18 +423,17 @@ export default function BatchDetailsPage() {
                         </h2>
                         <div className="space-y-4">
                             {comments.map((comment, index) => (
-                                <div key={index} className="border-t border-[#000000]/20 pt-4 first:border-t-0 first:pt-0">
+                                <div key={index} className="border-b border-[#000000]/10 pb-3 last:border-0">
                                     <div className="flex items-center gap-2 mb-2">
-                                        <span className="text-lg font-[Carbon_Phyber] text-[#000000]">
-                                            {comment.rating}/5
+                                        <span className="text-yellow-500">
+                                            {'★'.repeat(comment.rating)}{'☆'.repeat(5 - comment.rating)}
                                         </span>
-                                        <span className="text-yellow-500">★★★★★</span>
+                                        <span className="text-xs font-[Olney_Light] text-[#000000]/60">
+                                            {comment.consumer.slice(0, 6)}...{comment.consumer.slice(-4)}
+                                        </span>
                                     </div>
-                                    <p className="text-sm font-[Olney_Light] text-[#000000] mb-2">
+                                    <p className="text-sm font-[Olney_Light] text-[#000000]">
                                         {comment.metadata}
-                                    </p>
-                                    <p className="text-xs font-mono text-[#000000]/40">
-                                        {comment.consumer.substring(0, 6)}...{comment.consumer.substring(38)}
                                     </p>
                                 </div>
                             ))}
