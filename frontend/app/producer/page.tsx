@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
+import { uploadToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 
@@ -11,9 +12,24 @@ export default function ProducerPage() {
     const [name, setName] = useState('');
     const [location, setLocation] = useState('');
     const [companyRegisterNumber, setCompanyRegisterNumber] = useState('');
-    const [metadata, setMetadata] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
+    const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
+
+    const [additionalData, setAdditionalData] = useState({
+        labelsCertifications: [] as string[],
+        anneeCreation: new Date().getFullYear(),
+        description: '',
+        photos: [] as string[],
+        logo: '',
+        contact: {
+            email: '',
+            telephone: '',
+            adresseCourrier: ''
+        },
+        siteWeb: ''
+    });
 
     const { writeContract, isPending: isRegistering } = useWriteContract();
 
@@ -24,6 +40,33 @@ export default function ProducerPage() {
         args: address ? [address] : undefined,
     });
 
+    const loadIPFSData = async (cid: string) => {
+        setIsLoadingIPFS(true);
+        try {
+            const ipfsData = await getFromIPFSGateway(cid);
+
+            if (ipfsData) {
+                setAdditionalData({
+                    labelsCertifications: ipfsData.labelsCertifications || [],
+                    anneeCreation: ipfsData.anneeCreation || new Date().getFullYear(),
+                    description: ipfsData.description || '',
+                    photos: ipfsData.photos || [],
+                    logo: ipfsData.logo || '',
+                    contact: {
+                        email: ipfsData.contact?.email || '',
+                        telephone: ipfsData.contact?.telephone || '',
+                        adresseCourrier: ipfsData.contact?.adresseCourrier || ''
+                    },
+                    siteWeb: ipfsData.siteWeb || ''
+                });
+            }
+        } catch (error) {
+            console.error('Erreur chargement données IPFS:', error);
+        } finally {
+            setIsLoadingIPFS(false);
+        }
+    };
+
     useEffect(() => {
         if (producerData) {
             const producer = producerData as any;
@@ -33,22 +76,49 @@ export default function ProducerPage() {
             if (producer.name) setName(producer.name);
             if (producer.location) setLocation(producer.location);
             if (producer.companyRegisterNumber) setCompanyRegisterNumber(producer.companyRegisterNumber);
-            if (producer.metadata) setMetadata(producer.metadata);
+
+            // Récupérer les données IPFS
+            if (producer.metadata) {
+                loadIPFSData(producer.metadata);
+            }
         }
     }, [producerData]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsUploading(true);
 
         try {
+            // Construire l'objet JSON complet
+            const producerData = {
+                address: address,
+                nom: name,
+                localisation: location,
+                numeroImmatriculation: companyRegisterNumber,
+                labelsCertifications: additionalData.labelsCertifications,
+                anneeCreation: additionalData.anneeCreation,
+                description: additionalData.description,
+                photos: additionalData.photos,
+                logo: additionalData.logo,
+                contact: additionalData.contact,
+                siteWeb: additionalData.siteWeb
+            };
+
+            // Upload sur IPFS
+            const cid = await uploadToIPFS(producerData);
+            console.log('CID IPFS:', cid);
+
+            // Enregistrer avec le CID comme metadata
             await writeContract({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'addProducer',
-                args: [name, location, companyRegisterNumber, metadata],
+                args: [name, location, companyRegisterNumber, cid],
             });
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement:', error);
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -86,6 +156,12 @@ export default function ProducerPage() {
                     {isRegistered ? 'Modifier mes informations' : 'Enregistrement Producteur'}
                 </h1>
 
+                {isLoadingIPFS && (
+                    <div className="text-center text-[#000000] font-[Olney_Light] mb-4 opacity-70">
+                        Chargement des données IPFS...
+                    </div>
+                )}
+
                 <div className="bg-yellow-bee rounded-lg p-4 opacity-70">
                     <form onSubmit={handleSubmit} className="space-y-4">
                         <div>
@@ -96,7 +172,7 @@ export default function ProducerPage() {
                                 type="text"
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
-                                placeholder="Rucher du Soleil"
+                                placeholder="Les Ruchers de Bordeaux"
                                 className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 maxLength={256}
                                 required
@@ -111,7 +187,7 @@ export default function ProducerPage() {
                                 type="text"
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
-                                placeholder="Provence, France"
+                                placeholder="33 Bordeaux, Nouvelle-Aquitaine, France"
                                 className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 maxLength={256}
                                 required
@@ -120,13 +196,13 @@ export default function ProducerPage() {
 
                         <div>
                             <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
-                                Numéro SIRET *
+                                Numéro d'immatriculation *
                             </label>
                             <input
                                 type="text"
                                 value={companyRegisterNumber}
                                 onChange={(e) => setCompanyRegisterNumber(e.target.value)}
-                                placeholder="123 456 789 00012"
+                                placeholder="FR-AB123456"
                                 className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
                                 maxLength={64}
                                 required
@@ -135,35 +211,106 @@ export default function ProducerPage() {
 
                         <div>
                             <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
-                                Informations complémentaires (JSON)
+                                Description
                             </label>
                             <textarea
-                                value={metadata}
-                                onChange={(e) => setMetadata(e.target.value)}
-                                placeholder='{"certifications": ["Bio", "AOP"], "website": "https://..."}'
+                                value={additionalData.description}
+                                onChange={(e) => setAdditionalData({...additionalData, description: e.target.value})}
+                                placeholder="Producteur de miel bio renommé dans la région..."
                                 className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50 min-h-[100px]"
-                                maxLength={1024}
                             />
-                            <p className="text-xs font-[Olney_Light] mt-1 text-[#000000]/60">
-                                Format JSON optionnel pour certifications, site web, etc.
-                            </p>
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Année de création
+                            </label>
+                            <input
+                                type="number"
+                                value={additionalData.anneeCreation}
+                                onChange={(e) => setAdditionalData({...additionalData, anneeCreation: parseInt(e.target.value)})}
+                                placeholder="2010"
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Site web
+                            </label>
+                            <input
+                                type="url"
+                                value={additionalData.siteWeb}
+                                onChange={(e) => setAdditionalData({...additionalData, siteWeb: e.target.value})}
+                                placeholder="https://ruchers-bordeaux.fr"
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Email
+                            </label>
+                            <input
+                                type="email"
+                                value={additionalData.contact.email}
+                                onChange={(e) => setAdditionalData({
+                                    ...additionalData,
+                                    contact: {...additionalData.contact, email: e.target.value}
+                                })}
+                                placeholder="contact@ruchers-bordeaux.fr"
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Téléphone
+                            </label>
+                            <input
+                                type="tel"
+                                value={additionalData.contact.telephone}
+                                onChange={(e) => setAdditionalData({
+                                    ...additionalData,
+                                    contact: {...additionalData.contact, telephone: e.target.value}
+                                })}
+                                placeholder="+33 5 56 00 00 00"
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Adresse courrier
+                            </label>
+                            <input
+                                type="text"
+                                value={additionalData.contact.adresseCourrier}
+                                onChange={(e) => setAdditionalData({
+                                    ...additionalData,
+                                    contact: {...additionalData.contact, adresseCourrier: e.target.value}
+                                })}
+                                placeholder="12 rue des abeilles, 33000 Bordeaux"
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] placeholder:text-[#000000]/50"
+                            />
                         </div>
 
                         <button
                             type="submit"
-                            disabled={isRegistering}
+                            disabled={isRegistering || isUploading || isLoadingIPFS}
                             className="w-full bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
                         >
-                            {isRegistering
-                                ? 'Enregistrement en cours...'
-                                : isRegistered
-                                    ? 'Mettre à jour'
-                                    : 'Enregistrer mes informations'}
+                            {isUploading
+                                ? 'Upload IPFS en cours...'
+                                : isRegistering
+                                    ? 'Enregistrement en cours...'
+                                    : isRegistered
+                                        ? 'Mettre à jour'
+                                        : 'Enregistrer mes informations'}
                         </button>
                     </form>
                 </div>
 
-                {/* Logo */}
                 <div className="flex justify-center mt-8 mb-6">
                     <Image
                         src="/logo-png-noir.png"
