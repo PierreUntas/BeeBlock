@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
-import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { getFromIPFSGateway, getIPFSUrl } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -69,6 +69,7 @@ export default function BatchDetailsPage() {
     const [comments, setComments] = useState<Comment[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
+    const [labelImageError, setLabelImageError] = useState(false);
 
     useEffect(() => {
         const fetchBatchDetails = async () => {
@@ -112,7 +113,6 @@ export default function BatchDetailsPage() {
 
                 setBatch(batchData);
 
-                // Charger les données IPFS du lot
                 if (batchInfo.metadata) {
                     setIsLoadingIPFS(true);
                     try {
@@ -141,7 +141,6 @@ export default function BatchDetailsPage() {
 
                 setProducer(producerInfo);
 
-                // Charger les données IPFS du producteur
                 if (producerData.metadata) {
                     try {
                         const producerIpfsData = await getFromIPFSGateway(producerData.metadata);
@@ -183,6 +182,16 @@ export default function BatchDetailsPage() {
         if (comments.length === 0) return 0;
         const sum = comments.reduce((acc, comment) => acc + comment.rating, 0);
         return (sum / comments.length).toFixed(1);
+    };
+
+    const isImageFile = (url: string): boolean => {
+        const lowerUrl = url.toLowerCase();
+        return lowerUrl.endsWith('.png') ||
+            lowerUrl.endsWith('.jpg') ||
+            lowerUrl.endsWith('.jpeg') ||
+            lowerUrl.endsWith('.gif') ||
+            lowerUrl.endsWith('.webp') ||
+            !lowerUrl.endsWith('.pdf');
     };
 
     if (isLoading) {
@@ -265,6 +274,42 @@ export default function BatchDetailsPage() {
                         </div>
                     )}
                 </div>
+
+                {/* Section Étiquette */}
+                {batchIPFSData?.etiquetage && (
+                    <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
+                        <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
+                            Étiquette
+                        </h2>
+                        <div className="flex justify-center">
+                            {isImageFile(batchIPFSData.etiquetage) && !labelImageError ? (
+                                <div className="relative">
+                                    <img
+                                        src={getIPFSUrl(batchIPFSData.etiquetage)}
+                                        alt="Étiquette du lot"
+                                        className="max-w-full max-h-96 rounded-lg shadow-lg"
+                                        onError={() => setLabelImageError(true)}
+                                    />
+                                </div>
+                            ) : (
+                                <a
+                                    href={getIPFSUrl(batchIPFSData.etiquetage)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-3 bg-[#000000]/10 rounded-lg hover:bg-[#000000]/20 transition-colors"
+                                >
+                                    <span className="text-2xl">📄</span>
+                                    <span className="font-[Olney_Light] text-[#000000]">
+                                        Voir l'étiquette (PDF)
+                                    </span>
+                                </a>
+                            )}
+                        </div>
+                        <p className="text-xs font-mono text-[#000000]/50 mt-3 text-center break-all">
+                            {batchIPFSData.etiquetage}
+                        </p>
+                    </div>
+                )}
 
                 <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
                     <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
