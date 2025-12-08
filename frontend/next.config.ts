@@ -1,8 +1,7 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
-    webpack: (config, { isServer }) => {
+    webpack: (config, { isServer, webpack }) => {
         config.externals.push('pino-pretty', 'lokijs', 'encoding');
 
         config.resolve.fallback = {
@@ -12,14 +11,19 @@ const nextConfig: NextConfig = {
             tls: false,
         };
 
-        // Remplacer les modules React Native par des mocks vides
+        // Remplacer les modules React Native par false
         config.resolve.alias = {
             ...config.resolve.alias,
-            '@react-native-async-storage/async-storage': path.resolve(__dirname, 'mocks/empty.js'),
-            'react-native': path.resolve(__dirname, 'mocks/empty.js'),
+            '@react-native-async-storage/async-storage': false,
+            'react-native': false,
         };
 
-        // Configuration spécifique pour le navigateur
+        // Ajouter une règle pour ignorer complètement le module
+        config.module.rules.push({
+            test: /@react-native-async-storage\/async-storage/,
+            use: 'null-loader',
+        });
+
         if (!isServer) {
             config.resolve.fallback = {
                 ...config.resolve.fallback,
@@ -30,12 +34,6 @@ const nextConfig: NextConfig = {
                 'zlib': false,
             };
         }
-
-        // Exclure les fichiers de test
-        config.module.rules.push({
-            test: /\.test\.(js|mjs)$/,
-            loader: 'ignore-loader'
-        });
 
         return config;
     },
