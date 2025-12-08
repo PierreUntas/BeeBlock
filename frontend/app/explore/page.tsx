@@ -8,6 +8,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient } from '@/lib/client';
+import dynamic from 'next/dynamic';
 
 interface BatchIPFSData {
     identifiant: string;
