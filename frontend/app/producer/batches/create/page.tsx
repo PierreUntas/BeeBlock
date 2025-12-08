@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
+import { uploadToIPFS } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import { MerkleTree } from 'merkletreejs';
@@ -11,14 +12,26 @@ import { keccak256 } from 'viem';
 export default function CreateBatchPage() {
     const { address } = useAccount();
     const [honeyType, setHoneyType] = useState('');
-    const [metadata, setMetadata] = useState('');
     const [amount, setAmount] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const [secretKeys, setSecretKeys] = useState<string[]>([]);
     const [merkleRoot, setMerkleRoot] = useState<string>('');
     const [merkleTree, setMerkleTree] = useState<MerkleTree | null>(null);
+
+    const [batchData, setBatchData] = useState({
+        identifiant: '',
+        typeMiel: '',
+        periodeRecolte: '',
+        dateMiseEnPot: '',
+        lieuMiseEnPot: '',
+        certifications: [] as string[],
+        composition: '',
+        formatPot: '',
+        etiquetage: ''
+    });
 
     const { writeContract, isPending: isCreating } = useWriteContract();
 
@@ -118,7 +131,6 @@ export default function CreateBatchPage() {
         URL.revokeObjectURL(url);
     };
 
-
     const handleApprove = async () => {
         try {
             setIsApproving(true);
@@ -131,7 +143,6 @@ export default function CreateBatchPage() {
 
             alert('⏳ Approbation en cours... La transaction doit être confirmée sur la blockchain (~12 sec). Attendez la confirmation avant de créer votre lot.');
 
-            // Polling pour vérifier l'approbation
             const checkApproval = setInterval(async () => {
                 const result = await refetchApproval();
                 if (result.data === true) {
@@ -141,7 +152,6 @@ export default function CreateBatchPage() {
                 }
             }, 3000);
 
-            // Arrêter après 60 secondes
             setTimeout(() => {
                 clearInterval(checkApproval);
                 setIsApproving(false);
@@ -156,29 +166,52 @@ export default function CreateBatchPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setIsUploading(true);
 
-        if (!honeyType || !metadata || !amount || !merkleRoot) {
-            alert('Veuillez remplir tous les champs');
+        if (!honeyType || !amount || !merkleRoot) {
+            alert('Veuillez remplir tous les champs obligatoires');
+            setIsUploading(false);
             return;
         }
 
         if (!isApproved) {
             alert('⚠️ Vous devez d\'abord approuver le contrat HoneyTraceStorage');
+            setIsUploading(false);
             return;
         }
 
         try {
+            // Construire l'objet JSON complet
+            const completeData = {
+                identifiant: batchData.identifiant,
+                typeMiel: honeyType,
+                periodeRecolte: batchData.periodeRecolte,
+                dateMiseEnPot: batchData.dateMiseEnPot,
+                lieuMiseEnPot: batchData.lieuMiseEnPot,
+                certifications: batchData.certifications,
+                composition: batchData.composition,
+                formatPot: batchData.formatPot,
+                etiquetage: batchData.etiquetage
+            };
+
+            // Upload sur IPFS
+            const cid = await uploadToIPFS(completeData);
+            console.log('CID IPFS du lot:', cid);
+
+            // Créer le lot avec le CID comme metadata
             await writeContract({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'addHoneyBatch',
-                args: [honeyType, metadata, BigInt(amount), merkleRoot as `0x${string}`]
+                args: [honeyType, cid, BigInt(amount), merkleRoot as `0x${string}`]
             });
 
             alert('✅ Lot créé avec succès !');
         } catch (error) {
             console.error('Erreur lors de la création du lot:', error);
             alert('❌ Erreur lors de la création du lot');
+        } finally {
+            setIsUploading(false);
         }
     };
 
@@ -237,29 +270,109 @@ export default function CreateBatchPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
                         <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
-                            Type de miel *
+                            Identifiant du lot *
                         </label>
                         <input
                             type="text"
-                            value={honeyType}
-                            onChange={(e) => setHoneyType(e.target.value)}
+                            value={batchData.identifiant}
+                            onChange={(e) => setBatchData({...batchData, identifiant: e.target.value})}
                             className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
-                            placeholder="Ex: Lavande, Acacia..."
+                            placeholder="LOT20251118-001"
                             required
                         />
                     </div>
 
                     <div>
                         <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
-                            Métadonnées (JSON) *
+                            Type de miel *
+                        </label>
+                        <input
+                            type="text"
+                            value={honeyType}
+                            onChange={(e) => {
+                                setHoneyType(e.target.value);
+                                setBatchData({...batchData, typeMiel: e.target.value});
+                            }}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="Ex: Acacia, Lavande..."
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Période de récolte
+                        </label>
+                        <input
+                            type="text"
+                            value={batchData.periodeRecolte}
+                            onChange={(e) => setBatchData({...batchData, periodeRecolte: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="Mai-Juin 2025"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Date de mise en pot
+                        </label>
+                        <input
+                            type="date"
+                            value={batchData.dateMiseEnPot}
+                            onChange={(e) => setBatchData({...batchData, dateMiseEnPot: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Lieu de mise en pot
+                        </label>
+                        <input
+                            type="text"
+                            value={batchData.lieuMiseEnPot}
+                            onChange={(e) => setBatchData({...batchData, lieuMiseEnPot: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="Bordeaux, Nouvelle-Aquitaine, France"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Composition
                         </label>
                         <textarea
-                            value={metadata}
-                            onChange={(e) => setMetadata(e.target.value)}
-                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light] font-mono text-sm"
-                            placeholder='{"origin":"Provence","harvestDate":"2024-06"}'
-                            rows={4}
-                            required
+                            value={batchData.composition}
+                            onChange={(e) => setBatchData({...batchData, composition: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="Miel 100% Acacia issu de ruchers locaux"
+                            rows={3}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Format du pot
+                        </label>
+                        <input
+                            type="text"
+                            value={batchData.formatPot}
+                            onChange={(e) => setBatchData({...batchData, formatPot: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="250g"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
+                            Étiquetage (CID IPFS)
+                        </label>
+                        <input
+                            type="text"
+                            value={batchData.etiquetage}
+                            onChange={(e) => setBatchData({...batchData, etiquetage: e.target.value})}
+                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
+                            placeholder="ipfs://QmXyzEtiquettePDF"
                         />
                     </div>
 
@@ -304,10 +417,14 @@ export default function CreateBatchPage() {
                         </button>
                         <button
                             type="submit"
-                            disabled={isCreating || !merkleRoot || !isApproved}
+                            disabled={isCreating || isUploading || !merkleRoot || !isApproved}
                             className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-3 rounded-lg hover:bg-[#555555] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isCreating ? 'Création en cours...' : '✨ Créer le lot'}
+                            {isUploading
+                                ? '📤 Upload IPFS...'
+                                : isCreating
+                                    ? '⏳ Création en cours...'
+                                    : '✨ Créer le lot'}
                         </button>
                     </div>
                 </form>
