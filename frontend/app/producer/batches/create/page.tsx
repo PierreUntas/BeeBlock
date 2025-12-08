@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
-import { uploadToIPFS } from '@/app/utils/ipfs';
+import { uploadToIPFS, uploadFileToIPFS } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import { MerkleTree } from 'merkletreejs';
@@ -17,9 +17,12 @@ export default function CreateBatchPage() {
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isUploadingLabel, setIsUploadingLabel] = useState(false);
     const [secretKeys, setSecretKeys] = useState<string[]>([]);
     const [merkleRoot, setMerkleRoot] = useState<string>('');
     const [merkleTree, setMerkleTree] = useState<MerkleTree | null>(null);
+    const [labelFileName, setLabelFileName] = useState<string>('');
+    const labelInputRef = useRef<HTMLInputElement>(null);
 
     const [batchData, setBatchData] = useState({
         identifiant: '',
@@ -96,6 +99,26 @@ export default function CreateBatchPage() {
             setSecretKeys([]);
             setMerkleRoot('');
             setMerkleTree(null);
+        }
+    };
+
+    const handleLabelUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingLabel(true);
+        setLabelFileName(file.name);
+
+        try {
+            const cid = await uploadFileToIPFS(file);
+            setBatchData({ ...batchData, etiquetage: `ipfs://${cid}` });
+            alert('✅ Étiquette uploadée sur IPFS !');
+        } catch (error) {
+            console.error('Erreur lors de l\'upload de l\'étiquette:', error);
+            alert('❌ Erreur lors de l\'upload de l\'étiquette');
+            setLabelFileName('');
+        } finally {
+            setIsUploadingLabel(false);
         }
     };
 
@@ -181,7 +204,6 @@ export default function CreateBatchPage() {
         }
 
         try {
-            // Construire l'objet JSON complet
             const completeData = {
                 identifiant: batchData.identifiant,
                 typeMiel: honeyType,
@@ -194,11 +216,9 @@ export default function CreateBatchPage() {
                 etiquetage: batchData.etiquetage
             };
 
-            // Upload sur IPFS
             const cid = await uploadToIPFS(completeData);
             console.log('CID IPFS du lot:', cid);
 
-            // Créer le lot avec le CID comme metadata
             await writeContract({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
@@ -365,15 +385,35 @@ export default function CreateBatchPage() {
 
                     <div>
                         <label className="block text-sm font-[Olney_Light] text-[#000000] mb-2">
-                            Étiquetage (CID IPFS)
+                            Étiquette (PDF, Image)
                         </label>
                         <input
-                            type="text"
-                            value={batchData.etiquetage}
-                            onChange={(e) => setBatchData({...batchData, etiquetage: e.target.value})}
-                            className="w-full px-4 py-2 border border-[#000000] rounded-lg focus:ring-2 focus:ring-[#666666] font-[Olney_Light]"
-                            placeholder="ipfs://QmXyzEtiquettePDF"
+                            type="file"
+                            ref={labelInputRef}
+                            onChange={handleLabelUpload}
+                            accept=".pdf,.png,.jpg,.jpeg"
+                            className="hidden"
                         />
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() => labelInputRef.current?.click()}
+                                disabled={isUploadingLabel}
+                                className="flex-1 px-4 py-2 border border-[#000000] rounded-lg font-[Olney_Light] hover:bg-gray-100 transition-colors disabled:opacity-50"
+                            >
+                                {isUploadingLabel ? '📤 Upload en cours...' : '📎 Choisir un fichier'}
+                            </button>
+                        </div>
+                        {labelFileName && (
+                            <p className="text-xs font-[Olney_Light] text-green-600 mt-2">
+                                ✅ {labelFileName}
+                            </p>
+                        )}
+                        {batchData.etiquetage && (
+                            <p className="text-xs font-mono text-gray-500 mt-1 break-all">
+                                {batchData.etiquetage}
+                            </p>
+                        )}
                     </div>
 
                     <div>

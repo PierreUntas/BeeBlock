@@ -1,6 +1,6 @@
 // Configuration
 const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY;
-const IPFS_API = process.env.NEXT_PUBLIC_IPFS_API || 'http://localhost:5001/api/v0';
+const IPFS_API = process.env.NEXT_PUBLIC_IPFS_API;
 
 // Gateways publiques IPFS en fallback (les plus fiables en premier)
 const PUBLIC_GATEWAYS = [
@@ -22,6 +22,23 @@ export async function uploadToIPFS(data: any): Promise<string> {
 
     if (!response.ok) {
         throw new Error(`Erreur upload IPFS: ${response.statusText}`);
+    }
+
+    const result = await response.json();
+    return result.Hash;
+}
+
+export async function uploadFileToIPFS(file: File): Promise<string> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch(`${IPFS_API}/add`, {
+        method: 'POST',
+        body: formData
+    });
+
+    if (!response.ok) {
+        throw new Error(`Erreur upload fichier IPFS: ${response.statusText}`);
     }
 
     const result = await response.json();
@@ -91,3 +108,15 @@ export async function getFromIPFSGateway(cid: string): Promise<any> {
 
     throw new Error(`Toutes les gateways IPFS ont échoué pour ${cleanCid}: ${lastError?.message}`);
 }
+
+export function getIPFSUrl(cid: string): string {
+    const cleanCid = cid
+        .replace(/^ipfs:\/\//i, '')
+        .replace(/^\/ipfs\//i, '')
+        .replace(/^ipfs\//i, '')
+        .trim();
+
+    // Utiliser une gateway publique fiable pour les images
+    return `https://w3s.link/ipfs/${cleanCid}`;
+}
+
