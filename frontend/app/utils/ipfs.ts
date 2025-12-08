@@ -1,5 +1,5 @@
-// Configuration
-const IPFS_API = process.env.NEXT_PUBLIC_IPFS_API;
+// Configuration - utilise le proxy API pour les uploads
+const IPFS_API = '/api/ipfs';
 
 // Cache en mémoire pour éviter les requêtes répétées
 const ipfsCache = new Map<string, any>();
@@ -53,7 +53,6 @@ function cleanCID(cid: string): string {
 export async function getFromIPFSGateway(cid: string): Promise<any> {
     const cleanCid = cleanCID(cid);
 
-    // Vérifier le cache d'abord
     if (ipfsCache.has(cleanCid)) {
         console.log(`✓ Cache hit: ${cleanCid}`);
         return ipfsCache.get(cleanCid);
@@ -61,16 +60,28 @@ export async function getFromIPFSGateway(cid: string): Promise<any> {
 
     const url = `${IPFS_GATEWAY}${cleanCid}`;
 
-    const response = await fetch(url, { cache: 'force-cache' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-    if (!response.ok) {
-        throw new Error(`Erreur IPFS: ${response.statusText}`);
+    try {
+        const response = await fetch(url, {
+            cache: 'force-cache',
+            signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+            throw new Error(`Erreur IPFS: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        ipfsCache.set(cleanCid, data);
+        console.log(`✓ Gateway success: ${cleanCid}`);
+        return data;
+    } catch (error) {
+        clearTimeout(timeoutId);
+        throw error;
     }
-
-    const data = await response.json();
-    ipfsCache.set(cleanCid, data);
-    console.log(`✓ Gateway success: ${IPFS_GATEWAY}`);
-    return data;
 }
 
 export function getIPFSUrl(cid: string): string {
@@ -78,7 +89,6 @@ export function getIPFSUrl(cid: string): string {
     return `${IPFS_GATEWAY}${cleanCid}`;
 }
 
-// Précharger plusieurs CIDs en parallèle
 export async function prefetchIPFS(cids: string[]): Promise<void> {
     await Promise.allSettled(cids.map(cid => getFromIPFSGateway(cid)));
 }
