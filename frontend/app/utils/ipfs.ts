@@ -1,14 +1,11 @@
 // Configuration
-const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY;
 const IPFS_API = process.env.NEXT_PUBLIC_IPFS_API;
 
-// Gateways publiques IPFS en fallback (les plus fiables en premier)
-const PUBLIC_GATEWAYS = [
-    'https://w3s.link/ipfs/',
-    'https://nftstorage.link/ipfs/',
-    'https://ipfs.io/ipfs/',
-    'https://dweb.link/ipfs/'
-];
+// Cache en mémoire pour éviter les requêtes répétées
+const ipfsCache = new Map<string, any>();
+
+// Gateway IPFS unique
+const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
 
 export async function uploadToIPFS(data: any): Promise<string> {
     const formData = new FormData();
@@ -45,78 +42,43 @@ export async function uploadFileToIPFS(file: File): Promise<string> {
     return result.Hash;
 }
 
-function buildGatewayUrl(gateway: string, cid: string): string {
-    // Nettoyer la gateway et le CID
-    const cleanGateway = gateway.replace(/\/+$/, ''); // Supprimer les / à la fin
-
-    // Vérifier si la gateway contient déjà /ipfs/
-    if (cleanGateway.includes('/ipfs')) {
-        return `${cleanGateway}/${cid}`;
-    }
-    return `${cleanGateway}/ipfs/${cid}`;
+function cleanCID(cid: string): string {
+    return cid
+        .replace(/^ipfs:\/\//i, '')
+        .replace(/^\/ipfs\//i, '')
+        .replace(/^ipfs\//i, '')
+        .trim();
 }
 
 export async function getFromIPFSGateway(cid: string): Promise<any> {
-    // Nettoyer le CID (supprimer tous les préfixes possibles)
-    const cleanCid = cid
-        .replace(/^ipfs:\/\//i, '')
-        .replace(/^\/ipfs\//i, '')
-        .replace(/^ipfs\//i, '')
-        .trim();
+    const cleanCid = cleanCID(cid);
 
-    // Construire la liste des gateways à essayer
-    // Ignorer la gateway privée HTTP si on est en HTTPS (mixed content)
-    const isHttps = typeof window !== 'undefined' && window.location.protocol === 'https:';
-
-    let gateways: string[] = [];
-
-    if (IPFS_GATEWAY) {
-        const isPrivateHttps = IPFS_GATEWAY.startsWith('https://');
-        // N'ajouter la gateway privée que si elle est en HTTPS ou si la page n'est pas en HTTPS
-        if (isPrivateHttps || !isHttps) {
-            gateways.push(IPFS_GATEWAY);
-        }
+    // Vérifier le cache d'abord
+    if (ipfsCache.has(cleanCid)) {
+        console.log(`✓ Cache hit: ${cleanCid}`);
+        return ipfsCache.get(cleanCid);
     }
 
-    gateways = [...gateways, ...PUBLIC_GATEWAYS];
+    const url = `${IPFS_GATEWAY}${cleanCid}`;
 
-    let lastError: Error | null = null;
+    const response = await fetch(url, { cache: 'force-cache' });
 
-    for (const gateway of gateways) {
-        const url = buildGatewayUrl(gateway, cleanCid);
-
-        try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 secondes
-
-            const response = await fetch(url, {
-                cache: 'force-cache',
-                signal: controller.signal
-            });
-
-            clearTimeout(timeoutId);
-
-            if (response.ok) {
-                console.log(`✓ Gateway success: ${gateway}`);
-                return await response.json();
-            }
-        } catch (error) {
-            console.warn(`✗ Gateway ${gateway} failed for CID ${cleanCid}`);
-            lastError = error instanceof Error ? error : new Error(String(error));
-        }
+    if (!response.ok) {
+        throw new Error(`Erreur IPFS: ${response.statusText}`);
     }
 
-    throw new Error(`Toutes les gateways IPFS ont échoué pour ${cleanCid}: ${lastError?.message}`);
+    const data = await response.json();
+    ipfsCache.set(cleanCid, data);
+    console.log(`✓ Gateway success: ${IPFS_GATEWAY}`);
+    return data;
 }
 
 export function getIPFSUrl(cid: string): string {
-    const cleanCid = cid
-        .replace(/^ipfs:\/\//i, '')
-        .replace(/^\/ipfs\//i, '')
-        .replace(/^ipfs\//i, '')
-        .trim();
-
-    // Utiliser une gateway publique fiable pour les images
-    return `https://w3s.link/ipfs/${cleanCid}`;
+    const cleanCid = cleanCID(cid);
+    return `${IPFS_GATEWAY}${cleanCid}`;
 }
 
+// Précharger plusieurs CIDs en parallèle
+export async function prefetchIPFS(cids: string[]): Promise<void> {
+    await Promise.allSettled(cids.map(cid => getFromIPFSGateway(cid)));
+}
