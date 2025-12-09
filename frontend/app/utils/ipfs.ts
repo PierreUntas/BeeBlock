@@ -18,7 +18,27 @@ export async function uploadToIPFS(data: any): Promise<string> {
     });
 
     if (!response.ok) {
-        throw new Error(`Erreur upload IPFS: ${response.statusText}`);
+        // Essayer de récupérer le message d'erreur détaillé depuis le JSON
+        let errorMessage = `Erreur upload IPFS: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            if (errorData.error) {
+                errorMessage = errorData.error;
+            } else if (errorData.details) {
+                errorMessage = `${errorData.error || 'Erreur upload IPFS'}: ${errorData.details}`;
+            }
+        } catch {
+            // Si la réponse n'est pas du JSON, utiliser le texte brut
+            try {
+                const errorText = await response.text();
+                if (errorText) {
+                    errorMessage = `Erreur upload IPFS: ${errorText}`;
+                }
+            } catch {
+                // Utiliser le message par défaut
+            }
+        }
+        throw new Error(errorMessage);
     }
 
     const result = await response.json();
@@ -35,7 +55,27 @@ export async function uploadFileToIPFS(file: File): Promise<string> {
     });
 
     if (!response.ok) {
-        throw new Error(`Erreur upload fichier IPFS: ${response.statusText}`);
+        // Essayer de récupérer le message d'erreur détaillé depuis le JSON
+        let errorMessage = `Erreur upload fichier IPFS: ${response.statusText}`;
+        try {
+            const errorData = await response.json();
+            if (errorData.error) {
+                errorMessage = errorData.error;
+            } else if (errorData.details) {
+                errorMessage = `${errorData.error || 'Erreur upload fichier IPFS'}: ${errorData.details}`;
+            }
+        } catch {
+            // Si la réponse n'est pas du JSON, utiliser le texte brut
+            try {
+                const errorText = await response.text();
+                if (errorText) {
+                    errorMessage = `Erreur upload fichier IPFS: ${errorText}`;
+                }
+            } catch {
+                // Utiliser le message par défaut
+            }
+        }
+        throw new Error(errorMessage);
     }
 
     const result = await response.json();
