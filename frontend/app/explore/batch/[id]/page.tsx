@@ -113,7 +113,7 @@ export default function BatchDetailsPage() {
 
                 setBatch(batchData);
 
-                if (batchInfo.metadata) {
+                if (batchInfo.metadata && batchInfo.metadata.trim() !== '') {
                     setIsLoadingIPFS(true);
                     try {
                         const ipfsData = await getFromIPFSGateway(batchInfo.metadata);
@@ -141,7 +141,7 @@ export default function BatchDetailsPage() {
 
                 setProducer(producerInfo);
 
-                if (producerData.metadata) {
+                if (producerData.metadata && producerData.metadata.trim() !== '') {
                     try {
                         const producerIpfsData = await getFromIPFSGateway(producerData.metadata);
                         setProducerIPFSData(producerIpfsData);
@@ -403,9 +403,25 @@ export default function BatchDetailsPage() {
                 </div>
 
                 <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
-                    <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
-                        Producteur
-                    </h2>
+                    <div className="flex items-start gap-6 mb-4">
+                        <div className="flex-1">
+                            <h2 className="text-2xl font-[Carbon_bl] text-[#000000]">
+                                Producteur
+                            </h2>
+                        </div>
+                        {producerIPFSData?.logo && (
+                            <div className="flex-shrink-0">
+                                <img
+                                    src={producerIPFSData.logo.startsWith('ipfs://')
+                                        ? `https://ipfs.io/ipfs/${producerIPFSData.logo.replace('ipfs://', '')}`
+                                        : producerIPFSData.logo}
+                                    alt={`Logo ${producer.name}`}
+                                    className="w-24 h-24 object-contain rounded-lg border border-[#000000]"
+                                />
+                            </div>
+                        )}
+                    </div>
+
                     <div className="space-y-3">
                         <div>
                             <p className="text-sm font-[Olney_Light] text-[#000000]/60">
@@ -471,7 +487,7 @@ export default function BatchDetailsPage() {
                                 <div key={index} className="border-b border-[#000000]/10 pb-3 last:border-0">
                                     <div className="flex items-center gap-2 mb-2">
                                         <span className="text-yellow-500">
-                                            {'★'.repeat(comment.rating)}{'☆'.repeat(5 - comment.rating)}
+                                            {'★'.repeat(comment.rating)}
                                         </span>
                                         <span className="text-xs font-[Olney_Light] text-[#000000]/60">
                                             {comment.consumer.slice(0, 6)}...{comment.consumer.slice(-4)}
