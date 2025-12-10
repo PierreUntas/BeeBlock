@@ -85,18 +85,18 @@ export default function ProducerDetailsPage() {
 
                 setProducer(producerInfo);
 
-                // Charger les données IPFS du producteur
-                if (producerData.metadata) {
+                if (producerData.metadata && producerData.metadata.trim() !== '') {
                     setIsLoadingIPFS(true);
                     try {
                         const ipfsData = await getFromIPFSGateway(producerData.metadata);
                         setProducerIPFSData(ipfsData);
                     } catch (error) {
                         console.error('Erreur chargement IPFS producteur:', error);
+                    } finally {
+                        setIsLoadingIPFS(false);
                     }
                 }
 
-                // Récupérer les lots du producteur
                 const logs = await publicClient.getLogs({
                     address: HONEY_TRACE_STORAGE_ADDRESS,
                     event: parseAbiItem('event NewHoneyBatch(address indexed producer, uint indexed honeyBatchId)'),
@@ -137,9 +137,8 @@ export default function ProducerDetailsPage() {
                 batchesData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
                 setBatches(batchesData);
 
-                // Charger les données IPFS pour chaque lot
                 for (let i = 0; i < batchesData.length; i++) {
-                    if (batchesData[i].metadata) {
+                    if (batchesData[i].metadata && batchesData[i].metadata.trim() !== '') {
                         try {
                             const batchIPFSData = await getFromIPFSGateway(batchesData[i].metadata);
                             setBatches(prev => prev.map(b =>
@@ -152,8 +151,6 @@ export default function ProducerDetailsPage() {
                         }
                     }
                 }
-
-                setIsLoadingIPFS(false);
 
             } catch (error) {
                 console.error('Erreur lors du chargement des détails:', error);
@@ -209,9 +206,24 @@ export default function ProducerDetailsPage() {
                 )}
 
                 <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
-                    <h1 className="text-4xl font-[Carbon_Phyber] text-[#000000] mb-4">
-                        {producer.name}
-                    </h1>
+                    <div className="flex items-start gap-6 mb-4">
+                        <div className="flex-1">
+                            <h1 className="text-4xl font-[Carbon_Phyber] text-[#000000]">
+                                {producer.name}
+                            </h1>
+                        </div>
+                        {producerIPFSData?.logo && (
+                            <div className="flex-shrink-0">
+                                <img
+                                    src={producerIPFSData.logo.startsWith('ipfs://')
+                                        ? `https://ipfs.io/ipfs/${producerIPFSData.logo.replace('ipfs://', '')}`
+                                        : producerIPFSData.logo}
+                                    alt={`Logo ${producer.name}`}
+                                    className="w-24 h-24 object-contain rounded-lg border border-[#000000]"
+                                />
+                            </div>
+                        )}
+                    </div>
 
                     <div className="grid md:grid-cols-2 gap-6">
                         <div className="space-y-3">
@@ -317,6 +329,27 @@ export default function ProducerDetailsPage() {
                         </div>
                     </div>
                 </div>
+
+                {producerIPFSData?.photos && producerIPFSData.photos.length > 0 && (
+                    <div className="bg-yellow-bee rounded-lg p-6 opacity-70 border border-[#000000] mb-6">
+                        <h2 className="text-2xl font-[Carbon_bl] text-[#000000] mb-4">
+                            Photos
+                        </h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {producerIPFSData.photos.map((photo, index) => (
+                                <div key={index} className="relative">
+                                    <img
+                                        src={photo.startsWith('ipfs://')
+                                            ? `https://ipfs.io/ipfs/${photo.replace('ipfs://', '')}`
+                                            : photo}
+                                        alt={`Photo ${index + 1} de ${producer.name}`}
+                                        className="w-full h-64 object-cover rounded-lg border border-[#000000]"
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <h2 className="text-3xl font-[Carbon_Phyber] text-[#000000] mb-4">
                     Lots de miel ({batches.length})

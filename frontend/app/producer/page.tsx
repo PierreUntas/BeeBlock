@@ -16,6 +16,10 @@ export default function ProducerPage() {
     const [isRegistered, setIsRegistered] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
+    const [logoFile, setLogoFile] = useState<File | null>(null);
+    const [logoPreview, setLogoPreview] = useState<string>('');
+    const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
 
     const [additionalData, setAdditionalData] = useState({
         labelsCertifications: [] as string[],
@@ -40,6 +44,38 @@ export default function ProducerPage() {
         args: address ? [address] : undefined,
     });
 
+    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setLogoFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setLogoPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length > 0) {
+            setPhotoFiles(prev => [...prev, ...files]);
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setPhotoPreviews(prev => [...prev, reader.result as string]);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    const removePhoto = (index: number) => {
+        setPhotoFiles(prev => prev.filter((_, i) => i !== index));
+        setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
     const loadIPFSData = async (cid: string) => {
         setIsLoadingIPFS(true);
         try {
@@ -59,6 +95,22 @@ export default function ProducerPage() {
                     },
                     siteWeb: ipfsData.siteWeb || ''
                 });
+
+                if (ipfsData.logo) {
+                    const logoUrl = ipfsData.logo.startsWith('ipfs://')
+                        ? `https://ipfs.io/ipfs/${ipfsData.logo.replace('ipfs://', '')}`
+                        : ipfsData.logo;
+                    setLogoPreview(logoUrl);
+                }
+
+                if (ipfsData.photos && ipfsData.photos.length > 0) {
+                    const existingPhotos = ipfsData.photos.map((photo: string) =>
+                        photo.startsWith('ipfs://')
+                            ? `https://ipfs.io/ipfs/${photo.replace('ipfs://', '')}`
+                            : photo
+                    );
+                    setPhotoPreviews(existingPhotos);
+                }
             }
         } catch (error) {
             console.error('Erreur chargement données IPFS:', error);
@@ -77,7 +129,6 @@ export default function ProducerPage() {
             if (producer.location) setLocation(producer.location);
             if (producer.companyRegisterNumber) setCompanyRegisterNumber(producer.companyRegisterNumber);
 
-            // Récupérer les données IPFS
             if (producer.metadata) {
                 loadIPFSData(producer.metadata);
             }
@@ -89,7 +140,33 @@ export default function ProducerPage() {
         setIsUploading(true);
 
         try {
-            // Construire l'objet JSON complet
+            let logoUrl = additionalData.logo;
+            if (logoFile) {
+                const reader = new FileReader();
+                logoUrl = await new Promise((resolve) => {
+                    reader.onloadend = () => resolve(reader.result as string);
+                    reader.readAsDataURL(logoFile);
+                });
+            }
+
+            const photoUrls = await Promise.all(
+                photoFiles.map(file =>
+                    new Promise<string>((resolve) => {
+                        const reader = new FileReader();
+                        reader.onloadend = () => resolve(reader.result as string);
+                        reader.readAsDataURL(file);
+                    })
+                )
+            );
+
+            const existingPhotos = additionalData.photos.filter(
+                photo => !photoPreviews.some(preview =>
+                    preview === (photo.startsWith('ipfs://')
+                        ? `https://ipfs.io/ipfs/${photo.replace('ipfs://', '')}`
+                        : photo)
+                )
+            );
+
             const producerData = {
                 address: address,
                 nom: name,
@@ -98,17 +175,15 @@ export default function ProducerPage() {
                 labelsCertifications: additionalData.labelsCertifications,
                 anneeCreation: additionalData.anneeCreation,
                 description: additionalData.description,
-                photos: additionalData.photos,
-                logo: additionalData.logo,
+                photos: [...existingPhotos, ...photoUrls],
+                logo: logoUrl,
                 contact: additionalData.contact,
                 siteWeb: additionalData.siteWeb
             };
 
-            // Upload sur IPFS
             const cid = await uploadToIPFS(producerData);
             console.log('CID IPFS:', cid);
 
-            // Enregistrer avec le CID comme metadata
             await writeContract({
                 address: HONEY_TRACE_STORAGE_ADDRESS,
                 abi: HONEY_TRACE_STORAGE_ABI,
@@ -223,6 +298,60 @@ export default function ProducerPage() {
 
                         <div>
                             <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Logo de l'entreprise
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleLogoChange}
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-[Olney_Light] file:bg-[#666666] file:text-white hover:file:bg-[#555555]"
+                            />
+                            {logoPreview && (
+                                <div className="mt-2">
+                                    <img
+                                        src={logoPreview}
+                                        alt="Aperçu du logo"
+                                        className="w-24 h-24 object-contain rounded-lg border border-[#000000]"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
+                                Photos de l'entreprise
+                            </label>
+                            <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handlePhotoChange}
+                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-[Olney_Light] file:bg-[#666666] file:text-white hover:file:bg-[#555555]"
+                            />
+                            {photoPreviews.length > 0 && (
+                                <div className="mt-2 grid grid-cols-3 gap-2">
+                                    {photoPreviews.map((preview, index) => (
+                                        <div key={index} className="relative">
+                                            <img
+                                                src={preview}
+                                                alt={`Photo ${index + 1}`}
+                                                className="w-full h-24 object-cover rounded-lg border border-[#000000]"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removePhoto(index)}
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <label className="block text-sm font-[Olney_Light] mb-1.5 text-[#000000]">
                                 Année de création
                             </label>
                             <input
@@ -306,7 +435,7 @@ export default function ProducerPage() {
                                     ? 'Enregistrement en cours...'
                                     : isRegistered
                                         ? 'Mettre à jour'
-                                        : 'Enregistrer mes informations'}
+                                        : 'Enregistrer'}
                         </button>
                     </form>
                 </div>
