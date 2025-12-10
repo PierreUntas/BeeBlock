@@ -59,82 +59,111 @@ export default function ExplorePage() {
                     toBlock: 'latest'
                 });
 
-                const batchesData: BatchInfo[] = [];
-                const producersMap = new Map<string, ProducerInfo>();
-
-                for (const log of logs) {
+                // Récupérer toutes les données blockchain en parallèle
+                const batchesPromises = logs.map(async (log) => {
                     const tokenId = log.args.honeyBatchId as bigint;
                     const producerAddress = log.args.producer as `0x${string}`;
 
-                    const batchInfo = await publicClient.readContract({
-                        address: HONEY_TRACE_STORAGE_ADDRESS,
-                        abi: HONEY_TRACE_STORAGE_ABI,
-                        functionName: 'getHoneyBatch',
-                        args: [tokenId]
-                    }) as any;
-
-                    const balance = await publicClient.readContract({
-                        address: HONEY_TOKENIZATION_ADDRESS,
-                        abi: HONEY_TOKENIZATION_ABI,
-                        functionName: 'balanceOf',
-                        args: [producerAddress, tokenId]
-                    }) as bigint;
-
-                    if (!producersMap.has(producerAddress)) {
-                        const producerData = await publicClient.readContract({
+                    // Exécuter les 3 appels en parallèle pour chaque lot
+                    const [batchInfo, balance, producerData] = await Promise.all([
+                        publicClient.readContract({
+                            address: HONEY_TRACE_STORAGE_ADDRESS,
+                            abi: HONEY_TRACE_STORAGE_ABI,
+                            functionName: 'getHoneyBatch',
+                            args: [tokenId]
+                        }) as Promise<any>,
+                        publicClient.readContract({
+                            address: HONEY_TOKENIZATION_ADDRESS,
+                            abi: HONEY_TOKENIZATION_ABI,
+                            functionName: 'balanceOf',
+                            args: [producerAddress, tokenId]
+                        }) as Promise<bigint>,
+                        publicClient.readContract({
                             address: HONEY_TRACE_STORAGE_ADDRESS,
                             abi: HONEY_TRACE_STORAGE_ABI,
                             functionName: 'getProducer',
                             args: [producerAddress]
-                        }) as any;
+                        }) as Promise<any>
+                    ]);
 
-                        producersMap.set(producerAddress, {
+                    return {
+                        batch: {
+                            tokenId,
+                            producer: producerAddress,
+                            honeyType: batchInfo.honeyType,
+                            metadata: batchInfo.metadata,
+                            totalSupply: balance,
+                            remainingTokens: balance
+                        },
+                        producerInfo: {
+                            address: producerAddress,
                             name: producerData.name || 'Producteur anonyme',
                             location: producerData.location || 'Non spécifié'
+                        }
+                    };
+                });
+
+                // Attendre toutes les requêtes blockchain
+                const results = await Promise.all(batchesPromises);
+
+                // Construire la map des producteurs
+                const producersMap = new Map<string, ProducerInfo>();
+                const batchesData = results.map(({ batch, producerInfo }) => {
+                    if (!producersMap.has(producerInfo.address)) {
+                        producersMap.set(producerInfo.address, {
+                            name: producerInfo.name,
+                            location: producerInfo.location
                         });
                     }
-
-                    batchesData.push({
-                        tokenId,
-                        producer: producerAddress,
-                        honeyType: batchInfo.honeyType,
-                        metadata: batchInfo.metadata,
-                        totalSupply: balance,
-                        remainingTokens: balance
-                    });
-                }
+                    return batch;
+                });
 
                 batchesData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
                 setBatches(batchesData);
                 setProducers(producersMap);
+                setIsLoading(false);
 
-                // Charger les données IPFS pour chaque lot
+                // Charger les données IPFS en parallèle
                 setIsLoadingIPFS(true);
-                for (let i = 0; i < batchesData.length; i++) {
-                    if (batchesData[i].metadata) {
-                        try {
-                            const batchIPFSData = await getFromIPFSGateway(batchesData[i].metadata);
-                            setBatches(prev => prev.map(b =>
-                                b.tokenId === batchesData[i].tokenId
-                                    ? { ...b, ipfsData: batchIPFSData }
-                                    : b
-                            ));
-                        } catch (error) {
-                            console.error(`Erreur chargement IPFS lot ${batchesData[i].tokenId}:`, error);
-                        }
+                const ipfsPromises = batchesData.map(async (batch) => {
+                    if (!batch.metadata) return null;
+
+                    try {
+                        const ipfsData = await getFromIPFSGateway(batch.metadata);
+                        return { tokenId: batch.tokenId, ipfsData };
+                    } catch (error) {
+                        console.error(`Erreur chargement IPFS lot ${batch.tokenId}:`, error);
+                        return null;
                     }
-                }
+                });
+
+                const ipfsResults = await Promise.all(ipfsPromises);
+
+                // Mettre à jour tous les lots avec leurs données IPFS
+                setBatches(prev => {
+                    const updated = [...prev];
+                    ipfsResults.forEach(result => {
+                        if (result) {
+                            const index = updated.findIndex(b => b.tokenId === result.tokenId);
+                            if (index !== -1) {
+                                updated[index] = { ...updated[index], ipfsData: result.ipfsData };
+                            }
+                        }
+                    });
+                    return updated;
+                });
+
                 setIsLoadingIPFS(false);
 
             } catch (error) {
                 console.error('Erreur lors du chargement des lots:', error);
-            } finally {
                 setIsLoading(false);
             }
         };
 
         fetchAllBatches();
     }, []);
+
 
     const filteredBatches = filterType === 'all'
         ? batches
