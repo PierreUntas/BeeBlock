@@ -1,17 +1,20 @@
-import { NextRequest, NextResponse } from 'next/server';
+// app/api/ipfs/add/route.ts
+import { NextRequest, NextResponse } from "next/server";
+import { createThirdwebClient } from "thirdweb";
+import { upload } from "thirdweb/storage";
 
-const PINATA_JWT = process.env.PINATA_JWT;
-const PINATA_API_URL = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+const THIRDWEB_SECRET_KEY = process.env.THIRDWEB_SECRET_KEY;
 
 export async function POST(request: NextRequest) {
-    console.log('🚀 Utilisation de Pinata pour l\'upload IPFS');
+    console.log("🚀 Utilisation de thirdweb pour l'upload IPFS");
 
-    if (!PINATA_JWT) {
-        console.error('❌ PINATA_JWT n\'est pas configuré');
+    if (!THIRDWEB_SECRET_KEY) {
+        console.error("❌ THIRDWEB_SECRET_KEY n'est pas configuré");
         return NextResponse.json(
-            { 
-                error: 'Configuration Pinata manquante. Veuillez définir PINATA_JWT dans les variables d\'environnement de Vercel.',
-                details: 'La variable d\'environnement PINATA_JWT n\'est pas définie. Ajoutez-la dans les paramètres de votre projet Vercel.'
+            {
+                error: "Configuration thirdweb manquante. Veuillez définir THIRDWEB_SECRET_KEY dans les variables d'environnement.",
+                details:
+                    "THIRDWEB_SECRET_KEY n'est pas définie (.env.local en dev, Vercel Env en prod).",
             },
             { status: 500 }
         );
@@ -19,88 +22,48 @@ export async function POST(request: NextRequest) {
 
     try {
         const formData = await request.formData();
-        console.log('📦 FormData received');
+        console.log("📦 FormData received");
 
-        const response = await fetch(PINATA_API_URL, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${PINATA_JWT}`,
-            },
-            body: formData,
+        const fileEntry = formData.get("file");
+        if (!fileEntry || !(fileEntry instanceof File)) {
+            return NextResponse.json(
+                { error: "Aucun fichier reçu dans le champ 'file'." },
+                { status: 400 }
+            );
+        }
+
+        const file = fileEntry as File;
+        console.log("📦 Fichier reçu:", file.name, file.size);
+
+        // Client thirdweb côté serveur
+        const client = createThirdwebClient({
+            secretKey: THIRDWEB_SECRET_KEY,
         });
 
-        console.log('📡 Pinata Response status:', response.status);
+        // Upload vers le storage thirdweb (IPFS)
+        const cid = await upload({
+            client,
+            files: [file], // File natif (Web API)
+            uploadWithoutDirectory: true,
+        });
 
-        if (!response.ok) {
-            let errorText = '';
-            let errorData: any = null;
-            
-            try {
-                errorText = await response.text();
-                // Essayer de parser le JSON si possible
-                try {
-                    errorData = JSON.parse(errorText);
-                } catch {
-                    // Ce n'est pas du JSON, utiliser le texte brut
-                }
-            } catch {
-                errorText = response.statusText;
-            }
-            
-            console.error('❌ Pinata Error:', errorText);
-            
-            let errorMessage = `Erreur Pinata: ${response.statusText}`;
-            let details = errorText;
-            
-            if (response.status === 401) {
-                errorMessage = 'Authentification Pinata échouée. Vérifiez votre PINATA_JWT.';
-                details = 'Le JWT Pinata est invalide ou a expiré. Vérifiez votre configuration sur Vercel.';
-            } else if (response.status === 403) {
-                errorMessage = 'Accès refusé. Vérifiez les permissions de votre clé API Pinata.';
-                details = 'Votre clé API Pinata n\'a pas les permissions nécessaires pour uploader des fichiers.';
-            } else if (errorData?.error) {
-                errorMessage = errorData.error;
-                details = errorData.details || errorText;
-            }
-            
-            return NextResponse.json(
-                { 
-                    error: errorMessage,
-                    details: details,
-                    status: response.status
-                },
-                { status: response.status }
-            );
-        }
+        console.log("✅ thirdweb CID brut:", cid);
 
-        const result = await response.json();
-        console.log('✅ Pinata Result:', result);
-        
-        // Vérifier que le résultat contient bien IpfsHash
-        if (!result.IpfsHash) {
-            console.error('❌ Pinata response missing IpfsHash:', result);
-            return NextResponse.json(
-                { 
-                    error: 'Réponse Pinata invalide',
-                    details: 'La réponse de Pinata ne contient pas de hash IPFS.'
-                },
-                { status: 500 }
-            );
-        }
-        
-        // Adapter la réponse Pinata au format attendu par l'application
-        // Pinata retourne IpfsHash, mais l'application attend Hash
+        // cid = "ipfs://<CID>" → on garde uniquement le CID
+        const cleanCid = cid.replace(/^ipfs:\/\//i, "");
+
         return NextResponse.json({
-            Hash: result.IpfsHash,
-            ...result
+            Hash: cleanCid, // compatible avec ton lib/ipfs.ts
+            cid: cleanCid,
+            size: file.size,
+            name: file.name,
         });
-    } catch (error) {
-        console.error('💥 Pinata upload error:', error);
-        const errorMessage = error instanceof Error ? error.message : String(error);
+    } catch (error: any) {
+        console.error("💥 thirdweb upload error:", error);
         return NextResponse.json(
-            { 
-                error: 'Échec de l\'upload vers Pinata',
-                details: errorMessage
+            {
+                error: "Échec de l'upload vers thirdweb",
+                details: error?.message || String(error),
             },
             { status: 500 }
         );

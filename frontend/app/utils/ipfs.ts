@@ -18,7 +18,6 @@ export async function uploadToIPFS(data: any): Promise<string> {
     });
 
     if (!response.ok) {
-        // Essayer de récupérer le message d'erreur détaillé depuis le JSON
         let errorMessage = `Erreur upload IPFS: ${response.statusText}`;
         try {
             const errorData = await response.json();
@@ -28,15 +27,12 @@ export async function uploadToIPFS(data: any): Promise<string> {
                 errorMessage = `${errorData.error || 'Erreur upload IPFS'}: ${errorData.details}`;
             }
         } catch {
-            // Si la réponse n'est pas du JSON, utiliser le texte brut
             try {
                 const errorText = await response.text();
                 if (errorText) {
                     errorMessage = `Erreur upload IPFS: ${errorText}`;
                 }
-            } catch {
-                // Utiliser le message par défaut
-            }
+            } catch {}
         }
         throw new Error(errorMessage);
     }
@@ -55,7 +51,6 @@ export async function uploadFileToIPFS(file: File): Promise<string> {
     });
 
     if (!response.ok) {
-        // Essayer de récupérer le message d'erreur détaillé depuis le JSON
         let errorMessage = `Erreur upload fichier IPFS: ${response.statusText}`;
         try {
             const errorData = await response.json();
@@ -65,15 +60,12 @@ export async function uploadFileToIPFS(file: File): Promise<string> {
                 errorMessage = `${errorData.error || 'Erreur upload fichier IPFS'}: ${errorData.details}`;
             }
         } catch {
-            // Si la réponse n'est pas du JSON, utiliser le texte brut
             try {
                 const errorText = await response.text();
                 if (errorText) {
                     errorMessage = `Erreur upload fichier IPFS: ${errorText}`;
                 }
-            } catch {
-                // Utiliser le message par défaut
-            }
+            } catch {}
         }
         throw new Error(errorMessage);
     }
@@ -92,14 +84,12 @@ function cleanCID(cid: string): string {
 
 export async function getFromIPFSGateway(cid: string): Promise<any> {
     const cleanCid = cleanCID(cid);
-
     if (ipfsCache.has(cleanCid)) {
         console.log(`✓ Cache hit: ${cleanCid}`);
         return ipfsCache.get(cleanCid);
     }
 
     const url = `${IPFS_GATEWAY}${cleanCid}`;
-
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 10000);
 
