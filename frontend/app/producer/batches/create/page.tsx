@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAccount, useWriteContract, useReadContract } from 'wagmi';
+import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
 import { uploadToIPFS, uploadFileToIPFS } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import { MerkleTree } from 'merkletreejs';
 import { keccak256 } from 'viem';
+import { decodeEventLog } from 'viem';
 
 export default function CreateBatchPage() {
     const { address } = useAccount();
@@ -22,6 +23,7 @@ export default function CreateBatchPage() {
     const [merkleRoot, setMerkleRoot] = useState<string>('');
     const [merkleTree, setMerkleTree] = useState<MerkleTree | null>(null);
     const [labelFileName, setLabelFileName] = useState<string>('');
+    const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
     const labelInputRef = useRef<HTMLInputElement>(null);
 
     const [batchData, setBatchData] = useState({
@@ -36,7 +38,11 @@ export default function CreateBatchPage() {
         etiquetage: ''
     });
 
-    const { writeContract, isPending: isCreating } = useWriteContract();
+    const { writeContract, isPending: isCreating, data: hash } = useWriteContract();
+
+    const { data: receipt, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+        hash,
+    });
 
     const { data: producerData } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -68,6 +74,35 @@ export default function CreateBatchPage() {
             }
         }
     }, [approvalStatus, isApproving]);
+
+    useEffect(() => {
+        if (isConfirmed && receipt) {
+            const batchCreatedEvent = receipt.logs.find(log => {
+                try {
+                    const decoded = decodeEventLog({
+                        abi: HONEY_TRACE_STORAGE_ABI,
+                        data: log.data,
+                        topics: log.topics,
+                    });
+                    return decoded.eventName === 'NewHoneyBatch';
+                } catch {
+                    return false;
+                }
+            });
+
+            if (batchCreatedEvent) {
+                const decoded = decodeEventLog({
+                    abi: HONEY_TRACE_STORAGE_ABI,
+                    data: batchCreatedEvent.data,
+                    topics: batchCreatedEvent.topics,
+                }) as any;
+
+                const batchId = decoded.args.batchId?.toString();
+                setCreatedBatchId(batchId);
+                alert(`✅ Lot créé avec succès ! ID du lot: ${batchId}`);
+            }
+        }
+    }, [isConfirmed, receipt]);
 
     const generateSecretKeys = (count: number) => {
         const keys: string[] = [];
@@ -125,29 +160,36 @@ export default function CreateBatchPage() {
     const downloadSecretKeys = () => {
         if (secretKeys.length === 0 || !merkleTree) return;
 
+        const batchId = createdBatchId || 'BATCH_ID';
+
         const data = secretKeys.map((key, index) => {
             const leaf = keccak256(Buffer.from(key));
             const proof = merkleTree.getHexProof(leaf);
+            const merkleProofParam = proof.join(',');
+
+            const claimUrl = `https://bee-block.vercel.app/consumer/claim?batchId=${batchId}&secretKey=${key}&merkleProof=${merkleProofParam}`;
+
             return {
                 index: index + 1,
                 secretKey: key,
-                merkleProof: proof.join(',')
+                merkleProof: merkleProofParam,
+                claimUrl: claimUrl
             };
         });
 
         const content = data.map(item =>
-            `${item.index},"${item.secretKey}","${item.merkleProof}"`
+            `${item.index},"${item.secretKey}","${item.merkleProof}","${item.claimUrl}"`
         ).join('\n');
 
         const blob = new Blob(
-            [`Index,SecretKey,MerkleProof\n${content}`],
+            [`Index,SecretKey,MerkleProof,ClaimURL\n${content}`],
             { type: 'text/csv' }
         );
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `secret-keys-${Date.now()}.csv`;
+        a.download = `secret-keys-batch-${batchId}-${Date.now()}.csv`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -226,7 +268,7 @@ export default function CreateBatchPage() {
                 args: [honeyType, cid, BigInt(amount), merkleRoot as `0x${string}`]
             });
 
-            alert('✅ Lot créé avec succès !');
+            alert('⏳ Transaction envoyée ! En attente de confirmation...');
         } catch (error) {
             console.error('Erreur lors de la création du lot:', error);
             alert('❌ Erreur lors de la création du lot');
@@ -280,6 +322,14 @@ export default function CreateBatchPage() {
                                 {isApproving ? '⏳ En cours...' : '✅ Approuver maintenant'}
                             </button>
                         </div>
+                    </div>
+                )}
+
+                {createdBatchId && (
+                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6 rounded">
+                        <p className="font-bold">✅ Lot créé avec succès !</p>
+                        <p className="text-sm">ID du lot: <span className="font-mono">{createdBatchId}</span></p>
+                        <p className="text-sm mt-2">Vous pouvez maintenant télécharger les clés avec les URLs de claim.</p>
                     </div>
                 )}
 
