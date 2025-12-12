@@ -44,7 +44,7 @@ export default function Home() {
             <Navbar />
 
             {isLoading ? (
-                <div className="flex flex-col items-center justify-center min-h-screen relative">
+                <div className="fixed inset-0 flex items-center justify-center overflow-hidden">
                     {isMobile !== null && (
                         <video
                             ref={videoRef}
@@ -53,20 +53,16 @@ export default function Home() {
                             muted={isMuted}
                             playsInline
                             onEnded={handleVideoEnd}
-                            className="w-full h-screen object-contain bg-black"
+                            className="absolute inset-0 w-full h-full object-cover"
                         >
                             <source
                                 src={isMobile ? "/BEEBLOCK - 9-16.mp4" : "/BEEBLOCK - 16-9.mp4"}
                                 type="video/mp4"
                             />
-                            <source
-                                src={isMobile ? "/BEEBLOCK - 9-16.mov" : "/BEEBLOCK - 16-9.mov"}
-                                type="video/quicktime"
-                            />
                         </video>
                     )}
 
-                    <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
                         <button
                             onClick={handleSkip}
                             className="px-6 py-3 bg-white/90 hover:bg-white rounded-lg font-[Olney_Light] text-black transition-all shadow-lg cursor-pointer"
@@ -77,16 +73,15 @@ export default function Home() {
 
                     <button
                         onClick={toggleSound}
-                        className="absolute bottom-6 right-6 transition-all cursor-pointer"
+                        className="absolute bottom-8 right-8 z-20 transition-all cursor-pointer touch-manipulation"
                         aria-label={isMuted ? 'Activer le son' : 'Couper le son'}
                     >
                         <img
                             src="/icon-mute.webp"
                             alt={isMuted ? "Son coupé" : "Son activé"}
-                            className={`w-10 h-10 transition-all ${isMuted ? 'opacity-70' : 'opacity-100 hover:scale-110'}`}
+                            className={`w-12 h-12 transition-all ${isMuted ? 'opacity-70' : 'opacity-100 hover:scale-110'}`}
                         />
                     </button>
-
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center min-h-screen">

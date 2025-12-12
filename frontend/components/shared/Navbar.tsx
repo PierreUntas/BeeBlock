@@ -37,8 +37,8 @@ export default function Navbar() {
             </button>
 
             {/* Slide Menu */}
-            <nav className={`fixed top-0 right-0 h-screen w-80 bg-gray-bee/60 backdrop-blur-md shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
-                <div className="flex flex-col h-full pt-24 pb-8 px-6">
+            <nav className={`fixed top-0 right-0 h-screen w-80 bg-gray-bee/60 backdrop-blur-md shadow-2xl z-40 transform transition-transform duration-300 overflow-y-auto ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                <div className="flex flex-col min-h-full pt-24 pb-8 px-6">
                     <div className="flex-1 space-y-2">
                         <a href="/" className="block py-4 px-5 text-black font-[Olney_Light] text-lg hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
                             Accueil
