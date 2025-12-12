@@ -7,6 +7,15 @@ export default function Navbar() {
 
     return (
         <>
+            {/* Logo */}
+            <div className="fixed top-6 left-6 z-50">
+                <img
+                    src="/logo-png-noir.png"
+                    alt="Logo"
+                    className="h-10 w-auto opacity-70"
+                />
+            </div>
+
             {/* Backdrop */}
             {isOpen && (
                 <div
@@ -27,7 +36,6 @@ export default function Navbar() {
                 </div>
             </button>
 
-
             {/* Slide Menu */}
             <nav className={`fixed top-0 right-0 h-screen w-80 bg-gray-bee/60 backdrop-blur-md shadow-2xl z-40 transform transition-transform duration-300 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
                 <div className="flex flex-col h-full pt-24 pb-8 px-6">
@@ -40,6 +48,10 @@ export default function Navbar() {
 
                         <a href="/explore" className="block py-4 px-5 text-black font-[Olney_Light] text-lg hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
                             Explorer
+                        </a>
+
+                        <a href="/about" className="block py-4 px-5 text-black font-[Olney_Light] text-lg hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                            À propos
                         </a>
 
                         <div className="my-4 border-t border-black/10"></div>

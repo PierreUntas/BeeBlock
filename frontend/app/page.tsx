@@ -2,34 +2,91 @@
 
 import Image from "next/image";
 import Navbar from "../components/shared/Navbar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ConnectButton } from '@rainbow-me/rainbowkit';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
+    const [isMobile, setIsMobile] = useState<boolean | null>(null);
+    const [isMuted, setIsMuted] = useState(true);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setIsLoading(false);
-        }, 1200);
+        const checkMobile = () => {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            setIsMobile(width < 768 || height > width);
+        };
 
-        return () => clearTimeout(timer);
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+
+        return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
+    const handleSkip = () => {
+        setIsLoading(false);
+    };
+
+    const handleVideoEnd = () => {
+        setIsLoading(false);
+    };
+
+    const toggleSound = () => {
+        if (videoRef.current) {
+            videoRef.current.muted = !isMuted;
+            setIsMuted(!isMuted);
+        }
+    };
+
     return (
-        <div className="min-h-screen  bg-yellow-bee">
+        <div className="min-h-screen bg-yellow-bee">
             <Navbar />
 
             {isLoading ? (
-                <div className="flex flex-col items-center justify-center min-h-screen">
-                    <Image
-                        src="/logo-png-noir.png"
-                        alt="Logo"
-                        width={200}
-                        height={200}
-                        className="opacity-70"
-                    />
-                    <div className="text-6xl font-[Carbon_Phyber] mt-4 text-[#000000]">Bee Block</div>
+                <div className="flex flex-col items-center justify-center min-h-screen relative">
+                    {isMobile !== null && (
+                        <video
+                            ref={videoRef}
+                            key={isMobile ? 'mobile' : 'desktop'}
+                            autoPlay
+                            muted={isMuted}
+                            playsInline
+                            onEnded={handleVideoEnd}
+                            className="w-full h-screen object-contain bg-black"
+                        >
+                            <source
+                                src={isMobile ? "/BEEBLOCK - 9-16.mp4" : "/BEEBLOCK - 16-9.mp4"}
+                                type="video/mp4"
+                            />
+                            <source
+                                src={isMobile ? "/BEEBLOCK - 9-16.mov" : "/BEEBLOCK - 16-9.mov"}
+                                type="video/quicktime"
+                            />
+                        </video>
+                    )}
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <button
+                            onClick={handleSkip}
+                            className="px-6 py-3 bg-white/90 hover:bg-white rounded-lg font-[Olney_Light] text-black transition-all shadow-lg cursor-pointer"
+                        >
+                            Se connecter
+                        </button>
+                    </div>
+
+                    <button
+                        onClick={toggleSound}
+                        className="absolute bottom-6 right-6 transition-all cursor-pointer"
+                        aria-label={isMuted ? 'Activer le son' : 'Couper le son'}
+                    >
+                        <img
+                            src="/icon-mute.webp"
+                            alt={isMuted ? "Son coupé" : "Son activé"}
+                            className={`w-10 h-10 transition-all ${isMuted ? 'opacity-70' : 'opacity-100 hover:scale-110'}`}
+                        />
+                    </button>
+
                 </div>
             ) : (
                 <div className="flex flex-col items-center justify-center min-h-screen">
