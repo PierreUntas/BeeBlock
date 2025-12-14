@@ -575,7 +575,7 @@ npx hardhat ignition deploy ignition/modules/HoneyTraceSystem.ts --network sepol
 
 ## 👨‍💻 Équipe
 
-Projet développé par Pierre Arensuntas
+Projet développé par Pierre Untas en formation développeur blockchain chez Alyra et 4 collaborateurs en formation consultant blockchain : Nicolas Lesty, Vincent Forli, Julien Ruiz et Etienne Greisten.
 
 ## 📄 Licence
 
