@@ -595,7 +595,7 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 
 Pour toute question ou suggestion :
 - GitHub : [@PierreArensuntas](https://github.com/pierreuntas)
-- Email : contact@beeblock.fr
+- Email : pierre.untas@gmail.com
 
 ---
 
