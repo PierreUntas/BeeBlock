@@ -594,7 +594,7 @@ Les contributions sont les bienvenues ! N'hésitez pas à :
 ## 📧 Contact
 
 Pour toute question ou suggestion :
-- GitHub : [@PierreArensuntas](https://github.com/pierreuntas)
+- GitHub : [@PierreUntas](https://github.com/pierreuntas)
 - Email : pierre.untas@gmail.com
 
 ---
