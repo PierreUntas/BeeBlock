@@ -1,4 +1,3 @@
-// typescript
 import { NextRequest, NextResponse } from "next/server";
 
 const IPFS_RPC = process.env.IPFS_RPC;
