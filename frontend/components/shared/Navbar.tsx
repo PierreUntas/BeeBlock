@@ -1,9 +1,24 @@
 "use client"
 
 import { useState } from "react";
+import { usePrivy } from "@privy-io/react-auth";
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const { login, logout, authenticated, user } = usePrivy();
+
+    // Récupérer le wallet de l'utilisateur
+    const wallet = user?.wallet || user?.linkedAccounts?.find((account: any) => account.type === 'wallet');
+    const walletAddress = wallet?.address;
+
+    const copyAddress = () => {
+        if (walletAddress) {
+            navigator.clipboard.writeText(walletAddress);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
 
     return (
         <>
@@ -89,6 +104,49 @@ export default function Navbar() {
                                 Créer un Lot
                             </a>
                         </div>
+                    </div>
+
+                    {/* Section de connexion en bas du menu */}
+                    <div className="mt-auto pt-4 px-6 border-t border-black/10">
+                        {authenticated ? (
+                            <div className="space-y-3">
+                                <div className="py-3 px-4 bg-black/5 rounded-lg">
+                                    <p className="text-xs font-[Olney_Light] text-black/40 mb-1">CONNECTÉ EN TANT QUE</p>
+                                    {user?.email?.address && (
+                                        <p className="text-sm text-black font-medium truncate">{user.email.address}</p>
+                                    )}
+                                    {walletAddress && (
+                                        <button
+                                            onClick={copyAddress}
+                                            className="text-xs text-black/60 hover:text-black font-mono mt-1 flex items-center gap-2 transition-colors w-full"
+                                            title="Copier l'adresse complète"
+                                        >
+                                            <span>{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+                                            <span className="text-[10px] ml-auto">{copied ? '✓ Copié' : '📋'}</span>
+                                        </button>
+                                    )}
+                                </div>
+                                <button
+                                    onClick={() => {
+                                        logout();
+                                        setIsOpen(false);
+                                    }}
+                                    className="w-full py-3 px-4 bg-amber-400 hover:bg-amber-500 text-black font-[Olney_Light] font-medium rounded-lg transition-colors"
+                                >
+                                    Déconnexion
+                                </button>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={() => {
+                                    login();
+                                    setIsOpen(false);
+                                }}
+                                className="w-full py-3 px-4 bg-amber-400 hover:bg-amber-500 text-black font-[Olney_Light] font-medium rounded-lg transition-colors"
+                            >
+                                Se connecter
+                            </button>
+                        )}
                     </div>
                 </div>
             </nav>
