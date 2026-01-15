@@ -45,9 +45,9 @@ export default function PrivyProvider({ children }: { children: React.ReactNode 
                     accentColor: "#fbbf24",
                     logo: "/logo-png-noir.png",
                 },
-                embeddedWallets: {
-                    createOnLogin: "users-without-wallets",
-                },
+                // embeddedWallets: {
+                //     createOnLogin: "users-without-wallets",
+                // },
                 defaultChain: sepolia,
                 supportedChains: [sepolia],
             }}

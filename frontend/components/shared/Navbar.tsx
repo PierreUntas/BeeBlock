@@ -10,7 +10,7 @@ export default function Navbar() {
 
     // Récupérer le wallet de l'utilisateur
     const wallet = user?.wallet || user?.linkedAccounts?.find((account: any) => account.type === 'wallet');
-    const walletAddress = wallet?.address;
+    const walletAddress = (wallet as any)?.address;
 
     const copyAddress = () => {
         if (walletAddress) {

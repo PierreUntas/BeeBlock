@@ -112,7 +112,7 @@ export default function Home() {
                                     )}
                                     {(() => {
                                         const wallet = user?.wallet || user?.linkedAccounts?.find((account: any) => account.type === 'wallet');
-                                        const walletAddress = wallet?.address;
+                                        const walletAddress = (wallet as any)?.address;
                                         return walletAddress ? (
                                             <p className="text-sm text-gray-500 font-mono">
                                                 {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
