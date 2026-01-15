@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Navbar from "../components/shared/Navbar";
 import { useState, useEffect, useRef } from "react";
-import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { usePrivy } from '@privy-io/react-auth';
 
 export default function Home() {
     const [isLoading, setIsLoading] = useState(true);
     const [isMobile, setIsMobile] = useState<boolean | null>(null);
     const [isMuted, setIsMuted] = useState(true);
     const videoRef = useRef<HTMLVideoElement>(null);
+    const { login, authenticated, user } = usePrivy();
 
     useEffect(() => {
         const checkMobile = () => {
@@ -101,8 +102,39 @@ export default function Home() {
                         <h2 className="text-lg mt-2 font-[Olney_Light]">Suivez votre miel de la ruche au pot.</h2>
                     </div>
 
-                    <div className="mt-20 font-[Olney_Light] opacity-80 hover:opacity-100 transition-opacity">
-                        <ConnectButton />
+                    <div className="mt-20 font-[Olney_Light]">
+                        {authenticated ? (
+                            <div className="text-center">
+                                <div className="mb-4 space-y-1">
+                                    <p className="text-lg font-medium">Connecté en tant que</p>
+                                    {user?.email?.address && (
+                                        <p className="text-base text-gray-700">{user.email.address}</p>
+                                    )}
+                                    {(() => {
+                                        const wallet = user?.wallet || user?.linkedAccounts?.find((account: any) => account.type === 'wallet');
+                                        const walletAddress = (wallet as any)?.address;
+                                        return walletAddress ? (
+                                            <p className="text-sm text-gray-500 font-mono">
+                                                {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+                                            </p>
+                                        ) : null;
+                                    })()}
+                                </div>
+                                <a 
+                                    href="/explore" 
+                                    className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-colors inline-block"
+                                >
+                                    Explorer BeeBlock
+                                </a>
+                            </div>
+                        ) : (
+                            <button
+                                onClick={login}
+                                className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-colors"
+                            >
+                                Se connecter
+                            </button>
+                        )}
                     </div>
                 </div>
             )}
