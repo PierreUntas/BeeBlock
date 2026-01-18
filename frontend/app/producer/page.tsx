@@ -6,6 +6,8 @@ import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/c
 import { uploadToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
+import { useSendTransaction } from '@privy-io/react-auth';
+import { encodeFunctionData } from 'viem'; 
 
 export default function ProducerPage() {
     const { address } = useAccount();
@@ -36,6 +38,8 @@ export default function ProducerPage() {
     });
 
     const { writeContract, isPending: isRegistering } = useWriteContract();
+
+    const { sendTransaction } = useSendTransaction();
 
     const { data: producerData } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -184,12 +188,23 @@ export default function ProducerPage() {
             const cid = await uploadToIPFS(producerData);
             console.log('CID IPFS:', cid);
 
-            await writeContract({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'addProducer',
                 args: [name, location, companyRegisterNumber, cid],
             });
+
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+            
+            console.log('Transaction hash:', txHash);
         } catch (error) {
             console.error('Erreur lors de l\'enregistrement:', error);
         } finally {
