@@ -274,6 +274,9 @@ export default function CreateBatchPage() {
                 hash: txHash.hash as `0x${string}`,
             });
 
+            console.log('Receipt reçu:', receipt);
+            console.log('Nombre de logs:', receipt.logs.length);
+
             // Chercher l'event NewHoneyBatch dans les logs
             const batchCreatedEvent = receipt.logs.find(log => {
                 try {
@@ -282,11 +285,15 @@ export default function CreateBatchPage() {
                         data: log.data,
                         topics: log.topics,
                     });
+                    console.log('Event décodé:', decoded.eventName, decoded);
                     return decoded.eventName === 'NewHoneyBatch';
-                } catch {
+                } catch (e) {
+                    console.log('Erreur décodage log:', e);
                     return false;
                 }
             });
+
+            console.log('Event NewHoneyBatch trouvé:', batchCreatedEvent);
 
             if (batchCreatedEvent) {
                 const decoded = decodeEventLog({
@@ -295,11 +302,14 @@ export default function CreateBatchPage() {
                     topics: batchCreatedEvent.topics,
                 }) as any;
 
-                const batchId = decoded.args.batchId?.toString();
+                console.log('Decoded args:', decoded.args);
+                const batchId = decoded.args.honeyBatchId?.toString();
+                console.log('BatchId extrait:', batchId);
                 setCreatedBatchId(batchId);
                 alert(`✅ Lot créé avec succès ! ID du lot: ${batchId}`);
             } else {
-                alert('✅ Transaction confirmée ! Lot créé avec succès.');
+                console.error('❌ Event NewHoneyBatch non trouvé dans les logs');
+                alert('⚠️ Transaction confirmée mais impossible de récupérer l\'ID du lot. Vérifiez la console.');
                 setCreatedBatchId('confirmed');
             }
         } catch (error) {
@@ -534,7 +544,7 @@ export default function CreateBatchPage() {
                         <button
                             type="button"
                             onClick={downloadSecretKeys}
-                            disabled={!merkleRoot}
+                            disabled={!merkleRoot || !createdBatchId || createdBatchId === 'pending' || createdBatchId === 'confirmed'}
                             className="flex-1 bg-blue-500 text-white font-[Olney_Light] py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             📥 Télécharger les clés
