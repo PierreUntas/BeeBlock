@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useWriteContract, useReadContract } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
+import { useSendTransaction } from '@privy-io/react-auth';
+import { encodeFunctionData } from 'viem';
 
 export default function AdminPage() {
     const { address } = useAccount();
@@ -12,9 +14,10 @@ export default function AdminPage() {
     const [removeProducerAddress, setRemoveProducerAddress] = useState('');
     const [checkProducerAddress, setCheckProducerAddress] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isAuthorizingProducer, setIsAuthorizingProducer] = useState(false);
+    const [isRevokingProducer, setIsRevokingProducer] = useState(false);
 
-    const { writeContract, isPending: isAuthorizingProducer } = useWriteContract();
-    const { writeContract: writeRevokeProducer, isPending: isRevokingProducer } = useWriteContract();
+    const { sendTransaction } = useSendTransaction();
 
     const { data: isAdminResult } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -42,16 +45,30 @@ export default function AdminPage() {
         e.preventDefault();
         if (!newProducerAddress) return;
 
+        setIsAuthorizingProducer(true);
         try {
-            await writeContract({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'authorizeProducer',
                 args: [newProducerAddress as `0x${string}`, true],
             });
+
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+            
+            console.log('Transaction hash:', txHash);
             setNewProducerAddress('');
         } catch (error) {
             console.error('Erreur lors de l\'autorisation du producteur:', error);
+        } finally {
+            setIsAuthorizingProducer(false);
         }
     };
 
@@ -59,16 +76,30 @@ export default function AdminPage() {
         e.preventDefault();
         if (!removeProducerAddress) return;
 
+        setIsRevokingProducer(true);
         try {
-            await writeRevokeProducer({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'authorizeProducer',
                 args: [removeProducerAddress as `0x${string}`, false],
             });
+
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+            
+            console.log('Transaction hash:', txHash);
             setRemoveProducerAddress('');
         } catch (error) {
             console.error('Erreur lors de la révocation du producteur:', error);
+        } finally {
+            setIsRevokingProducer(false);
         }
     };
 

@@ -1,11 +1,13 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useAccount, useWriteContract } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
+import { useSendTransaction } from '@privy-io/react-auth';
+import { encodeFunctionData } from 'viem';
 
 function ClaimTokenForm() {
     const { address } = useAccount();
@@ -16,8 +18,9 @@ function ClaimTokenForm() {
     const [merkleProofInput, setMerkleProofInput] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState(false);
+    const [isPending, setIsPending] = useState(false);
 
-    const { writeContract, isPending } = useWriteContract();
+    const { sendTransaction } = useSendTransaction();
 
     useEffect(() => {
         const batchIdParam = searchParams.get('batchId');
@@ -44,18 +47,29 @@ function ClaimTokenForm() {
             return;
         }
 
+        setIsPending(true);
         try {
             const merkleProof = merkleProofInput
                 .split(',')
                 .map(hash => hash.trim() as `0x${string}`);
 
-            await writeContract({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'claimHoneyToken',
                 args: [BigInt(batchId), secretKey, merkleProof],
             });
 
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+
+            console.log('Transaction hash:', txHash);
             setSuccess(true);
             alert('✅ Token réclamé avec succès !');
             setBatchId('');
@@ -64,6 +78,8 @@ function ClaimTokenForm() {
         } catch (err: any) {
             console.error('Erreur lors de la réclamation:', err);
             setError(`❌ Erreur: ${err.message || 'Clé invalide ou déjà utilisée'}`);
+        } finally {
+            setIsPending(false);
         }
     };
 

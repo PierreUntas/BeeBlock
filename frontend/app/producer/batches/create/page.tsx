@@ -1,14 +1,15 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { useAccount, useWriteContract, useReadContract, useWaitForTransactionReceipt } from 'wagmi';
+import { useAccount, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
 import { uploadToIPFS, uploadFileToIPFS } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import { MerkleTree } from 'merkletreejs';
-import { keccak256 } from 'viem';
-import { decodeEventLog } from 'viem';
+import { keccak256, encodeFunctionData, decodeEventLog, createPublicClient, http } from 'viem';
+import { sepolia } from 'viem/chains';
+import { useSendTransaction } from '@privy-io/react-auth';
 
 export default function CreateBatchPage() {
     const { address } = useAccount();
@@ -24,7 +25,10 @@ export default function CreateBatchPage() {
     const [merkleTree, setMerkleTree] = useState<MerkleTree | null>(null);
     const [labelFileName, setLabelFileName] = useState<string>('');
     const [createdBatchId, setCreatedBatchId] = useState<string | null>(null);
+    const [isCreating, setIsCreating] = useState(false);
     const labelInputRef = useRef<HTMLInputElement>(null);
+
+    const { sendTransaction } = useSendTransaction();
 
     const [batchData, setBatchData] = useState({
         identifiant: '',
@@ -36,12 +40,6 @@ export default function CreateBatchPage() {
         composition: '',
         formatPot: '',
         etiquetage: ''
-    });
-
-    const { writeContract, isPending: isCreating, data: hash } = useWriteContract();
-
-    const { data: receipt, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
-        hash,
     });
 
     const { data: producerData } = useReadContract({
@@ -74,35 +72,6 @@ export default function CreateBatchPage() {
             }
         }
     }, [approvalStatus, isApproving]);
-
-    useEffect(() => {
-        if (isConfirmed && receipt) {
-            const batchCreatedEvent = receipt.logs.find(log => {
-                try {
-                    const decoded = decodeEventLog({
-                        abi: HONEY_TRACE_STORAGE_ABI,
-                        data: log.data,
-                        topics: log.topics,
-                    });
-                    return decoded.eventName === 'NewHoneyBatch';
-                } catch {
-                    return false;
-                }
-            });
-
-            if (batchCreatedEvent) {
-                const decoded = decodeEventLog({
-                    abi: HONEY_TRACE_STORAGE_ABI,
-                    data: batchCreatedEvent.data,
-                    topics: batchCreatedEvent.topics,
-                }) as any;
-
-                const batchId = decoded.args.batchId?.toString();
-                setCreatedBatchId(batchId);
-                alert(`✅ Lot créé avec succès ! ID du lot: ${batchId}`);
-            }
-        }
-    }, [isConfirmed, receipt]);
 
     const generateSecretKeys = (count: number) => {
         const keys: string[] = [];
@@ -199,13 +168,24 @@ export default function CreateBatchPage() {
     const handleApprove = async () => {
         try {
             setIsApproving(true);
-            await writeContract({
-                address: HONEY_TOKENIZATION_ADDRESS,
+            
+            const data = encodeFunctionData({
                 abi: HONEY_TOKENIZATION_ABI,
                 functionName: 'setApprovalForAll',
                 args: [HONEY_TRACE_STORAGE_ADDRESS, true]
             });
 
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TOKENIZATION_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+
+            console.log('Approval transaction hash:', txHash);
             alert('⏳ Approbation en cours... La transaction doit être confirmée sur la blockchain (~12 sec). Attendez la confirmation avant de créer votre lot.');
 
             const checkApproval = setInterval(async () => {
@@ -224,7 +204,7 @@ export default function CreateBatchPage() {
 
         } catch (error) {
             console.error('Erreur lors de l\'approbation:', error);
-            alert('❌ Erreur lors de l\'approbation. Vérifiez que vous avez bien confirmé la transaction dans MetaMask.');
+            alert('❌ Erreur lors de l\'approbation. Veuillez réessayer.');
             setIsApproving(false);
         }
     };
@@ -261,19 +241,83 @@ export default function CreateBatchPage() {
             const cid = await uploadToIPFS(completeData);
             console.log('CID IPFS du lot:', cid);
 
-            await writeContract({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            setIsUploading(false);
+            setIsCreating(true);
+
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'addHoneyBatch',
                 args: [honeyType, cid, BigInt(amount), merkleRoot as `0x${string}`]
             });
 
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+
+            console.log('Batch creation transaction hash:', txHash);
             alert('⏳ Transaction envoyée ! En attente de confirmation...');
+
+            // Créer un client public pour lire la blockchain
+            const publicClient = createPublicClient({
+                chain: sepolia,
+                transport: http(process.env.NEXT_PUBLIC_RPC_URL_SEPOLIA),
+            });
+
+            // Attendre le receipt de la transaction
+            const receipt = await publicClient.waitForTransactionReceipt({
+                hash: txHash.hash as `0x${string}`,
+            });
+
+            console.log('Receipt reçu:', receipt);
+            console.log('Nombre de logs:', receipt.logs.length);
+
+            // Chercher l'event NewHoneyBatch dans les logs
+            const batchCreatedEvent = receipt.logs.find(log => {
+                try {
+                    const decoded = decodeEventLog({
+                        abi: HONEY_TRACE_STORAGE_ABI,
+                        data: log.data,
+                        topics: log.topics,
+                    });
+                    console.log('Event décodé:', decoded.eventName, decoded);
+                    return decoded.eventName === 'NewHoneyBatch';
+                } catch (e) {
+                    console.log('Erreur décodage log:', e);
+                    return false;
+                }
+            });
+
+            console.log('Event NewHoneyBatch trouvé:', batchCreatedEvent);
+
+            if (batchCreatedEvent) {
+                const decoded = decodeEventLog({
+                    abi: HONEY_TRACE_STORAGE_ABI,
+                    data: batchCreatedEvent.data,
+                    topics: batchCreatedEvent.topics,
+                }) as any;
+
+                console.log('Decoded args:', decoded.args);
+                const batchId = decoded.args.honeyBatchId?.toString();
+                console.log('BatchId extrait:', batchId);
+                setCreatedBatchId(batchId);
+                alert(`✅ Lot créé avec succès ! ID du lot: ${batchId}`);
+            } else {
+                console.error('❌ Event NewHoneyBatch non trouvé dans les logs');
+                alert('⚠️ Transaction confirmée mais impossible de récupérer l\'ID du lot. Vérifiez la console.');
+                setCreatedBatchId('confirmed');
+            }
         } catch (error) {
             console.error('Erreur lors de la création du lot:', error);
             alert('❌ Erreur lors de la création du lot');
         } finally {
             setIsUploading(false);
+            setIsCreating(false);
         }
     };
 
@@ -500,7 +544,7 @@ export default function CreateBatchPage() {
                         <button
                             type="button"
                             onClick={downloadSecretKeys}
-                            disabled={!merkleRoot}
+                            disabled={!merkleRoot || !createdBatchId || createdBatchId === 'pending' || createdBatchId === 'confirmed'}
                             className="flex-1 bg-blue-500 text-white font-[Olney_Light] py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             📥 Télécharger les clés

@@ -1,13 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import { useAccount } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
-import { parseAbiItem } from 'viem';
+import { parseAbiItem, encodeFunctionData } from 'viem';
 import { publicClient } from '@/lib/client';
+import { useSendTransaction } from '@privy-io/react-auth';
 
 interface OwnedToken {
     tokenId: bigint;
@@ -25,8 +26,9 @@ export default function ConsumerPage() {
     const [selectedToken, setSelectedToken] = useState<bigint | null>(null);
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
+    const [isCommenting, setIsCommenting] = useState(false);
 
-    const { writeContract, isPending: isCommenting } = useWriteContract();
+    const { sendTransaction } = useSendTransaction();
 
     useEffect(() => {
         const fetchOwnedTokens = async () => {
@@ -106,24 +108,34 @@ export default function ConsumerPage() {
 
         if (!selectedToken) return;
 
+        setIsCommenting(true);
         try {
-            writeContract({
-                address: HONEY_TRACE_STORAGE_ADDRESS,
+            const data = encodeFunctionData({
                 abi: HONEY_TRACE_STORAGE_ABI,
                 functionName: 'addComment',
                 args: [selectedToken, rating, comment]
-            }, {
-                onSuccess: () => {
-                    setSelectedToken(null);
-                    setRating(5);
-                    setComment('');
-                },
-                onError: (err) => {
-                    console.error('Erreur lors de l\'ajout du commentaire:', err);
-                }
             });
+
+            const txHash = await sendTransaction(
+                {
+                    to: HONEY_TRACE_STORAGE_ADDRESS,
+                    data: data,
+                },
+                {
+                    sponsor: true,
+                }
+            );
+
+            console.log('Comment transaction hash:', txHash);
+            alert('✅ Avis envoyé avec succès !');
+            setSelectedToken(null);
+            setRating(5);
+            setComment('');
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors de l\'ajout du commentaire:', error);
+            alert('❌ Erreur lors de l\'ajout du commentaire');
+        } finally {
+            setIsCommenting(false);
         }
     };
 
