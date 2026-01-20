@@ -15,6 +15,7 @@ export default function ProducerPage() {
     const [location, setLocation] = useState('');
     const [companyRegisterNumber, setCompanyRegisterNumber] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
     const [isRegistered, setIsRegistered] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
@@ -41,7 +42,7 @@ export default function ProducerPage() {
 
     const { sendTransaction } = useSendTransaction();
 
-    const { data: producerData } = useReadContract({
+    const { data: producerData, isLoading: isLoadingProducer } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'getProducer',
@@ -128,6 +129,7 @@ export default function ProducerPage() {
             const producer = producerData as any;
             setIsAuthorized(producer.authorized);
             setIsRegistered(producer.name && producer.name.length > 0);
+            setIsCheckingAuthorization(false);
 
             if (producer.name) setName(producer.name);
             if (producer.location) setLocation(producer.location);
@@ -136,8 +138,10 @@ export default function ProducerPage() {
             if (producer.metadata) {
                 loadIPFSData(producer.metadata);
             }
+        } else if (!isLoadingProducer && producerData !== undefined) {
+            setIsCheckingAuthorization(false);
         }
-    }, [producerData]);
+    }, [producerData, isLoadingProducer]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -211,6 +215,21 @@ export default function ProducerPage() {
             setIsUploading(false);
         }
     };
+
+    // État de chargement pendant la vérification
+    if (isCheckingAuthorization || isLoadingProducer) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!address) {
         return (

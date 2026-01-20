@@ -12,11 +12,12 @@ export default function AdminPage() {
     const [removeAdminAddress, setRemoveAdminAddress] = useState('');
     const [checkAdminAddress, setCheckAdminAddress] = useState('');
     const [isOwner, setIsOwner] = useState(false);
+    const [isCheckingOwner, setIsCheckingOwner] = useState(true);
 
     const { writeContract, isPending: isAddingAdmin } = useWriteContract();
     const { writeContract: writeRemoveAdmin, isPending: isRemovingAdmin } = useWriteContract();
 
-    const { data: ownerAddress } = useReadContract({
+    const { data: ownerAddress, isLoading: isLoadingOwner } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'owner',
@@ -32,8 +33,11 @@ export default function AdminPage() {
     useEffect(() => {
         if (address && ownerAddress) {
             setIsOwner(address.toLowerCase() === (ownerAddress as string).toLowerCase());
+            setIsCheckingOwner(false);
+        } else if (!isLoadingOwner && ownerAddress) {
+            setIsCheckingOwner(false);
         }
-    }, [address, ownerAddress]);
+    }, [address, ownerAddress, isLoadingOwner]);
 
     const handleAddAdmin = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -68,6 +72,21 @@ export default function AdminPage() {
             console.error('Erreur lors de la suppression de l\'admin:', error);
         }
     };
+
+    // État de chargement pendant la vérification
+    if (isCheckingOwner || isLoadingOwner) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!address) {
         return (

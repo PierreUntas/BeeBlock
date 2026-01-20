@@ -16,6 +16,7 @@ export default function CreateBatchPage() {
     const [honeyType, setHoneyType] = useState('');
     const [amount, setAmount] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +43,7 @@ export default function CreateBatchPage() {
         etiquetage: ''
     });
 
-    const { data: producerData } = useReadContract({
+    const { data: producerData, isLoading: isLoadingProducer } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'getProducer',
@@ -60,8 +61,11 @@ export default function CreateBatchPage() {
         if (producerData) {
             const producer = producerData as any;
             setIsAuthorized(producer.authorized);
+            setIsCheckingAuthorization(false);
+        } else if (!isLoadingProducer && producerData !== undefined) {
+            setIsCheckingAuthorization(false);
         }
-    }, [producerData]);
+    }, [producerData, isLoadingProducer]);
 
     useEffect(() => {
         if (approvalStatus !== undefined) {
@@ -320,6 +324,21 @@ export default function CreateBatchPage() {
             setIsCreating(false);
         }
     };
+
+    // État de chargement pendant la vérification
+    if (isCheckingAuthorization || isLoadingProducer) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!address) {
         return (

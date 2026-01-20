@@ -14,12 +14,13 @@ export default function AdminPage() {
     const [removeProducerAddress, setRemoveProducerAddress] = useState('');
     const [checkProducerAddress, setCheckProducerAddress] = useState('');
     const [isAdmin, setIsAdmin] = useState(false);
+    const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
     const [isAuthorizingProducer, setIsAuthorizingProducer] = useState(false);
     const [isRevokingProducer, setIsRevokingProducer] = useState(false);
 
     const { sendTransaction } = useSendTransaction();
 
-    const { data: isAdminResult } = useReadContract({
+    const { data: isAdminResult, isLoading: isLoadingAdmin } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'isAdmin',
@@ -36,8 +37,11 @@ export default function AdminPage() {
     useEffect(() => {
         if (isAdminResult !== undefined) {
             setIsAdmin(isAdminResult as boolean);
+            setIsCheckingAdmin(false);
+        } else if (!isLoadingAdmin && isAdminResult !== undefined) {
+            setIsCheckingAdmin(false);
         }
-    }, [isAdminResult]);
+    }, [isAdminResult, isLoadingAdmin]);
 
     const isProducerAuthorized = producerData ? (producerData as any).authorized : undefined;
 
@@ -102,6 +106,21 @@ export default function AdminPage() {
             setIsRevokingProducer(false);
         }
     };
+
+    // État de chargement pendant la vérification
+    if (isCheckingAdmin || isLoadingAdmin) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!address) {
         return (

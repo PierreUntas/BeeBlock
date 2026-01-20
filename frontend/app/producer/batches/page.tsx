@@ -35,10 +35,11 @@ export default function ProducerBatchesPage() {
     const { address } = useAccount();
     const [batches, setBatches] = useState<BatchInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
     const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
 
-    const { data: producerData } = useReadContract({
+    const { data: producerData, isLoading: isLoadingProducer } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'getProducer',
@@ -49,8 +50,11 @@ export default function ProducerBatchesPage() {
         if (producerData) {
             const producer = producerData as any;
             setIsAuthorized(producer.authorized);
+            setIsCheckingAuthorization(false);
+        } else if (!isLoadingProducer && producerData !== undefined) {
+            setIsCheckingAuthorization(false);
         }
-    }, [producerData]);
+    }, [producerData, isLoadingProducer]);
 
     useEffect(() => {
         const fetchBatches = async () => {
@@ -128,6 +132,21 @@ export default function ProducerBatchesPage() {
 
         fetchBatches();
     }, [address, isAuthorized]);
+
+    // État de chargement pendant la vérification
+    if (isCheckingAuthorization || isLoadingProducer) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     if (!address) {
         return (
