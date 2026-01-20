@@ -108,6 +108,13 @@ export default function ConsumerPage() {
 
         if (!selectedToken) return;
 
+        // Vérifier que l'utilisateur n'est pas le producteur
+        const token = ownedTokens.find(t => t.tokenId === selectedToken);
+        if (token && address && token.producer.toLowerCase() === address.toLowerCase()) {
+            alert('❌ Vous ne pouvez pas laisser un avis sur vos propres lots');
+            return;
+        }
+
         setIsCommenting(true);
         try {
             const data = encodeFunctionData({
@@ -139,6 +146,11 @@ export default function ConsumerPage() {
         }
     };
 
+    // Fonction pour vérifier si l'utilisateur est le producteur du token
+    const isOwnProducer = (token: OwnedToken) => {
+        return address && token.producer.toLowerCase() === address.toLowerCase();
+    };
+
     if (!address) {
         return (
             <div className="min-h-screen bg-yellow-bee">
@@ -162,7 +174,7 @@ export default function ConsumerPage() {
                     </h1>
                     <Link
                         href="/consumer/claim"
-                        className="bg-[#666666] text-white font-[Olney_Light] py-2 px-6 rounded-lg hover:bg-[#555555] transition-colors border border-[#000000]"
+                        className="bg-[#666666] text-white font-[Olney_Light] py-2 px-6 rounded-lg hover:bg-[#555555] transition-all duration-300 border border-[#000000]"
                     >
                         Réclamer un token
                     </Link>
@@ -201,6 +213,11 @@ export default function ConsumerPage() {
                                         <p className="text-sm font-[Olney_Light] text-[#000000]/60 mt-1">
                                             Par: {token.producerName}
                                         </p>
+                                        {isOwnProducer(token) && (
+                                            <p className="text-xs font-[Olney_Light] text-orange-600 mt-2 bg-orange-100 px-2 py-1 rounded inline-block">
+                                                👨‍🌾 Votre production
+                                            </p>
+                                        )}
                                     </div>
                                     <div className="text-right">
                                         <p className="text-sm font-[Olney_Light] text-[#000000]/60">
@@ -215,16 +232,18 @@ export default function ConsumerPage() {
                                 <div className="flex gap-2">
                                     <Link
                                         href={`/explore/batch/${token.tokenId}`}
-                                        className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-[#555555] transition-colors border border-[#000000] text-center text-sm"
+                                        className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-[#555555] transition-all duration-300 border border-[#000000] text-center text-sm"
                                     >
                                         Voir les détails
                                     </Link>
-                                    <button
-                                        onClick={() => setSelectedToken(token.tokenId)}
-                                        className="flex-1 bg-yellow-bee text-[#000000] font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-yellow-bee/70 transition-colors border border-[#000000] text-sm"
-                                    >
-                                        Laisser un avis
-                                    </button>
+                                    {!isOwnProducer(token) && (
+                                        <button
+                                            onClick={() => setSelectedToken(token.tokenId)}
+                                            className="flex-1 bg-yellow-bee text-[#000000] font-[Olney_Light] py-2 px-4 rounded-lg hover:text-[#666666] hover:border-[#666666] transition-all duration-300 cursor-pointer border border-[#000000] text-sm"
+                                        >
+                                            Laisser un avis
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -271,14 +290,14 @@ export default function ConsumerPage() {
                                     <button
                                         type="button"
                                         onClick={() => setSelectedToken(null)}
-                                        className="flex-1 bg-yellow-bee text-[#000000] font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-yellow-bee/70 transition-colors border border-[#000000]"
+                                        className="flex-1 bg-yellow-bee text-[#000000] font-[Olney_Light] py-2 px-4 rounded-lg hover:text-[#666666] hover:border-[#666666] transition-all duration-300 cursor-pointer border border-[#000000]"
                                     >
                                         Annuler
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={isCommenting}
-                                        className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-[#555555] transition-colors border border-[#000000] disabled:opacity-50"
+                                        className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg hover:bg-[#555555] transition-all duration-300 cursor-pointer border border-[#000000] disabled:opacity-50"
                                     >
                                         {isCommenting ? 'Envoi...' : 'Envoyer'}
                                     </button>

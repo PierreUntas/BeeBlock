@@ -199,7 +199,7 @@ export default function ExplorePage() {
                         <button
                             key={type}
                             onClick={() => setFilterType(type)}
-                            className={`px-4 py-2 rounded-lg font-[Olney_Light] transition-colors border border-[#000000] ${
+                            className={`px-4 py-2 rounded-lg font-[Olney_Light] transition-colors border border-[#000000] cursor-pointer ${
                                 filterType === type
                                     ? 'bg-[#666666] text-white'
                                     : 'bg-yellow-bee text-[#000000] opacity-70 hover:opacity-100'

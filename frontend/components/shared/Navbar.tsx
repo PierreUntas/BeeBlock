@@ -73,13 +73,13 @@ export default function Navbar() {
     return (
         <>
             {/* Logo */}
-            <div className="fixed top-6 left-6 z-50">
+            <a href="/" className="fixed top-6 left-6 z-50 cursor-pointer">
                 <img
                     src="/logo-png-noir.png"
                     alt="Logo"
-                    className="h-10 w-auto opacity-70"
+                    className="h-10 w-auto opacity-70 hover:opacity-100 transition-opacity"
                 />
-            </div>
+            </a>
 
             {/* Backdrop */}
             {isOpen && (
@@ -190,13 +190,13 @@ export default function Navbar() {
                                 <div className="my-4 border-t border-black/10"></div>
                                 <div className="space-y-2">
                                     <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">ADMINISTRATION</p>
-                                    
+
                                     {isOwner && (
                                         <a href="/owner" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
                                             Propriétaire
                                         </a>
                                     )}
-                                    
+
                                     {isAdmin && (
                                         <a href="/admin" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
                                             Administrateur
