@@ -1,16 +1,66 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
+import { useAccount, useReadContract } from "wagmi";
+import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
 
 export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const { login, logout, authenticated, user } = usePrivy();
+    const { address } = useAccount();
+
+    // États pour les rôles
+    const [isOwner, setIsOwner] = useState(false);
+    const [isAdmin, setIsAdmin] = useState(false);
+    const [isProducer, setIsProducer] = useState(false);
 
     // Récupérer le wallet de l'utilisateur
     const wallet = user?.wallet || user?.linkedAccounts?.find((account: any) => account.type === 'wallet');
     const walletAddress = (wallet as any)?.address;
+
+    // Vérifier si l'utilisateur est owner
+    const { data: ownerAddress } = useReadContract({
+        address: HONEY_TRACE_STORAGE_ADDRESS,
+        abi: HONEY_TRACE_STORAGE_ABI,
+        functionName: 'owner',
+    });
+
+    // Vérifier si l'utilisateur est admin
+    const { data: isAdminResult } = useReadContract({
+        address: HONEY_TRACE_STORAGE_ADDRESS,
+        abi: HONEY_TRACE_STORAGE_ABI,
+        functionName: 'isAdmin',
+        args: address ? [address] : undefined,
+    });
+
+    // Vérifier si l'utilisateur est producteur autorisé
+    const { data: producerData } = useReadContract({
+        address: HONEY_TRACE_STORAGE_ADDRESS,
+        abi: HONEY_TRACE_STORAGE_ABI,
+        functionName: 'getProducer',
+        args: address ? [address] : undefined,
+    });
+
+    // Mettre à jour les rôles
+    useEffect(() => {
+        if (address && ownerAddress) {
+            setIsOwner(address.toLowerCase() === (ownerAddress as string).toLowerCase());
+        }
+    }, [address, ownerAddress]);
+
+    useEffect(() => {
+        if (isAdminResult !== undefined) {
+            setIsAdmin(isAdminResult as boolean);
+        }
+    }, [isAdminResult]);
+
+    useEffect(() => {
+        if (producerData) {
+            setIsProducer((producerData as any).authorized === true);
+        }
+    }, [producerData]);
 
     const copyAddress = () => {
         if (walletAddress) {
@@ -73,6 +123,29 @@ export default function Navbar() {
                                             <span className="text-[10px] ml-auto">{copied ? '✓ Copié' : '📋'}</span>
                                         </button>
                                     )}
+                                    {/* Affichage des rôles */}
+                                    {(isOwner || isAdmin || isProducer) && (
+                                        <div className="mt-2 pt-2 border-t border-black/10">
+                                            <p className="text-[10px] text-black/40 mb-1">RÔLES</p>
+                                            <div className="flex flex-wrap gap-1">
+                                                {isOwner && (
+                                                    <span className="text-[10px] bg-purple-400/30 text-purple-900 px-2 py-0.5 rounded">
+                                                        Propriétaire
+                                                    </span>
+                                                )}
+                                                {isAdmin && (
+                                                    <span className="text-[10px] bg-blue-400/30 text-blue-900 px-2 py-0.5 rounded">
+                                                        Administrateur
+                                                    </span>
+                                                )}
+                                                {isProducer && (
+                                                    <span className="text-[10px] bg-green-400/30 text-green-900 px-2 py-0.5 rounded">
+                                                        Producteur
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <button
                                     onClick={() => {
@@ -98,6 +171,7 @@ export default function Navbar() {
                     </div>
 
                     <div className="flex-1 space-y-2">
+                        {/* Liens publics - toujours visibles */}
                         <a href="/" className="block py-4 px-5 text-black font-[Olney_Light] text-lg hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
                             Accueil
                         </a>
@@ -110,41 +184,59 @@ export default function Navbar() {
                             À propos
                         </a>
 
-                        <div className="my-4 border-t border-black/10"></div>
+                        {/* Section Administration - visible seulement pour Owner et Admin */}
+                        {(isOwner || isAdmin) && (
+                            <>
+                                <div className="my-4 border-t border-black/10"></div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">ADMINISTRATION</p>
+                                    
+                                    {isOwner && (
+                                        <a href="/owner" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                            Propriétaire
+                                        </a>
+                                    )}
+                                    
+                                    {isAdmin && (
+                                        <a href="/admin" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                            Administrateur
+                                        </a>
+                                    )}
+                                </div>
+                            </>
+                        )}
 
-                        <div className="space-y-2">
-                            <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">ADMINISTRATION</p>
-                            <a href="/owner" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Propriétaire
-                            </a>
-                            <a href="/admin" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Administrateur
-                            </a>
-                        </div>
+                        {/* Section Consommateur - visible pour tous les utilisateurs connectés */}
+                        {authenticated && (
+                            <>
+                                <div className="my-4 border-t border-black/10"></div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">CONSOMMATEUR</p>
+                                    <a href="/consumer" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                        Mes Produits
+                                    </a>
+                                </div>
+                            </>
+                        )}
 
-                        <div className="my-4 border-t border-black/10"></div>
-
-                        <div className="space-y-2">
-                            <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">UTILISATEURS</p>
-                            <a href="/consumer" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Consommateur
-                            </a>
-                        </div>
-
-                        <div className="my-4 border-t border-black/10"></div>
-
-                        <div className="space-y-2">
-                            <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">PRODUCTEUR</p>
-                            <a href="/producer" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Dashboard
-                            </a>
-                            <a href="/producer/batches" className="block py-3 px-5 text-black font-[Olney_Light] text-sm hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Mes Lots
-                            </a>
-                            <a href="/producer/batches/create" className="block py-3 px-5 text-black font-[Olney_Light] text-sm hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
-                                Créer un Lot
-                            </a>
-                        </div>
+                        {/* Section Producteur - visible seulement pour les producteurs autorisés */}
+                        {isProducer && (
+                            <>
+                                <div className="my-4 border-t border-black/10"></div>
+                                <div className="space-y-2">
+                                    <p className="text-xs font-[Olney_Light] text-black/40 px-5 mb-2">PRODUCTEUR</p>
+                                    <a href="/producer" className="block py-3 px-5 text-black font-[Olney_Light] hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                        Dashboard
+                                    </a>
+                                    <a href="/producer/batches" className="block py-3 px-5 text-black font-[Olney_Light] text-sm hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                        Mes Lots
+                                    </a>
+                                    <a href="/producer/batches/create" className="block py-3 px-5 text-black font-[Olney_Light] text-sm hover:bg-black/10 rounded-xl transition-all cursor-pointer hover:translate-x-2">
+                                        Créer un Lot
+                                    </a>
+                                </div>
+                            </>
+                        )}
                     </div>
 
                 </div>
