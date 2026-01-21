@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
-import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { getFromIPFSGateway, getIPFSUrl } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -368,6 +368,16 @@ export default function ProducerDetailsPage() {
                                 href={`/explore/batch/${batch.tokenId}`}
                                 className="bg-yellow-bee rounded-lg p-4 opacity-70 border border-[#000000] hover:opacity-100 transition-opacity"
                             >
+                                {batch.ipfsData?.etiquetage && (
+                                    <div className="mb-3 rounded-lg overflow-hidden">
+                                        <img
+                                            src={getIPFSUrl(batch.ipfsData.etiquetage)}
+                                            alt={`Étiquette ${batch.honeyType}`}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                    </div>
+                                )}
+                                
                                 <h3 className="text-xl font-[Carbon_bl] text-[#000000] mb-2">
                                     {batch.honeyType}
                                 </h3>

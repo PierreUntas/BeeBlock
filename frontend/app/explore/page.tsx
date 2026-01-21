@@ -237,6 +237,16 @@ export default function ExplorePage() {
                                 href={`/explore/batch/${batch.tokenId}`}
                                 className="bg-yellow-bee rounded-lg p-4 opacity-70 border border-[#000000] hover:opacity-100 transition-opacity"
                             >
+                                {batch.ipfsData?.etiquetage && (
+                                    <div className="mb-3 rounded-lg overflow-hidden">
+                                        <img
+                                            src={getIPFSUrl(batch.ipfsData.etiquetage)}
+                                            alt={`Étiquette ${batch.honeyType}`}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                    </div>
+                                )}
+                                
                                 <div className="mb-3">
                                     <h3 className="text-2xl font-[Carbon_bl] text-[#000000] mb-1">
                                         {batch.honeyType}
