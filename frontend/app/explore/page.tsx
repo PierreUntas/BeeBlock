@@ -217,10 +217,11 @@ export default function ExplorePage() {
                 )}
 
                 {isLoading ? (
-                    <div className="text-center py-12">
-                        <p className="text-[#000000] font-[Olney_Light] opacity-70">
-                            Chargement des lots...
-                        </p>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                            <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement des lots...</p>
+                        </div>
                     </div>
                 ) : filteredBatches.length === 0 ? (
                     <div className="bg-yellow-bee rounded-lg p-8 opacity-70 text-center border border-[#000000]">

@@ -37,6 +37,7 @@ export default function ConsumerPage() {
                 return;
             }
 
+            setIsLoading(true);
             try {
                 // Récupérer tous les événements NewHoneyBatch
                 const logs = await publicClient.getLogs({
@@ -151,19 +152,6 @@ export default function ConsumerPage() {
         return address && token.producer.toLowerCase() === address.toLowerCase();
     };
 
-    if (!address) {
-        return (
-            <div className="min-h-screen bg-yellow-bee">
-                <Navbar />
-                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="text-center text-[#000000] font-[Olney_Light] text-xl opacity-70">
-                        Veuillez connecter votre wallet
-                    </p>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-yellow-bee pt-14">
             <Navbar />
@@ -180,11 +168,12 @@ export default function ConsumerPage() {
                     </Link>
                 </div>
 
-                {isLoading ? (
-                    <div className="text-center py-12">
-                        <p className="text-[#000000] font-[Olney_Light] opacity-70">
-                            Chargement de vos tokens...
-                        </p>
+                {isLoading || !address ? (
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                            <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement de vos tokens...</p>
+                        </div>
                     </div>
                 ) : ownedTokens.length === 0 ? (
                     <div className="bg-yellow-bee rounded-lg p-8 opacity-70 text-center border border-[#000000]">

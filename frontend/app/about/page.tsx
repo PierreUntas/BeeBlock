@@ -53,7 +53,7 @@ export default function AboutPage() {
                 <div className="text-center mt-8">
                     <a
                         href="/"
-                        className="inline-block px-8 py-3 bg-[#666666] text-white font-[Olney_Light] rounded-lg hover:bg-[#555555] transition-colors"
+                        className="inline-block px-8 py-3 bg-[#666666] text-white font-[Olney_Light] rounded-lg hover:bg-[#555555] transition-all duration-300 cursor-pointer"
                     >
                         ← Retour à l'accueil
                     </a>
