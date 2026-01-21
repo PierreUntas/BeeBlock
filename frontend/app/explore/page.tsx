@@ -30,6 +30,8 @@ interface BatchInfo {
     totalSupply: bigint;
     remainingTokens: bigint;
     ipfsData?: BatchIPFSData;
+    averageRating?: number;
+    commentsCount?: number;
 }
 
 interface ProducerInfo {
@@ -147,6 +149,60 @@ export default function ExplorePage() {
                             const index = updated.findIndex(b => b.tokenId === result.tokenId);
                             if (index !== -1) {
                                 updated[index] = { ...updated[index], ipfsData: result.ipfsData };
+                            }
+                        }
+                    });
+                    return updated;
+                });
+
+                // Charger les notes et avis pour chaque lot
+                const ratingsPromises = batchesData.map(async (batch) => {
+                    try {
+                        const commentsCount = await publicClient.readContract({
+                            address: HONEY_TRACE_STORAGE_ADDRESS,
+                            abi: HONEY_TRACE_STORAGE_ABI,
+                            functionName: 'getHoneyBatchCommentsCount',
+                            args: [batch.tokenId]
+                        }) as bigint;
+
+                        if (commentsCount > 0n) {
+                            const comments = await publicClient.readContract({
+                                address: HONEY_TRACE_STORAGE_ADDRESS,
+                                abi: HONEY_TRACE_STORAGE_ABI,
+                                functionName: 'getHoneyBatchComments',
+                                args: [batch.tokenId, 0n, commentsCount]
+                            }) as any[];
+
+                            const totalRating = comments.reduce((sum, comment) => sum + Number(comment.rating), 0);
+                            const averageRating = totalRating / comments.length;
+
+                            return {
+                                tokenId: batch.tokenId,
+                                averageRating,
+                                commentsCount: Number(commentsCount)
+                            };
+                        }
+                        return null;
+                    } catch (error) {
+                        console.error(`Erreur chargement avis lot ${batch.tokenId}:`, error);
+                        return null;
+                    }
+                });
+
+                const ratingsResults = await Promise.all(ratingsPromises);
+
+                // Mettre à jour les lots avec les notes
+                setBatches(prev => {
+                    const updated = [...prev];
+                    ratingsResults.forEach(result => {
+                        if (result) {
+                            const index = updated.findIndex(b => b.tokenId === result.tokenId);
+                            if (index !== -1) {
+                                updated[index] = {
+                                    ...updated[index],
+                                    averageRating: result.averageRating,
+                                    commentsCount: result.commentsCount
+                                };
                             }
                         }
                     });
@@ -280,6 +336,15 @@ export default function ExplorePage() {
                                                 {cert}
                                             </span>
                                         ))}
+                                    </div>
+                                )}
+
+                                {batch.commentsCount !== undefined && batch.commentsCount > 0 && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-yellow-500">⭐</span>
+                                        <span className="text-sm font-[Olney_Light] text-[#000000]">
+                                            {batch.averageRating?.toFixed(1)} ({batch.commentsCount} avis)
+                                        </span>
                                     </div>
                                 )}
 
