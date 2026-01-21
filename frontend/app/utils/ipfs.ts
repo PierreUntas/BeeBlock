@@ -4,7 +4,7 @@ const IPFS_API = '/api/ipfs';
 // Cache en mémoire pour éviter les requêtes répétées
 const ipfsCache = new Map<string, any>();
 
-// Gateway IPFS unique
+// Gateway IPFS public (rapide et fiable)
 const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
 
 export async function uploadToIPFS(data: any): Promise<string> {
