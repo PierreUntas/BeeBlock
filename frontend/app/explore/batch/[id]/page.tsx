@@ -199,9 +199,10 @@ export default function BatchDetailsPage() {
             <div className="min-h-screen bg-yellow-bee">
                 <Navbar />
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="text-[#000000] font-[Olney_Light] opacity-70">
-                        Chargement des détails du lot...
-                    </p>
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement des détails du lot...</p>
+                    </div>
                 </div>
             </div>
         );

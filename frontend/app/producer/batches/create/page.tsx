@@ -16,6 +16,7 @@ export default function CreateBatchPage() {
     const [honeyType, setHoneyType] = useState('');
     const [amount, setAmount] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
     const [isApproved, setIsApproved] = useState(false);
     const [isApproving, setIsApproving] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +43,7 @@ export default function CreateBatchPage() {
         etiquetage: ''
     });
 
-    const { data: producerData } = useReadContract({
+    const { data: producerData, isLoading: isLoadingProducer } = useReadContract({
         address: HONEY_TRACE_STORAGE_ADDRESS,
         abi: HONEY_TRACE_STORAGE_ABI,
         functionName: 'getProducer',
@@ -60,8 +61,11 @@ export default function CreateBatchPage() {
         if (producerData) {
             const producer = producerData as any;
             setIsAuthorized(producer.authorized);
+            setIsCheckingAuthorization(false);
+        } else if (!isLoadingProducer && producerData !== undefined) {
+            setIsCheckingAuthorization(false);
         }
-    }, [producerData]);
+    }, [producerData, isLoadingProducer]);
 
     useEffect(() => {
         if (approvalStatus !== undefined) {
@@ -321,6 +325,21 @@ export default function CreateBatchPage() {
         }
     };
 
+    // État de chargement pendant la vérification
+    if (isCheckingAuthorization || isLoadingProducer) {
+        return (
+            <div className="min-h-screen bg-yellow-bee">
+                <Navbar />
+                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Vérification des permissions...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!address) {
         return (
             <div className="min-h-screen bg-yellow-bee">
@@ -361,7 +380,7 @@ export default function CreateBatchPage() {
                             <button
                                 onClick={handleApprove}
                                 disabled={isApproving}
-                                className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-all duration-300"
                             >
                                 {isApproving ? '⏳ En cours...' : '✅ Approuver maintenant'}
                             </button>
@@ -493,7 +512,7 @@ export default function CreateBatchPage() {
                                 type="button"
                                 onClick={() => labelInputRef.current?.click()}
                                 disabled={isUploadingLabel}
-                                className="flex-1 px-4 py-2 border border-[#000000] rounded-lg font-[Olney_Light] hover:bg-gray-100 transition-colors disabled:opacity-50"
+                                className="flex-1 px-4 py-2 border border-[#000000] rounded-lg font-[Olney_Light] hover:bg-gray-100 transition-all duration-300 disabled:opacity-50 cursor-pointer"
                             >
                                 {isUploadingLabel ? '📤 Upload en cours...' : '📎 Choisir un fichier'}
                             </button>
@@ -545,14 +564,14 @@ export default function CreateBatchPage() {
                             type="button"
                             onClick={downloadSecretKeys}
                             disabled={!merkleRoot || !createdBatchId || createdBatchId === 'pending' || createdBatchId === 'confirmed'}
-                            className="flex-1 bg-blue-500 text-white font-[Olney_Light] py-3 rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 bg-blue-500 text-white font-[Olney_Light] py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             📥 Télécharger les clés
                         </button>
                         <button
                             type="submit"
                             disabled={isCreating || isUploading || !merkleRoot || !isApproved}
-                            className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-3 rounded-lg hover:bg-[#555555] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="flex-1 bg-[#666666] text-white font-[Olney_Light] py-3 rounded-lg hover:bg-[#555555] transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                         >
                             {isUploading
                                 ? '📤 Upload IPFS...'

@@ -66,9 +66,9 @@ export default function Home() {
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <button
                             onClick={handleSkip}
-                            className="px-6 py-3 bg-white/90 hover:bg-white rounded-lg font-[Olney_Light] text-black transition-all shadow-lg cursor-pointer"
+                            className="px-6 py-3 bg-white/90 hover:bg-white rounded-lg font-[Olney_Light] text-black transition-all duration-300 shadow-lg cursor-pointer"
                         >
-                            Se connecter
+                            Explorer BeeBlock
                         </button>
                     </div>
 
@@ -120,17 +120,17 @@ export default function Home() {
                                         ) : null;
                                     })()}
                                 </div>
-                                <a 
-                                    href="/explore" 
-                                    className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-colors inline-block"
+                                <a
+                                    href="/explore"
+                                    className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-all duration-300 inline-block cursor-pointer"
                                 >
-                                    Explorer BeeBlock
+                                    Déconnexion
                                 </a>
                             </div>
                         ) : (
                             <button
                                 onClick={login}
-                                className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-colors"
+                                className="px-6 py-3 bg-amber-400 hover:bg-amber-500 text-black font-medium rounded-lg transition-all duration-300 cursor-pointer"
                             >
                                 Se connecter
                             </button>

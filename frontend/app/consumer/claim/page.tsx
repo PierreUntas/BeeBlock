@@ -101,8 +101,7 @@ function ClaimTokenForm() {
 
             <div className="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4 mb-6 rounded">
                 <p className="font-[Olney_Light] text-sm">
-                    💡 <strong>Mode test :</strong> Entrez manuellement le numéro de lot, la clé secrète et la preuve Merkle.<br/>
-                    <em>À terme, ces informations seront contenues dans le QR code à l'intérieur du pot.</em>
+                    💡 Scannez le QR code caché à l'intérieur du pot de miel afin que les champs se remplissent automatiquement. Ce token vous permettra d'émettre un avis sur le lot de miel.
                 </p>
             </div>
 
@@ -167,7 +166,7 @@ function ClaimTokenForm() {
                 <button
                     type="submit"
                     disabled={isPending}
-                    className="w-full bg-[#666666] text-white font-[Olney_Light] py-3 px-6 rounded-lg hover:bg-[#555555] transition-colors border border-[#000000] disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="w-full bg-[#666666] text-white font-[Olney_Light] py-3 px-6 rounded-lg hover:bg-[#555555] transition-all duration-300 border border-[#000000] cursor-pointer disabled:bg-gray-400 disabled:cursor-not-allowed"
                 >
                     {isPending ? 'Transaction en cours...' : 'Réclamer mon token'}
                 </button>

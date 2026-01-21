@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
-import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { getFromIPFSGateway, getIPFSUrl } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -30,6 +30,8 @@ interface BatchInfo {
     totalSupply: bigint;
     remainingTokens: bigint;
     ipfsData?: BatchIPFSData;
+    averageRating?: number;
+    commentsCount?: number;
 }
 
 interface ProducerInfo {
@@ -153,6 +155,60 @@ export default function ExplorePage() {
                     return updated;
                 });
 
+                // Charger les notes et avis pour chaque lot
+                const ratingsPromises = batchesData.map(async (batch) => {
+                    try {
+                        const commentsCount = await publicClient.readContract({
+                            address: HONEY_TRACE_STORAGE_ADDRESS,
+                            abi: HONEY_TRACE_STORAGE_ABI,
+                            functionName: 'getHoneyBatchCommentsCount',
+                            args: [batch.tokenId]
+                        }) as bigint;
+
+                        if (commentsCount > 0n) {
+                            const comments = await publicClient.readContract({
+                                address: HONEY_TRACE_STORAGE_ADDRESS,
+                                abi: HONEY_TRACE_STORAGE_ABI,
+                                functionName: 'getHoneyBatchComments',
+                                args: [batch.tokenId, 0n, commentsCount]
+                            }) as any[];
+
+                            const totalRating = comments.reduce((sum, comment) => sum + Number(comment.rating), 0);
+                            const averageRating = totalRating / comments.length;
+
+                            return {
+                                tokenId: batch.tokenId,
+                                averageRating,
+                                commentsCount: Number(commentsCount)
+                            };
+                        }
+                        return null;
+                    } catch (error) {
+                        console.error(`Erreur chargement avis lot ${batch.tokenId}:`, error);
+                        return null;
+                    }
+                });
+
+                const ratingsResults = await Promise.all(ratingsPromises);
+
+                // Mettre à jour les lots avec les notes
+                setBatches(prev => {
+                    const updated = [...prev];
+                    ratingsResults.forEach(result => {
+                        if (result) {
+                            const index = updated.findIndex(b => b.tokenId === result.tokenId);
+                            if (index !== -1) {
+                                updated[index] = {
+                                    ...updated[index],
+                                    averageRating: result.averageRating,
+                                    commentsCount: result.commentsCount
+                                };
+                            }
+                        }
+                    });
+                    return updated;
+                });
+
                 setIsLoadingIPFS(false);
 
             } catch (error) {
@@ -199,7 +255,7 @@ export default function ExplorePage() {
                         <button
                             key={type}
                             onClick={() => setFilterType(type)}
-                            className={`px-4 py-2 rounded-lg font-[Olney_Light] transition-colors border border-[#000000] ${
+                            className={`px-4 py-2 rounded-lg font-[Olney_Light] transition-colors border border-[#000000] cursor-pointer ${
                                 filterType === type
                                     ? 'bg-[#666666] text-white'
                                     : 'bg-yellow-bee text-[#000000] opacity-70 hover:opacity-100'
@@ -217,10 +273,11 @@ export default function ExplorePage() {
                 )}
 
                 {isLoading ? (
-                    <div className="text-center py-12">
-                        <p className="text-[#000000] font-[Olney_Light] opacity-70">
-                            Chargement des lots...
-                        </p>
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                            <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement des lots...</p>
+                        </div>
                     </div>
                 ) : filteredBatches.length === 0 ? (
                     <div className="bg-yellow-bee rounded-lg p-8 opacity-70 text-center border border-[#000000]">
@@ -236,6 +293,16 @@ export default function ExplorePage() {
                                 href={`/explore/batch/${batch.tokenId}`}
                                 className="bg-yellow-bee rounded-lg p-4 opacity-70 border border-[#000000] hover:opacity-100 transition-opacity"
                             >
+                                {batch.ipfsData?.etiquetage && (
+                                    <div className="mb-3 rounded-lg overflow-hidden">
+                                        <img
+                                            src={getIPFSUrl(batch.ipfsData.etiquetage)}
+                                            alt={`Étiquette ${batch.honeyType}`}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                    </div>
+                                )}
+                                
                                 <div className="mb-3">
                                     <h3 className="text-2xl font-[Carbon_bl] text-[#000000] mb-1">
                                         {batch.honeyType}
@@ -269,6 +336,15 @@ export default function ExplorePage() {
                                                 {cert}
                                             </span>
                                         ))}
+                                    </div>
+                                )}
+
+                                {batch.commentsCount !== undefined && batch.commentsCount > 0 && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-yellow-500">⭐</span>
+                                        <span className="text-sm font-[Olney_Light] text-[#000000]">
+                                            {batch.averageRating?.toFixed(1)} ({batch.commentsCount} avis)
+                                        </span>
                                     </div>
                                 )}
 

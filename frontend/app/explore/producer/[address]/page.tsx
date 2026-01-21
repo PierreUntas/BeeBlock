@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI, HONEY_TOKENIZATION_ADDRESS, HONEY_TOKENIZATION_ABI } from '@/config/contracts';
-import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { getFromIPFSGateway, getIPFSUrl } from '@/app/utils/ipfs';
 import Navbar from '@/components/shared/Navbar';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -49,6 +49,8 @@ interface BatchInfo {
     metadata: string;
     remainingTokens: bigint;
     ipfsData?: BatchIPFSData;
+    averageRating?: number;
+    commentsCount?: number;
 }
 
 export default function ProducerDetailsPage() {
@@ -137,18 +139,53 @@ export default function ProducerDetailsPage() {
                 batchesData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
                 setBatches(batchesData);
 
+                // Charger les données IPFS et les notes en parallèle
                 for (let i = 0; i < batchesData.length; i++) {
+                    const tokenId = batchesData[i].tokenId;
+                    
+                    // Récupérer les commentaires pour calculer la note moyenne
+                    const commentsCount = await publicClient.readContract({
+                        address: HONEY_TRACE_STORAGE_ADDRESS,
+                        abi: HONEY_TRACE_STORAGE_ABI,
+                        functionName: 'getHoneyBatchCommentsCount',
+                        args: [tokenId]
+                    }) as bigint;
+
+                    let averageRating = 0;
+                    if (commentsCount > 0n) {
+                        const comments = await publicClient.readContract({
+                            address: HONEY_TRACE_STORAGE_ADDRESS,
+                            abi: HONEY_TRACE_STORAGE_ABI,
+                            functionName: 'getHoneyBatchComments',
+                            args: [tokenId, 0n, commentsCount]
+                        }) as any[];
+
+                        const sum = comments.reduce((acc: number, comment: any) => acc + Number(comment.rating), 0);
+                        averageRating = sum / comments.length;
+                    }
+
                     if (batchesData[i].metadata && batchesData[i].metadata.trim() !== '') {
                         try {
                             const batchIPFSData = await getFromIPFSGateway(batchesData[i].metadata);
                             setBatches(prev => prev.map(b =>
-                                b.tokenId === batchesData[i].tokenId
-                                    ? { ...b, ipfsData: batchIPFSData }
+                                b.tokenId === tokenId
+                                    ? { ...b, ipfsData: batchIPFSData, averageRating, commentsCount: Number(commentsCount) }
                                     : b
                             ));
                         } catch (error) {
-                            console.error(`Erreur chargement IPFS lot ${batchesData[i].tokenId}:`, error);
+                            console.error(`Erreur chargement IPFS lot ${tokenId}:`, error);
+                            setBatches(prev => prev.map(b =>
+                                b.tokenId === tokenId
+                                    ? { ...b, averageRating, commentsCount: Number(commentsCount) }
+                                    : b
+                            ));
                         }
+                    } else {
+                        setBatches(prev => prev.map(b =>
+                            b.tokenId === tokenId
+                                ? { ...b, averageRating, commentsCount: Number(commentsCount) }
+                                : b
+                        ));
                     }
                 }
 
@@ -167,9 +204,10 @@ export default function ProducerDetailsPage() {
             <div className="min-h-screen bg-yellow-bee">
                 <Navbar />
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="text-[#000000] font-[Olney_Light] opacity-70">
-                        Chargement des détails du producteur...
-                    </p>
+                    <div className="text-center">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                        <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement des détails du producteur...</p>
+                    </div>
                 </div>
             </div>
         );
@@ -367,6 +405,16 @@ export default function ProducerDetailsPage() {
                                 href={`/explore/batch/${batch.tokenId}`}
                                 className="bg-yellow-bee rounded-lg p-4 opacity-70 border border-[#000000] hover:opacity-100 transition-opacity"
                             >
+                                {batch.ipfsData?.etiquetage && (
+                                    <div className="mb-3 rounded-lg overflow-hidden">
+                                        <img
+                                            src={getIPFSUrl(batch.ipfsData.etiquetage)}
+                                            alt={`Étiquette ${batch.honeyType}`}
+                                            className="w-full h-32 object-cover"
+                                        />
+                                    </div>
+                                )}
+                                
                                 <h3 className="text-xl font-[Carbon_bl] text-[#000000] mb-2">
                                     {batch.honeyType}
                                 </h3>
@@ -395,6 +443,14 @@ export default function ProducerDetailsPage() {
                                                 {cert}
                                             </span>
                                         ))}
+                                    </div>
+                                )}
+                                {batch.commentsCount !== undefined && batch.commentsCount > 0 && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-yellow-500">⭐</span>
+                                        <span className="text-sm font-[Olney_Light] text-[#000000]">
+                                            {batch.averageRating?.toFixed(1)} ({batch.commentsCount} avis)
+                                        </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-[#000000]/20">
