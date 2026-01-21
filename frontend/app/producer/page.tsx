@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { HONEY_TRACE_STORAGE_ADDRESS, HONEY_TRACE_STORAGE_ABI } from '@/config/contracts';
 import { uploadToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
@@ -23,6 +23,8 @@ export default function ProducerPage() {
     const [logoPreview, setLogoPreview] = useState<string>('');
     const [photoFiles, setPhotoFiles] = useState<File[]>([]);
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+    const logoInputRef = useRef<HTMLInputElement>(null);
+    const photosInputRef = useRef<HTMLInputElement>(null);
 
     const [additionalData, setAdditionalData] = useState({
         labelsCertifications: [] as string[],
@@ -335,11 +337,19 @@ export default function ProducerPage() {
                                 Logo de l'entreprise
                             </label>
                             <input
+                                ref={logoInputRef}
                                 type="file"
                                 accept="image/*"
                                 onChange={handleLogoChange}
-                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-[Olney_Light] file:bg-[#666666] file:text-white hover:file:bg-[#555555]"
+                                className="hidden"
                             />
+                            <button
+                                type="button"
+                                onClick={() => logoInputRef.current?.click()}
+                                className="w-full px-4 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] hover:bg-[#F5E5A8] transition-all duration-300 cursor-pointer text-left"
+                            >
+                                {logoFile ? `📎 ${logoFile.name}` : '🖼️ Choisir un logo'}
+                            </button>
                             {logoPreview && (
                                 <div className="mt-2">
                                     <img
@@ -356,12 +366,20 @@ export default function ProducerPage() {
                                 Photos de l'entreprise
                             </label>
                             <input
+                                ref={photosInputRef}
                                 type="file"
                                 accept="image/*"
                                 multiple
                                 onChange={handlePhotoChange}
-                                className="w-full px-3 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-[Olney_Light] file:bg-[#666666] file:text-white hover:file:bg-[#555555]"
+                                className="hidden"
                             />
+                            <button
+                                type="button"
+                                onClick={() => photosInputRef.current?.click()}
+                                className="w-full px-4 py-2 bg-yellow-bee border border-[#000000] rounded-lg font-[Olney_Light] text-sm text-[#000000] hover:bg-[#F5E5A8] transition-all duration-300 cursor-pointer text-left"
+                            >
+                                {photoFiles.length > 0 ? `📷 ${photoFiles.length} photo${photoFiles.length > 1 ? 's' : ''} sélectionnée${photoFiles.length > 1 ? 's' : ''}` : '📷 Sélectionner des photos'}
+                            </button>
                             {photoPreviews.length > 0 && (
                                 <div className="mt-2 grid grid-cols-3 gap-2">
                                     {photoPreviews.map((preview, index) => (
@@ -374,7 +392,7 @@ export default function ProducerPage() {
                                             <button
                                                 type="button"
                                                 onClick={() => removePhoto(index)}
-                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                                                className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 cursor-pointer transition-all duration-300"
                                             >
                                                 ×
                                             </button>
@@ -461,7 +479,7 @@ export default function ProducerPage() {
                         <button
                             type="submit"
                             disabled={isRegistering || isUploading || isLoadingIPFS}
-                            className="w-full bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg disabled:opacity-50 hover:bg-[#555555] transition-colors border border-[#000000]"
+                            className="w-full bg-[#666666] text-white font-[Olney_Light] py-2 px-4 rounded-lg disabled:opacity-50 hover:bg-[#555555] transition-all duration-300 border border-[#000000] cursor-pointer disabled:cursor-not-allowed"
                         >
                             {isUploading
                                 ? 'Upload IPFS en cours...'
