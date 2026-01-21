@@ -36,7 +36,7 @@ export default function ProducerBatchesPage() {
     const [batches, setBatches] = useState<BatchInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
     const [isLoadingIPFS, setIsLoadingIPFS] = useState(false);
 
     const { data: producerData, isLoading: isLoadingProducer } = useReadContract({
@@ -59,10 +59,10 @@ export default function ProducerBatchesPage() {
     useEffect(() => {
         const fetchBatches = async () => {
             if (!address || !isAuthorized || !publicClient) {
-                setIsLoading(false);
                 return;
             }
 
+            setIsLoading(true);
             try {
                 const logs = await publicClient.getLogs({
                     address: HONEY_TRACE_STORAGE_ADDRESS,
@@ -191,8 +191,11 @@ export default function ProducerBatchesPage() {
                 </div>
 
                 {isLoading ? (
-                    <div className="text-center text-[#000000] font-[Olney_Light] opacity-70 py-12">
-                        Chargement de vos lots...
+                    <div className="flex items-center justify-center py-12">
+                        <div className="text-center">
+                            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-black/70 mb-4"></div>
+                            <p className="text-[#000000] font-[Olney_Light] text-xl opacity-70">Chargement de vos lots...</p>
+                        </div>
                     </div>
                 ) : batches.length === 0 ? (
                     <div className="text-center text-[#000000] font-[Olney_Light] opacity-70 py-12">
