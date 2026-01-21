@@ -49,6 +49,8 @@ interface BatchInfo {
     metadata: string;
     remainingTokens: bigint;
     ipfsData?: BatchIPFSData;
+    averageRating?: number;
+    commentsCount?: number;
 }
 
 export default function ProducerDetailsPage() {
@@ -137,18 +139,53 @@ export default function ProducerDetailsPage() {
                 batchesData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
                 setBatches(batchesData);
 
+                // Charger les données IPFS et les notes en parallèle
                 for (let i = 0; i < batchesData.length; i++) {
+                    const tokenId = batchesData[i].tokenId;
+                    
+                    // Récupérer les commentaires pour calculer la note moyenne
+                    const commentsCount = await publicClient.readContract({
+                        address: HONEY_TRACE_STORAGE_ADDRESS,
+                        abi: HONEY_TRACE_STORAGE_ABI,
+                        functionName: 'getHoneyBatchCommentsCount',
+                        args: [tokenId]
+                    }) as bigint;
+
+                    let averageRating = 0;
+                    if (commentsCount > 0n) {
+                        const comments = await publicClient.readContract({
+                            address: HONEY_TRACE_STORAGE_ADDRESS,
+                            abi: HONEY_TRACE_STORAGE_ABI,
+                            functionName: 'getHoneyBatchComments',
+                            args: [tokenId, 0n, commentsCount]
+                        }) as any[];
+
+                        const sum = comments.reduce((acc: number, comment: any) => acc + Number(comment.rating), 0);
+                        averageRating = sum / comments.length;
+                    }
+
                     if (batchesData[i].metadata && batchesData[i].metadata.trim() !== '') {
                         try {
                             const batchIPFSData = await getFromIPFSGateway(batchesData[i].metadata);
                             setBatches(prev => prev.map(b =>
-                                b.tokenId === batchesData[i].tokenId
-                                    ? { ...b, ipfsData: batchIPFSData }
+                                b.tokenId === tokenId
+                                    ? { ...b, ipfsData: batchIPFSData, averageRating, commentsCount: Number(commentsCount) }
                                     : b
                             ));
                         } catch (error) {
-                            console.error(`Erreur chargement IPFS lot ${batchesData[i].tokenId}:`, error);
+                            console.error(`Erreur chargement IPFS lot ${tokenId}:`, error);
+                            setBatches(prev => prev.map(b =>
+                                b.tokenId === tokenId
+                                    ? { ...b, averageRating, commentsCount: Number(commentsCount) }
+                                    : b
+                            ));
                         }
+                    } else {
+                        setBatches(prev => prev.map(b =>
+                            b.tokenId === tokenId
+                                ? { ...b, averageRating, commentsCount: Number(commentsCount) }
+                                : b
+                        ));
                     }
                 }
 
@@ -406,6 +443,14 @@ export default function ProducerDetailsPage() {
                                                 {cert}
                                             </span>
                                         ))}
+                                    </div>
+                                )}
+                                {batch.commentsCount !== undefined && batch.commentsCount > 0 && (
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <span className="text-yellow-500">⭐</span>
+                                        <span className="text-sm font-[Olney_Light] text-[#000000]">
+                                            {batch.averageRating?.toFixed(1)} ({batch.commentsCount} avis)
+                                        </span>
                                     </div>
                                 )}
                                 <div className="flex justify-between items-center mt-3 pt-3 border-t border-[#000000]/20">
