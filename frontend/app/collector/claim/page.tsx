@@ -35,11 +35,6 @@ function ClaimTokenForm() {
         if (editionIdParam) setEditionId(editionIdParam);
         if (secretKeyParam) setSecretKey(secretKeyParam);
         if (merkleProofParam) setMerkleProofInput(merkleProofParam);
-
-        // Auto-expand advanced section if params are present
-        if (editionIdParam || secretKeyParam || merkleProofParam) {
-            setShowAdvanced(true);
-        }
     }, [searchParams]);
 
     const handleClaim = async (e: React.FormEvent) => {
