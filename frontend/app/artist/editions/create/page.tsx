@@ -9,7 +9,8 @@ import { base64ToBlob, downloadFile } from '@/app/utils/file';
 import { CATEGORIES_EN, CATEGORIES_FR } from '@/app/utils/categories';
 import { MerkleTree } from 'merkletreejs';
 import { keccak256, encodeFunctionData, decodeEventLog, createPublicClient, http } from 'viem';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
 import QRCode from 'qrcode';
 import * as XLSX from 'xlsx';
 
@@ -23,6 +24,9 @@ const getMerkleProofForKey = (key: string, merkleTree: MerkleTree): string => {
 
 export default function CreateEditionPage() {
     const { address } = useAccount();
+    const { user } = usePrivy();
+    const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
+    const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [amount, setAmount] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
@@ -45,6 +49,7 @@ export default function CreateEditionPage() {
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
     const [editionData, setEditionData] = useState({
         title: '',
@@ -61,16 +66,15 @@ export default function CreateEditionPage() {
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
-        args: address ? [address] : undefined,
+        args: activeAddress ? [activeAddress] : undefined,
     });
 
     const { data: approvalStatus, refetch: refetchApproval } = useReadContract({
         address: ARTWORK_TOKENIZATION_ADDRESS,
         abi: ARTWORK_TOKENIZATION_ABI,
         functionName: 'isApprovedForAll',
-        args: address ? [address, ARTWORK_REGISTRY_ADDRESS] : undefined,
+        args: activeAddress ? [activeAddress, ARTWORK_REGISTRY_ADDRESS] : undefined,
     });
-
     useEffect(() => {
         if (artistData) {
             const artist = artistData as any;
@@ -86,7 +90,7 @@ export default function CreateEditionPage() {
             setIsApproved(approvalStatus as boolean);
             if (approvalStatus && loadingStates.approving) {
                 setLoadingStates(prev => ({ ...prev, approving: false }));
-                alert('Approbation confirmée ! Vous pouvez maintenant créer des œuvres.');
+                showAlert('Approbation confirmée ! Vous pouvez maintenant créer des œuvres.');
             }
         }
     }, [approvalStatus, loadingStates.approving]);
@@ -121,7 +125,7 @@ export default function CreateEditionPage() {
         if (value) {
             const count = parseInt(value);
             if (count > 100) {
-                alert('La taille de l\'édition ne peut pas dépasser 100 exemplaires pour limiter les coûts de gas.');
+                showAlert('La taille de l\'édition ne peut pas dépasser 100 exemplaires pour limiter les coûts de gas.');
                 setAmount('');
                 setSecretKeys([]);
                 setMerkleRoot('');
@@ -162,10 +166,10 @@ export default function CreateEditionPage() {
                 console.log('Images uploadées:', updated.images.length);
                 return updated;
             });
-            alert(`${newCids.length} image${newCids.length > 1 ? 's uploadées' : ' uploadée'} sur IPFS !`);
+            await showAlert(`${newCids.length} image${newCids.length > 1 ? 's uploadées' : ' uploadée'} sur IPFS !`);
         } catch (error) {
             console.error('Error uploading image:', error);
-            alert('Erreur lors de l\'upload de l\'image');
+            await showAlert('Erreur lors de l\'upload de l\'image');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploadingImage: false }));
             // Reset input so the same file can be re-selected if needed
@@ -199,10 +203,10 @@ export default function CreateEditionPage() {
             const blob = base64ToBlob(base64Data);
             const url = URL.createObjectURL(blob);
             downloadFile(url, `QR_Edition_Page_${createdEditionId}.png`);
-            alert(`QR Code de la page du lot téléchargé avec succès !`);
+            await showAlert('QR Code de la page du lot téléchargé avec succès !');
         } catch (error) {
             console.error('Error generating edition page QR code:', error);
-            alert('Erreur lors de la génération du QR code de la page');
+            await showAlert('Erreur lors de la génération du QR code de la page');
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -247,10 +251,10 @@ export default function CreateEditionPage() {
             XLSX.utils.book_append_sheet(wb, ws, 'Secret Keys');
             XLSX.writeFile(wb, `secret-keys-edition-${createdEditionId}-${Date.now()}.xlsx`);
             setHasDownloadedKeys(true); // Mark as downloaded
-            alert(`Fichier Excel avec ${secretKeys.length} QR codes généré avec succès !`);
+            await showAlert(`Fichier Excel avec ${secretKeys.length} QR codes généré avec succès !`);
         } catch (error) {
             console.error('Error generating Excel with QR codes:', error);
-            alert('Erreur lors de la génération du fichier Excel avec QR codes');
+            await showAlert('Erreur lors de la génération du fichier Excel avec QR codes');
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -277,10 +281,10 @@ export default function CreateEditionPage() {
             const url = URL.createObjectURL(content);
             downloadFile(url, `qr-codes-claim-edition-${createdEditionId}-${Date.now()}.zip`);
             setHasDownloadedKeys(true); // Mark as downloaded
-            alert(`${secretKeys.length} QR codes téléchargés avec succès !`);
+            await showAlert(`${secretKeys.length} QR codes téléchargés avec succès !`);
         } catch (error) {
             console.error('Error generating QR codes:', error);
-            alert('Erreur lors de la génération des QR codes');
+            await showAlert('Erreur lors de la génération des QR codes');
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -294,20 +298,14 @@ export default function CreateEditionPage() {
                 functionName: 'setApprovalForAll',
                 args: [ARTWORK_REGISTRY_ADDRESS, true]
             });
-            await sendTransaction({ to: ARTWORK_TOKENIZATION_ADDRESS, data }, { sponsor: true });
-            alert('Approbation en cours... La transaction doit être confirmée sur la blockchain (~12 sec). Attendez la confirmation avant de créer votre lot.');
-            const checkApproval = setInterval(async () => {
-                const result = await refetchApproval();
-                if (result.data === true) {
-                    clearInterval(checkApproval);
-                    setLoadingStates(prev => ({ ...prev, approving: false }));
-                    setIsApproved(true);
-                }
-            }, 3000);
-            setTimeout(() => { clearInterval(checkApproval); setLoadingStates(prev => ({ ...prev, approving: false })); }, 60000);
+            const txResult = await sendTransaction({ to: ARTWORK_TOKENIZATION_ADDRESS, data }, { sponsor: true });
+            const publicClientInstance = createPublicClient({ chain: activeChain, transport: http(activeRpcUrl) });
+            await publicClientInstance.waitForTransactionReceipt({ hash: txResult.hash });
+            setLoadingStates(prev => ({ ...prev, approving: false }));
+            setIsApproved(true);
         } catch (error) {
             console.error('Error during approval:', error);
-            alert('Erreur lors de l\'approbation. Veuillez réessayer.');
+            await showAlert('Erreur lors de l\'approbation. Veuillez réessayer.');
             setLoadingStates(prev => ({ ...prev, approving: false }));
         }
     };
@@ -315,15 +313,15 @@ export default function CreateEditionPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editionData.title || !amount || !merkleRoot) {
-            alert('Veuillez remplir tous les champs obligatoires');
+            await showAlert('Veuillez remplir tous les champs obligatoires');
             return;
         }
         if (editionData.images.length === 0) {
-            alert('Vous devez ajouter au moins une image de l\'œuvre');
+            await showAlert('Vous devez ajouter au moins une image de l\'œuvre');
             return;
         }
         if (!isApproved) {
-            alert('Vous devez d\'abord approuver le contrat');
+            await showAlert('Vous devez d\'abord approuver le contrat');
             return;
         }
 
@@ -365,8 +363,6 @@ export default function CreateEditionPage() {
                 { sponsor: true }
             );
 
-            alert('Transaction envoyée ! En attente de confirmation...');
-
             const publicClientInstance = createPublicClient({
                 chain: activeChain,
                 transport: http(activeRpcUrl),
@@ -391,15 +387,15 @@ export default function CreateEditionPage() {
                 }) as any;
                 const editionId = decoded.args.editionId?.toString();
                 setCreatedEditionId(editionId);
-                alert(`Œuvre créée avec succès ! ID : ${editionId}`);
+                await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
             } else {
                 console.error('NewArtworkEdition event not found in logs');
-                alert('Transaction confirmée mais impossible de récupérer l\'ID de l\'œuvre. Vérifiez la console.');
+                await showAlert('Transaction confirmée mais impossible de récupérer l\'ID de l\'œuvre. Vérifiez la console.');
                 setCreatedEditionId('confirmed');
             }
         } catch (error) {
             console.error('Error creating artwork:', error);
-            alert('Erreur lors de la création de l\'œuvre');
+            await showAlert('Erreur lors de la création de l\'œuvre');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false, creating: false }));
         }
@@ -489,7 +485,7 @@ export default function CreateEditionPage() {
                 </div>
 
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
 
                         {/* Title */}
                         <div>
@@ -564,6 +560,7 @@ export default function CreateEditionPage() {
                                 onChange={(e) => setEditionData({ ...editionData, dimensions: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                 placeholder="Ex: 100x150 cm"
+                                autoComplete="new-password"
                             />
                         </div>
 

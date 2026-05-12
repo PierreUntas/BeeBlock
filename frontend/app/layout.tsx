@@ -1,4 +1,5 @@
 import PrivyProvider from "@/app/PrivyProvider";
+import { ModalProvider } from "@/app/ModalProvider";
 import type { Metadata } from "next";
 import "./globals.css";
 import Layout from "../components/shared/Layout";
@@ -24,9 +25,11 @@ export default function RootLayout({
     <html lang="en">
       <body className="antialiased">
         <PrivyProvider>
-          <Layout>
-            {children}
-          </Layout>
+          <ModalProvider>
+            <Layout>
+              {children}
+            </Layout>
+          </ModalProvider>
         </PrivyProvider>
       </body>
     </html>

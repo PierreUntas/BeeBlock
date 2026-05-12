@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { useSendTransaction } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
 import { encodeFunctionData, keccak256 } from 'viem';
 import { MerkleTree } from 'merkletreejs';
 import { publicClient } from '@/lib/client';
@@ -34,6 +35,7 @@ export default function AdminPage() {
     const [isGeneratingKeys, setIsGeneratingKeys] = useState(false);
 
     const { sendTransaction } = useSendTransaction();
+    const { showAlert, showConfirm } = useModal();
 
     const { data: isAdminResult, isLoading: isLoadingAdmin } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
@@ -72,7 +74,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 args: [newArtistAddress as `0x${string}`, true],
             });
 
-            await sendTransaction(
+            const txResult1 = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
                     data: data,
@@ -81,7 +83,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     sponsor: true,
                 }
             );
-            
+            await publicClient.waitForTransactionReceipt({ hash: txResult1.hash });
             setNewArtistAddress('');
         } catch (error) {
             console.error('Error authorizing artist:', error);
@@ -102,7 +104,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 args: [removeArtistAddress as `0x${string}`, false],
             });
 
-            await sendTransaction(
+            const txResult2 = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
                     data: data,
@@ -111,7 +113,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     sponsor: true,
                 }
             );
-            
+            await publicClient.waitForTransactionReceipt({ hash: txResult2.hash });
             setRemoveArtistAddress('');
         } catch (error) {
             console.error('Error revoking artist:', error);
@@ -144,7 +146,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
             setRecoveryRemainingCount(Number(remaining));
         } catch (error) {
             console.error('Error analyzing edition:', error);
-            alert('Impossible de lire l\'édition. Vérifiez l\'ID.');
+            await showAlert('Impossible de lire l\'édition. Vérifiez l\'ID.');
         } finally {
             setIsAnalyzing(false);
         }
@@ -191,7 +193,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
     const handleDisableEdition = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!disableEditionId) return;
-        if (!confirm(`Désactiver l'édition #${disableEditionId} ? Aucun certificat ne pourra plus être réclamé.`)) return;
+        if (!(await showConfirm(`Désactiver l'édition #${disableEditionId} ? Aucun certificat ne pourra plus être réclamé.`))) return;
 
         setIsDisablingEdition(true);
         try {
@@ -200,12 +202,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 functionName: 'disableEdition',
                 args: [BigInt(disableEditionId)],
             });
-            await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
-            alert(`Édition #${disableEditionId} désactivée.`);
+            const txResult3 = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            await publicClient.waitForTransactionReceipt({ hash: txResult3.hash });
+            await showAlert(`Édition #${disableEditionId} désactivée.`);
             setDisableEditionId('');
         } catch (error) {
             console.error('Error disabling edition:', error);
-            alert('Erreur lors de la désactivation.');
+            await showAlert('Erreur lors de la désactivation.');
         } finally {
             setIsDisablingEdition(false);
         }
@@ -215,10 +218,10 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         e.preventDefault();
         if (!replaceEditionId || !replaceMerkleRoot) return;
         if (!replaceMerkleRoot.startsWith('0x') || replaceMerkleRoot.length !== 66) {
-            alert('La racine Merkle doit être un hash bytes32 (0x suivi de 64 caractères hex).');
+            await showAlert('La racine Merkle doit être un hash bytes32 (0x suivi de 64 caractères hex).');
             return;
         }
-        if (!confirm(`Remplacer la racine Merkle de l'édition #${replaceEditionId} ? Les anciennes clés secrètes seront invalidées et l'édition sera réactivée.`)) return;
+        if (!(await showConfirm(`Remplacer la racine Merkle de l'édition #${replaceEditionId} ? Les anciennes clés secrètes seront invalidées et l'édition sera réactivée.`))) return;
 
         setIsReplacingMerkleRoot(true);
         try {
@@ -227,13 +230,14 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 functionName: 'replaceEditionMerkleRoot',
                 args: [BigInt(replaceEditionId), replaceMerkleRoot as `0x${string}`],
             });
-            await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
-            alert(`Racine Merkle de l'édition #${replaceEditionId} remplacée. L'édition est réactivée.`);
+            const txResult4 = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            await publicClient.waitForTransactionReceipt({ hash: txResult4.hash });
+            await showAlert(`Racine Merkle de l'édition #${replaceEditionId} remplacée. L'édition est réactivée.`);
             setReplaceEditionId('');
             setReplaceMerkleRoot('');
         } catch (error) {
             console.error('Error replacing merkle root:', error);
-            alert('Erreur lors du remplacement.');
+            await showAlert('Erreur lors du remplacement.');
         } finally {
             setIsReplacingMerkleRoot(false);
         }

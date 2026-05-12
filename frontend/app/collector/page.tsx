@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { parseAbiItem, encodeFunctionData } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { useSendTransaction } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
 
 interface OwnedToken {
     tokenId: bigint;
@@ -32,6 +33,7 @@ export default function CollectorPage() {
     const [comment, setComment] = useState('');
 
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
     useEffect(() => {
         const fetchOwnedTokens = async () => {
@@ -124,7 +126,7 @@ export default function CollectorPage() {
 
         const token = ownedTokens.find(t => t.tokenId === selectedToken);
         if (token && address && token.artist.toLowerCase() === address.toLowerCase()) {
-            alert('Vous ne pouvez pas laisser un avis sur vos propres œuvres');
+            await showAlert('Vous ne pouvez pas laisser un avis sur vos propres œuvres');
             return;
         }
 
@@ -139,15 +141,16 @@ export default function CollectorPage() {
                 args: [selectedToken, rating, cid]
             });
 
-            await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            const txResult = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
-            alert('Avis envoyé avec succès !');
+            await showAlert('Avis envoyé avec succès !');
             setSelectedToken(null);
             setRating(5);
             setComment('');
         } catch (error) {
             console.error('Error adding comment:', error);
-            alert('Erreur lors de l\'ajout du commentaire');
+            await showAlert('Erreur lors de l\'ajout du commentaire');
         } finally {
             setLoadingStates(prev => ({ ...prev, commenting: false }));
         }

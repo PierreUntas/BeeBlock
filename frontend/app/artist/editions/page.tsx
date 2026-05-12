@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { getFromIPFSGateway } from '@/app/utils/ipfs';
 import { getCategoryLabel } from '@/app/utils/categories';
@@ -32,6 +33,9 @@ interface EditionInfo {
 
 export default function ArtistEditionsPage() {
     const { address } = useAccount();
+    const { user } = usePrivy();
+    const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
+    const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [editions, setEditions] = useState<EditionInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
@@ -46,7 +50,7 @@ export default function ArtistEditionsPage() {
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
-        args: address ? [address] : undefined,
+        args: activeAddress ? [activeAddress] : undefined,
     });
 
     useEffect(() => {
@@ -61,14 +65,14 @@ export default function ArtistEditionsPage() {
 
     useEffect(() => {
         const fetchEditions = async () => {
-            if (!address || !isAuthorized || !publicClient) return;
+            if (!activeAddress || !isAuthorized || !publicClient) return;
 
             setLoadingStates(prev => ({ ...prev, fetchingEditions: true }));
             try {
                 const logs = await publicClient.getLogs({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     event: parseAbiItem('event NewArtworkEdition(address indexed artist, uint indexed editionId)'),
-                    args: { artist: address },
+                    args: { artist: activeAddress },
                     fromBlock: getDeploymentBlock(),
                     toBlock: 'latest'
                 });
@@ -89,7 +93,7 @@ export default function ArtistEditionsPage() {
                         address: ARTWORK_TOKENIZATION_ADDRESS,
                         abi: ARTWORK_TOKENIZATION_ABI,
                         functionName: 'balanceOf',
-                        args: [address, tokenId]
+                        args: [activeAddress, tokenId]
                     }) as bigint;
 
                     let artworkTitle = 'Œuvre sans titre';
@@ -129,7 +133,7 @@ export default function ArtistEditionsPage() {
         };
 
         fetchEditions();
-    }, [address, isAuthorized]);
+    }, [activeAddress, isAuthorized]);
 
     if (isCheckingAuthorization || isLoadingArtist) {
         return (
@@ -142,7 +146,7 @@ export default function ArtistEditionsPage() {
         );
     }
 
-    if (!address) {
+    if (!activeAddress) {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">

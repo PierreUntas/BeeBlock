@@ -6,12 +6,17 @@ import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contrac
 import { BASE_URL } from '@/config/constants';
 import { uploadToIPFS, uploadFileToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
 import { base64ToBlob, downloadFile, gatewayUrlToIpfsUri } from '@/app/utils/file';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
+import { publicClient } from '@/lib/client';
 import { encodeFunctionData } from 'viem';
 import QRCode from 'qrcode';
 
 export default function ArtistPage() {
     const { address } = useAccount();
+    const { user } = usePrivy();
+    const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
+    const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [name, setName] = useState('');
     const [location, setLocation] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
@@ -46,12 +51,13 @@ export default function ArtistPage() {
 
     const { writeContract, isPending: isRegistering } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
     const { data: artistData, isLoading: isLoadingArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
-        args: address ? [address] : undefined,
+        args: activeAddress ? [activeAddress] : undefined,
     });
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,10 +104,10 @@ export default function ArtistPage() {
             const blob = base64ToBlob(base64Data);
             const url = URL.createObjectURL(blob);
             downloadFile(url, `QR_Artist_${name.replace(/\s+/g, '_')}_${address.slice(0, 8)}.png`);
-            alert('QR Code de votre page artiste téléchargé avec succès !');
+            await showAlert('QR Code de votre page artiste téléchargé avec succès !');
         } catch (error) {
             console.error('Error generating artist page QR code:', error);
-            alert('Erreur lors de la génération du QR code');
+            await showAlert('Erreur lors de la génération du QR code');
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -222,17 +228,18 @@ export default function ArtistPage() {
                 args: [cid],
             });
 
-            await sendTransaction(
+            const txResult = await sendTransaction(
                 { to: ARTWORK_REGISTRY_ADDRESS, data },
                 { sponsor: true }
             );
+            await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
             setIsRegistered(true);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 6000);
         } catch (error) {
             console.error('Error saving artist:', error);
-            alert('Erreur lors de l\'enregistrement');
+            await showAlert('Erreur lors de l\'enregistrement');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false }));
         }

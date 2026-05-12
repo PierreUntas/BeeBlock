@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
 import Image from 'next/image';
 import { useSendTransaction } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
 import { encodeFunctionData } from 'viem';
 import { publicClient } from '@/lib/client';
 
@@ -26,6 +27,7 @@ function ClaimTokenForm() {
     });
 
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
     useEffect(() => {
         const editionIdParam = searchParams.get('editionId');
@@ -75,7 +77,7 @@ function ClaimTokenForm() {
                 args: [BigInt(editionId), secretKey, merkleProof],
             });
 
-            const txHash = await sendTransaction(
+            const txResult = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
                     data: data,
@@ -85,12 +87,16 @@ function ClaimTokenForm() {
                 }
             );
 
-            // Transaction hash (internal): txHash
-            setSuccess(true);
-            alert('Token réclamé avec succès !');
-            setEditionId('');
-            setSecretKey('');
-            setMerkleProofInput('');
+            const receipt = await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
+            if (receipt.status === 'success') {
+                setSuccess(true);
+                await showAlert('Token réclamé avec succès !');
+                setEditionId('');
+                setSecretKey('');
+                setMerkleProofInput('');
+            } else {
+                setError('La transaction a échoué sur la blockchain.');
+            }
         } catch (err: any) {
             console.error('Error claiming token:', err);
             setError(`Erreur: ${err.message || 'Clé invalide ou déjà utilisée'}`);
