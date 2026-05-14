@@ -9,10 +9,12 @@ const { ethers } = await network.connect();
 function generateSecretKeys(amount: number) {
     const secretKeys = [];
     for (let i = 0; i < amount; i++) {
-        secretKeys.push(ethers.hexlify(ethers.randomBytes(32)))
+        // Generate 64-char hex string without 0x prefix, matching the frontend format
+        secretKeys.push(ethers.hexlify(ethers.randomBytes(32)).slice(2));
     }
 
-    const leaves = secretKeys.map(key => keccak256(ethers.toUtf8Bytes(key)))
+    // Double-hash leaves to match the contract: keccak256(keccak256(key))
+    const leaves = secretKeys.map(key => keccak256(keccak256(ethers.toUtf8Bytes(key))));
 
     const merkleTree = new MerkleTree(leaves, keccak256, { sortPairs: true });
     const merkleRoot = merkleTree.getHexRoot();
@@ -699,6 +701,72 @@ describe("ArtworkRegistry", function () {
             const gasUsed = receipt.gasUsed;
 
             expect(gasUsed).to.be.lessThan(300000);
+        })
+
+        it("Should disable an edition and block new claims", async function () {
+            const edition = generateSecretKeys(5);
+            const editionId = 1;
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+
+            await expect(artworkRegistry.connect(admin).disableEdition(editionId))
+                .to.emit(artworkRegistry, "EditionDisabled")
+                .withArgs(editionId, await admin.getAddress());
+
+            const keyData = edition.keyWithProofs[0];
+            await expect(artworkRegistry.connect(collector).claimCertificate(editionId, keyData.secretKey, keyData.proof))
+                .to.revertedWithCustomError(artworkRegistry, "EditionIsDisabled");
+        })
+
+        it("Should not allow disabling an already disabled edition", async function () {
+            const edition = generateSecretKeys(5);
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+            await artworkRegistry.connect(admin).disableEdition(1);
+            await expect(artworkRegistry.connect(admin).disableEdition(1))
+                .to.revertedWithCustomError(artworkRegistry, "EditionAlreadyDisabled");
+        })
+
+        it("Should not allow non-admin to disable an edition", async function () {
+            const edition = generateSecretKeys(5);
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+            await expect(artworkRegistry.connect(collector).disableEdition(1))
+                .to.revertedWithCustomError(artworkRegistry, "OnlyAdminAuthorized");
+        })
+
+        it("Should replace Merkle root on a disabled edition and allow claim with new key", async function () {
+            const edition = generateSecretKeys(5);
+            const editionId = 1;
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+
+            await artworkRegistry.connect(admin).disableEdition(editionId);
+
+            const newEdition = generateSecretKeys(5);
+            await expect(artworkRegistry.connect(admin).replaceEditionMerkleRoot(editionId, newEdition.merkleRoot))
+                .to.emit(artworkRegistry, "EditionMerkleRootReplaced")
+                .withArgs(editionId, newEdition.merkleRoot);
+
+            const keyData = newEdition.keyWithProofs[0];
+            await artworkRegistry.connect(collector).claimCertificate(editionId, keyData.secretKey, keyData.proof);
+            const balance = await artworkTokenization.balanceOf(collector.getAddress(), editionId);
+            expect(balance).to.equal(1);
+        })
+
+        it("Should not allow replacing Merkle root on an active (non-disabled) edition", async function () {
+            const edition = generateSecretKeys(5);
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+            const newEdition = generateSecretKeys(5);
+            await expect(artworkRegistry.connect(admin).replaceEditionMerkleRoot(1, newEdition.merkleRoot))
+                .to.revertedWithCustomError(artworkRegistry, "EditionNotDisabled");
+        })
+
+        it("Should not allow review on a disabled edition", async function () {
+            const edition = generateSecretKeys(5);
+            const editionId = 1;
+            await artworkRegistry.connect(artist).createArtworkEdition("QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest", 5, edition.merkleRoot);
+            const keyData = edition.keyWithProofs[0];
+            await artworkRegistry.connect(collector).claimCertificate(editionId, keyData.secretKey, keyData.proof);
+            await artworkRegistry.connect(admin).disableEdition(editionId);
+            await expect(artworkRegistry.connect(collector).addReview(editionId, 5, "QmYwAPJzv5CZsnANOTaREALcidButCorrectLengthForTest"))
+                .to.revertedWithCustomError(artworkRegistry, "EditionIsDisabled");
         })
 
         it("Should handle artist transfering certificates manually", async function () {

@@ -49,11 +49,11 @@ export default function ArtistPage() {
         }
     });
 
-    const { writeContract, isPending: isRegistering } = useWriteContract();
+    const { isPending: isRegistering } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const { showAlert } = useModal();
 
-    const { data: artistData, isLoading: isLoadingArtist } = useReadContract({
+    const { data: artistData, isLoading: isLoadingArtist, refetch: refetchArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
@@ -174,6 +174,8 @@ export default function ArtistPage() {
         e.preventDefault();
         setLoadingStates(prev => ({ ...prev, uploading: true }));
 
+        let savedCid = '';
+        let transactionAttempted = false;
         try {
             // Upload logo if a new file was selected, otherwise keep existing IPFS URI
             let logoUri: string | undefined = logoPreview.startsWith('https://ipfs.io/ipfs/')
@@ -220,14 +222,15 @@ export default function ArtistPage() {
                 socialMedia: additionalData.socialMedia,
             };
 
-            const cid = await uploadToIPFS(artistMetadata);
+            savedCid = await uploadToIPFS(artistMetadata);
 
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'setArtistInfo',
-                args: [cid],
+                args: [savedCid],
             });
 
+            transactionAttempted = true;
             const txResult = await sendTransaction(
                 { to: ARTWORK_REGISTRY_ADDRESS, data },
                 { sponsor: true }
@@ -237,8 +240,29 @@ export default function ArtistPage() {
             setIsRegistered(true);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 6000);
+            refetchArtist();
         } catch (error) {
             console.error('Error saving artist:', error);
+            // Privy sometimes shows its own error notification even when the
+            // transaction succeeds. If we attempted the transaction, wait for
+            // a potential in-flight transaction to mine before concluding failure.
+            if (transactionAttempted && savedCid && activeAddress) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const current = await publicClient.readContract({
+                        address: ARTWORK_REGISTRY_ADDRESS,
+                        abi: ARTWORK_REGISTRY_ABI,
+                        functionName: 'getArtist',
+                        args: [activeAddress],
+                    }) as any;
+                    if (current.metadata === savedCid) {
+                        setIsRegistered(true);
+                        setSaveSuccess(true);
+                        setTimeout(() => setSaveSuccess(false), 6000);
+                        return;
+                    }
+                } catch {}
+            }
             await showAlert('Erreur lors de l\'enregistrement');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false }));

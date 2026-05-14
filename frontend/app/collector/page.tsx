@@ -131,6 +131,11 @@ export default function CollectorPage() {
         }
 
         setLoadingStates(prev => ({ ...prev, commenting: true }));
+        let transactionAttempted = false;
+        let countBefore = 0n;
+        try {
+            countBefore = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+        } catch {}
         try {
             const reviewMetadata = { rating, comment };
             const cid = await uploadToIPFS(reviewMetadata);
@@ -141,6 +146,7 @@ export default function CollectorPage() {
                 args: [selectedToken, rating, cid]
             });
 
+            transactionAttempted = true;
             const txResult = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
             await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
@@ -150,6 +156,17 @@ export default function CollectorPage() {
             setComment('');
         } catch (error) {
             console.error('Error adding comment:', error);
+            if (transactionAttempted) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const countAfter = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+                    if (countAfter > countBefore) {
+                        await showAlert('Avis envoyé avec succès !');
+                        setSelectedToken(null); setRating(5); setComment('');
+                        return;
+                    }
+                } catch {}
+            }
             await showAlert('Erreur lors de l\'ajout du commentaire');
         } finally {
             setLoadingStates(prev => ({ ...prev, commenting: false }));

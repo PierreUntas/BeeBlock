@@ -17,7 +17,8 @@ import * as XLSX from 'xlsx';
 // Utility function
 
 const getMerkleProofForKey = (key: string, merkleTree: MerkleTree): string => {
-    const leaf = keccak256(`0x${Buffer.from(key).toString('hex')}`);
+    const innerHash = keccak256(`0x${Buffer.from(key).toString('hex')}`);
+    const leaf = keccak256(innerHash);
     const proof = merkleTree.getHexProof(leaf);
     return proof.join(',');
 };
@@ -88,12 +89,8 @@ export default function CreateEditionPage() {
     useEffect(() => {
         if (approvalStatus !== undefined) {
             setIsApproved(approvalStatus as boolean);
-            if (approvalStatus && loadingStates.approving) {
-                setLoadingStates(prev => ({ ...prev, approving: false }));
-                showAlert('Approbation confirmée ! Vous pouvez maintenant créer des œuvres.');
-            }
         }
-    }, [approvalStatus, loadingStates.approving]);
+    }, [approvalStatus]);
 
     // Warn the user if they try to leave without downloading the keys
     useEffect(() => {
@@ -136,7 +133,10 @@ export default function CreateEditionPage() {
                 setSecretKeys(keys);
                 setEditionData(prev => ({ ...prev, editionSize: count }));
 
-                const leaves = keys.map(key => keccak256(`0x${Buffer.from(key).toString('hex')}`));
+                const leaves = keys.map(key => {
+                    const innerHash = keccak256(`0x${Buffer.from(key).toString('hex')}`);
+                    return keccak256(innerHash);
+                });
                 const tree = new MerkleTree(leaves, keccak256, { sortPairs: true });
                 setMerkleTree(tree);
                 setMerkleRoot(tree.getHexRoot());
@@ -291,6 +291,8 @@ export default function CreateEditionPage() {
     };
 
     const handleApprove = async () => {
+        const publicClientInstance = createPublicClient({ chain: activeChain, transport: http(activeRpcUrl) });
+        let transactionAttempted = false;
         try {
             setLoadingStates(prev => ({ ...prev, approving: true }));
             const data = encodeFunctionData({
@@ -298,13 +300,25 @@ export default function CreateEditionPage() {
                 functionName: 'setApprovalForAll',
                 args: [ARTWORK_REGISTRY_ADDRESS, true]
             });
+            transactionAttempted = true;
             const txResult = await sendTransaction({ to: ARTWORK_TOKENIZATION_ADDRESS, data }, { sponsor: true });
-            const publicClientInstance = createPublicClient({ chain: activeChain, transport: http(activeRpcUrl) });
             await publicClientInstance.waitForTransactionReceipt({ hash: txResult.hash });
+            await refetchApproval();
             setLoadingStates(prev => ({ ...prev, approving: false }));
-            setIsApproved(true);
         } catch (error) {
             console.error('Error during approval:', error);
+            if (transactionAttempted) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const approved = await publicClientInstance.readContract({
+                        address: ARTWORK_TOKENIZATION_ADDRESS,
+                        abi: ARTWORK_TOKENIZATION_ABI,
+                        functionName: 'isApprovedForAll',
+                        args: [activeAddress, ARTWORK_REGISTRY_ADDRESS],
+                    });
+                    if (approved) { await refetchApproval(); setLoadingStates(prev => ({ ...prev, approving: false })); return; }
+                } catch {}
+            }
             await showAlert('Erreur lors de l\'approbation. Veuillez réessayer.');
             setLoadingStates(prev => ({ ...prev, approving: false }));
         }
@@ -326,6 +340,8 @@ export default function CreateEditionPage() {
         }
 
         setLoadingStates(prev => ({ ...prev, uploading: true }));
+        let transactionAttempted = false;
+        const publicClientInstance = createPublicClient({ chain: activeChain, transport: http(activeRpcUrl) });
         try {
             // IPFS object matching the target structure
             const artworkMetadata: {
@@ -358,15 +374,11 @@ export default function CreateEditionPage() {
                 args: [cid, BigInt(amount), merkleRoot as `0x${string}`]
             });
 
+            transactionAttempted = true;
             const txHash = await sendTransaction(
                 { to: ARTWORK_REGISTRY_ADDRESS, data },
                 { sponsor: true }
             );
-
-            const publicClientInstance = createPublicClient({
-                chain: activeChain,
-                transport: http(activeRpcUrl),
-            });
 
             const receipt = await publicClientInstance.waitForTransactionReceipt({
                 hash: txHash.hash as `0x${string}`,
@@ -395,6 +407,24 @@ export default function CreateEditionPage() {
             }
         } catch (error) {
             console.error('Error creating artwork:', error);
+            if (transactionAttempted && activeAddress) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const logs = await publicClientInstance.getLogs({
+                        address: ARTWORK_REGISTRY_ADDRESS,
+                        event: { type: 'event', name: 'NewArtworkEdition', inputs: [{ type: 'address', name: 'artist', indexed: true }, { type: 'uint256', name: 'editionId', indexed: true }] } as any,
+                        args: { artist: activeAddress },
+                        fromBlock: BigInt(Math.max(0, Number(await publicClientInstance.getBlockNumber()) - 5)),
+                        toBlock: 'latest',
+                    });
+                    if (logs.length > 0) {
+                        const editionId = (logs[logs.length - 1].args as any).editionId?.toString();
+                        setCreatedEditionId(editionId);
+                        await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
+                        return;
+                    }
+                } catch {}
+            }
             await showAlert('Erreur lors de la création de l\'œuvre');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false, creating: false }));

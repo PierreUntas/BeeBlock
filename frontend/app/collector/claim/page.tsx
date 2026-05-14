@@ -55,6 +55,7 @@ function ClaimTokenForm() {
         }
 
         setLoadingStates(prev => ({ ...prev, claiming: true }));
+        let transactionAttempted = false;
         try {
             const editionData = await publicClient.readContract({
                 address: ARTWORK_REGISTRY_ADDRESS,
@@ -77,6 +78,7 @@ function ClaimTokenForm() {
                 args: [BigInt(editionId), secretKey, merkleProof],
             });
 
+            transactionAttempted = true;
             const txResult = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
@@ -99,6 +101,23 @@ function ClaimTokenForm() {
             }
         } catch (err: any) {
             console.error('Error claiming token:', err);
+            if (transactionAttempted && editionId && secretKey) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const claimed = await publicClient.readContract({
+                        address: ARTWORK_REGISTRY_ADDRESS,
+                        abi: ARTWORK_REGISTRY_ABI,
+                        functionName: 'isKeyClaimed',
+                        args: [BigInt(editionId), secretKey],
+                    });
+                    if (claimed) {
+                        setSuccess(true);
+                        await showAlert('Token réclamé avec succès !');
+                        setEditionId(''); setSecretKey(''); setMerkleProofInput('');
+                        return;
+                    }
+                } catch {}
+            }
             setError(`Erreur: ${err.message || 'Clé invalide ou déjà utilisée'}`);
         } finally {
             setLoadingStates(prev => ({ ...prev, claiming: false }));

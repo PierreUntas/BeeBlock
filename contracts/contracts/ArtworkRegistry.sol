@@ -278,6 +278,9 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     /// @dev Thrown when trying to disable an edition that is already disabled
     error EditionAlreadyDisabled();
 
+    /// @dev Thrown when trying to replace the Merkle root of an edition that is not disabled
+    error EditionNotDisabled();
+
     /// @dev Thrown when trying to claim a certificate from a disabled edition
     error EditionIsDisabled();
 
@@ -602,6 +605,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     function replaceEditionMerkleRoot(uint256 _editionId, bytes32 _newMerkleRoot) external onlyAdmin {
         ArtworkEdition storage edition = artworkEditions[_editionId];
         require(edition.merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(edition.disabled, EditionNotDisabled());
         require(_newMerkleRoot != bytes32(0), EmptyMerkleRoot());
         edition.merkleRoot = _newMerkleRoot;
         edition.disabled = false;
@@ -654,7 +658,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         );
         require(remainingCertificates > 0, NoCertificateLeft());
 
-        bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
+        bytes32 leaf = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_secretKey))));
         require(!claimedKeys[_editionId][leaf], KeyAlreadyClaimed());
 
         require(
@@ -696,6 +700,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         string memory _metadata
     ) external {
         require(artworkEditions[_editionId].merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(!artworkEditions[_editionId].disabled, EditionIsDisabled());
 
         require(
             artworkTokenization.balanceOf(msg.sender, _editionId) > 0,
@@ -811,7 +816,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         uint256 _editionId,
         string memory _secretKey
     ) external view returns (bool) {
-        bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
+        bytes32 leaf = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_secretKey))));
         return claimedKeys[_editionId][leaf];
     }
 

@@ -48,9 +48,13 @@ npx hardhat verify --network base <address>        # Verify on Basescan
 
 **Key security**: `claimedKeys[editionId][keccak256(secretKey)]` prevents replay. ReentrancyGuard on mint.
 
-**Deployed addresses** (Sepolia testnet, also deployed on Base mainnet):
-- `ArtworkRegistry`: `0x5BE1B5CD7CCab144d59daf1Daf4fA7A1ed39A71B`
-- `ArtworkTokenization`: `0x1F88E95659d8c7f3E65455Eb82D6D2580ADbf819`
+**Deployed addresses** (Base mainnet):
+- `ArtworkRegistry`: `0xc1f7115141c0f08FECEE300a1e8AA2EB0Cdb4C21`
+- `ArtworkTokenization`: `0xA1Eb7db2c1E4Fd9d807eA51114c110389F10116D`
+
+**Deployed addresses** (Sepolia testnet):
+- `ArtworkRegistry`: `0x154E0CA565b555cA70eF41730E5608890EeABAaA`
+- `ArtworkTokenization`: `0xA10B29902a765901fF62dB311Fa9e2692747aB1c`
 
 Test helper `generateSecretKeys(n)` in `test/ArtworkRegistry.ts` builds the full Merkle tree and returns keys with proofs.
 

@@ -67,6 +67,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (!newArtistAddress) return;
 
         setIsAuthorizingArtist(true);
+        let transactionAttempted1 = false;
         try {
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
@@ -74,6 +75,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 args: [newArtistAddress as `0x${string}`, true],
             });
 
+            transactionAttempted1 = true;
             const txResult1 = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
@@ -87,6 +89,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
             setNewArtistAddress('');
         } catch (error) {
             console.error('Error authorizing artist:', error);
+            if (transactionAttempted1) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const artist = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtist', args: [newArtistAddress as `0x${string}`] }) as any;
+                    if (artist.authorized) { setNewArtistAddress(''); return; }
+                } catch {}
+            }
         } finally {
             setIsAuthorizingArtist(false);
         }
@@ -97,6 +106,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (!removeArtistAddress) return;
 
         setIsRevokingArtist(true);
+        let transactionAttempted2 = false;
         try {
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
@@ -104,6 +114,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 args: [removeArtistAddress as `0x${string}`, false],
             });
 
+            transactionAttempted2 = true;
             const txResult2 = await sendTransaction(
                 {
                     to: ARTWORK_REGISTRY_ADDRESS,
@@ -117,6 +128,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
             setRemoveArtistAddress('');
         } catch (error) {
             console.error('Error revoking artist:', error);
+            if (transactionAttempted2) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const artist = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtist', args: [removeArtistAddress as `0x${string}`] }) as any;
+                    if (!artist.authorized) { setRemoveArtistAddress(''); return; }
+                } catch {}
+            }
         } finally {
             setIsRevokingArtist(false);
         }
@@ -161,7 +179,10 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 const randomBytes = crypto.getRandomValues(new Uint8Array(32));
                 keys.push(Array.from(randomBytes).map(b => b.toString(16).padStart(2, '0')).join(''));
             }
-            const leaves = keys.map(key => keccak256(`0x${Buffer.from(key).toString('hex')}` as `0x${string}`));
+            const leaves = keys.map(key => {
+                const innerHash = keccak256(`0x${Buffer.from(key).toString('hex')}` as `0x${string}`);
+                return keccak256(innerHash);
+            });
             const tree = new MerkleTree(leaves, (data: Buffer) => {
                 const hex = `0x${data.toString('hex')}` as `0x${string}`;
                 return Buffer.from(keccak256(hex).slice(2), 'hex');
@@ -180,7 +201,8 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (!recoveryKeys.length || !recoveryTree || !recoveryEditionId) return;
         const rows = ['Index,Secret Key,Merkle Proof,Claim URL'];
         recoveryKeys.forEach((key, i) => {
-            const leaf = Buffer.from(keccak256(`0x${Buffer.from(key).toString('hex')}` as `0x${string}`).slice(2), 'hex');
+            const innerHash = keccak256(`0x${Buffer.from(key).toString('hex')}` as `0x${string}`);
+            const leaf = Buffer.from(keccak256(innerHash).slice(2), 'hex');
             const proof = recoveryTree.getProof(leaf).map((p: { data: Buffer }) => `0x${p.data.toString('hex')}`).join('|');
             const claimUrl = `${BASE_URL}/collector/claim?editionId=${recoveryEditionId}&secretKey=${key}&merkleProof=${encodeURIComponent(proof.replace(/\|/g, ','))}`;
             rows.push(`${i + 1},"${key}","${proof}","${claimUrl}"`);
@@ -196,18 +218,27 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (!(await showConfirm(`Désactiver l'édition #${disableEditionId} ? Aucun certificat ne pourra plus être réclamé.`))) return;
 
         setIsDisablingEdition(true);
+        let transactionAttempted3 = false;
         try {
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'disableEdition',
                 args: [BigInt(disableEditionId)],
             });
+            transactionAttempted3 = true;
             const txResult3 = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
             await publicClient.waitForTransactionReceipt({ hash: txResult3.hash });
             await showAlert(`Édition #${disableEditionId} désactivée.`);
             setDisableEditionId('');
         } catch (error) {
             console.error('Error disabling edition:', error);
+            if (transactionAttempted3) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const edition = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [BigInt(disableEditionId)] }) as any;
+                    if (edition[3] === true) { await showAlert(`Édition #${disableEditionId} désactivée.`); setDisableEditionId(''); return; }
+                } catch {}
+            }
             await showAlert('Erreur lors de la désactivation.');
         } finally {
             setIsDisablingEdition(false);
@@ -224,12 +255,14 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (!(await showConfirm(`Remplacer la racine Merkle de l'édition #${replaceEditionId} ? Les anciennes clés secrètes seront invalidées et l'édition sera réactivée.`))) return;
 
         setIsReplacingMerkleRoot(true);
+        let transactionAttempted4 = false;
         try {
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'replaceEditionMerkleRoot',
                 args: [BigInt(replaceEditionId), replaceMerkleRoot as `0x${string}`],
             });
+            transactionAttempted4 = true;
             const txResult4 = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
             await publicClient.waitForTransactionReceipt({ hash: txResult4.hash });
             await showAlert(`Racine Merkle de l'édition #${replaceEditionId} remplacée. L'édition est réactivée.`);
@@ -237,6 +270,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
             setReplaceMerkleRoot('');
         } catch (error) {
             console.error('Error replacing merkle root:', error);
+            if (transactionAttempted4) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const edition = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [BigInt(replaceEditionId)] }) as any;
+                    if (edition[1] === replaceMerkleRoot) { await showAlert(`Racine Merkle de l'édition #${replaceEditionId} remplacée. L'édition est réactivée.`); setReplaceEditionId(''); setReplaceMerkleRoot(''); return; }
+                } catch {}
+            }
             await showAlert('Erreur lors du remplacement.');
         } finally {
             setIsReplacingMerkleRoot(false);

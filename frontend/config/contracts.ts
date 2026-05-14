@@ -58,6 +58,11 @@ export const ARTWORK_REGISTRY_ABI =[
     },
     {
       "inputs": [],
+      "name": "EditionNotDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "EditionMustHaveCertificates",
       "type": "error"
     },
