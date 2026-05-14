@@ -596,7 +596,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
      * The old compromised keys become invalid immediately (they won't verify against the new root).
      *
      * Requirements:
-     * - Caller must be the contract owner
+     * - Caller must be an admin
      * - Edition must exist
      * - New Merkle root must not be empty
      *

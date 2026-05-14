@@ -307,7 +307,7 @@ export default function CreateEditionPage() {
             setLoadingStates(prev => ({ ...prev, approving: false }));
         } catch (error) {
             console.error('Error during approval:', error);
-            if (transactionAttempted) {
+            if (transactionAttempted && activeAddress) {
                 await new Promise(r => setTimeout(r, 5000));
                 try {
                     const approved = await publicClientInstance.readContract({
@@ -418,7 +418,7 @@ export default function CreateEditionPage() {
                         toBlock: 'latest',
                     });
                     if (logs.length > 0) {
-                        const editionId = (logs[logs.length - 1].args as any).editionId?.toString();
+                        const editionId = (logs[logs.length - 1] as any).args?.editionId?.toString();
                         setCreatedEditionId(editionId);
                         await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
                         return;
