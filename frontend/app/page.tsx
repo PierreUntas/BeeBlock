@@ -7,7 +7,7 @@ export default function Home() {
 
     return (
         <div className="min-h-screen bg-[#f5f3ef]">
-            <div className="max-width-[860px] mx-auto px-6 pt-28 pb-20">
+            <div className="max-w-[860px] mx-auto px-6 pt-28 pb-20">
                 {/* Header */}
                 <div className="text-center mb-[72px]">
                     <div className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-5">

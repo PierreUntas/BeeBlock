@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAccount, useReadContract } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { useSendTransaction } from '@privy-io/react-auth';
@@ -34,6 +35,7 @@ export default function AdminPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isGeneratingKeys, setIsGeneratingKeys] = useState(false);
 
+    const router = useRouter();
     const { sendTransaction } = useSendTransaction();
     const { showAlert, showConfirm } = useModal();
 
@@ -59,6 +61,12 @@ export default function AdminPage() {
             setIsCheckingAdmin(false);
         }
     }, [isAdminResult, isLoadingAdmin]);
+
+    useEffect(() => {
+        if (!isCheckingAdmin && !isLoadingAdmin && address && !isAdmin) {
+            router.replace('/');
+        }
+    }, [isCheckingAdmin, isLoadingAdmin, address, isAdmin, router]);
 
 const isArtistAuthorized = artistData ? (artistData as any).authorized : undefined;
 

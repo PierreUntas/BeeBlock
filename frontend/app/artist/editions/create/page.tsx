@@ -97,8 +97,6 @@ export default function CreateEditionPage() {
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (createdEditionId && secretKeys.length > 0 && !hasDownloadedKeys) {
                 e.preventDefault();
-                e.returnValue = 'ATTENTION : Vous n\'avez pas téléchargé les clés secrètes ! Si vous quittez maintenant, vous les perdrez définitivement.';
-                return e.returnValue;
             }
         };
 

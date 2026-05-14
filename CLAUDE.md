@@ -53,8 +53,8 @@ npx hardhat verify --network base <address>        # Verify on Basescan
 - `ArtworkTokenization`: `0xA1Eb7db2c1E4Fd9d807eA51114c110389F10116D`
 
 **Deployed addresses** (Sepolia testnet):
-- `ArtworkRegistry`: `0x154E0CA565b555cA70eF41730E5608890EeABAaA`
-- `ArtworkTokenization`: `0xA10B29902a765901fF62dB311Fa9e2692747aB1c`
+- `ArtworkRegistry`: `0xfa954e2AEC0827Bb69433db64F99F6E9df562113`
+- `ArtworkTokenization`: `0x1f7Bac7B3F6B49E2147541aB58f2C6365A7Ed148`
 
 Test helper `generateSecretKeys(n)` in `test/ArtworkRegistry.ts` builds the full Merkle tree and returns keys with proofs.
 

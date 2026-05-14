@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
 
@@ -12,6 +13,7 @@ export default function AdminPage() {
     const [isOwner, setIsOwner] = useState(false);
     const [isCheckingOwner, setIsCheckingOwner] = useState(true);
 
+    const router = useRouter();
     const { writeContract, isPending: isAddingAdmin } = useWriteContract();
     const { writeContract: writeRemoveAdmin, isPending: isRemovingAdmin } = useWriteContract();
 
@@ -36,6 +38,12 @@ export default function AdminPage() {
             setIsCheckingOwner(false);
         }
     }, [address, ownerAddress, isLoadingOwner]);
+
+    useEffect(() => {
+        if (!isCheckingOwner && !isLoadingOwner && address && !isOwner) {
+            router.replace('/');
+        }
+    }, [isCheckingOwner, isLoadingOwner, address, isOwner, router]);
 
     const handleAddAdmin = async (e: React.FormEvent) => {
         e.preventDefault();
