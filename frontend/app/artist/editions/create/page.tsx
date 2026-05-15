@@ -152,6 +152,12 @@ export default function CreateEditionPage() {
         const files = Array.from(e.target.files || []);
         if (!files.length) return;
 
+        const oversized = files.filter(f => f.size > 20 * 1024 * 1024);
+        if (oversized.length > 0) {
+            await showAlert(`${oversized.length > 1 ? 'Ces fichiers dépassent' : 'Ce fichier dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
+            return;
+        }
+
         setLoadingStates(prev => ({ ...prev, uploadingImage: true }));
         try {
             const newCids: string[] = [];

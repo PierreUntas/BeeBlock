@@ -60,9 +60,15 @@ export default function ArtistPage() {
         args: activeAddress ? [activeAddress] : undefined,
     });
 
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_FILE_SIZE) {
+                showAlert(`Le logo dépasse la limite de 20 Mo (${(file.size / 1024 / 1024).toFixed(1)} Mo).`);
+                return;
+            }
             setLogoFile(file);
             const reader = new FileReader();
             reader.onloadend = () => setLogoPreview(reader.result as string);
@@ -73,6 +79,11 @@ export default function ArtistPage() {
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
+            const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
+            if (oversized.length > 0) {
+                showAlert(`${oversized.length > 1 ? 'Ces photos dépassent' : 'Cette photo dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
+                return;
+            }
             setPhotoFiles(prev => [...prev, ...files]);
             files.forEach(file => {
                 const reader = new FileReader();
