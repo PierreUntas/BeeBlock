@@ -49,8 +49,8 @@ npx hardhat verify --network base <address>        # Verify on Basescan
 **Key security**: `claimedKeys[editionId][keccak256(secretKey)]` prevents replay. ReentrancyGuard on mint.
 
 **Deployed addresses** (Base mainnet):
-- `ArtworkRegistry`: `0x527F8FF17CC7980E69a69d667E7D90D4A129aE52`
-- `ArtworkTokenization`: `0xD46013F87C0bb62A273Ea5CFdF61F64896321958`
+- `ArtworkRegistry`: `0x157DbA323117DC54A7907E55d0cA7553974E79a5`
+- `ArtworkTokenization`: `0x73D6Dd9498Fed8F85cc7ceBAc8593eE6C93b3A54`
 
 **Deployed addresses** (Sepolia testnet):
 - `ArtworkRegistry`: `0xfa954e2AEC0827Bb69433db64F99F6E9df562113`
