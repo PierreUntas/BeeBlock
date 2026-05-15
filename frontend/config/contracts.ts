@@ -58,12 +58,12 @@ export const ARTWORK_REGISTRY_ABI =[
     },
     {
       "inputs": [],
-      "name": "EditionNotDisabled",
+      "name": "EditionMustHaveCertificates",
       "type": "error"
     },
     {
       "inputs": [],
-      "name": "EditionMustHaveCertificates",
+      "name": "EditionNotDisabled",
       "type": "error"
     },
     {
@@ -1601,5 +1601,4 @@ export const ARTWORK_TOKENIZATION_ABI =[
       "stateMutability": "view",
       "type": "function"
     }
-  ] as const;
-
+] as const;
