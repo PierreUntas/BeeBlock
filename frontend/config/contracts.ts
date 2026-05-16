@@ -43,12 +43,27 @@ export const ARTWORK_REGISTRY_ABI =[
     },
     {
       "inputs": [],
+      "name": "EditionAlreadyDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "EditionDoesNotExist",
       "type": "error"
     },
     {
       "inputs": [],
+      "name": "EditionIsDisabled",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "EditionMustHaveCertificates",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "EditionNotDisabled",
       "type": "error"
     },
     {
@@ -59,6 +74,11 @@ export const ARTWORK_REGISTRY_ABI =[
     {
       "inputs": [],
       "name": "EmptyMerkleRoot",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "InvalidConfigValue",
       "type": "error"
     },
     {
@@ -217,6 +237,44 @@ export const ARTWORK_REGISTRY_ABI =[
       "inputs": [
         {
           "indexed": true,
+          "internalType": "uint256",
+          "name": "editionId",
+          "type": "uint256"
+        },
+        {
+          "indexed": true,
+          "internalType": "address",
+          "name": "by",
+          "type": "address"
+        }
+      ],
+      "name": "EditionDisabled",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "editionId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "bytes32",
+          "name": "newMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "EditionMerkleRootReplaced",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
           "internalType": "address",
           "name": "artist",
           "type": "address"
@@ -235,6 +293,45 @@ export const ARTWORK_REGISTRY_ABI =[
         }
       ],
       "name": "EditionMetadataUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxEditionSizeUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxReviewsPerUserAndEditionUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "internalType": "uint256",
+          "name": "newValue",
+          "type": "uint256"
+        }
+      ],
+      "name": "MaxReviewsQueryUpdated",
       "type": "event"
     },
     {
@@ -312,45 +409,6 @@ export const ARTWORK_REGISTRY_ABI =[
       ],
       "name": "OwnershipTransferred",
       "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "MAX_EDITION_SIZE",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MAX_REVIEWS_PER_USER",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "MAX_REVIEWS_QUERY",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
     },
     {
       "inputs": [
@@ -487,6 +545,19 @@ export const ARTWORK_REGISTRY_ABI =[
     {
       "inputs": [
         {
+          "internalType": "uint256",
+          "name": "_editionId",
+          "type": "uint256"
+        }
+      ],
+      "name": "disableEdition",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
           "internalType": "address",
           "name": "_address",
           "type": "address"
@@ -526,26 +597,24 @@ export const ARTWORK_REGISTRY_ABI =[
       "name": "getArtworkEdition",
       "outputs": [
         {
-          "components": [
-            {
-              "internalType": "string",
-              "name": "metadata",
-              "type": "string"
-            },
-            {
-              "internalType": "bytes32",
-              "name": "merkleRoot",
-              "type": "bytes32"
-            },
-            {
-              "internalType": "bool",
-              "name": "hasBeenClaimed",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct ArtworkRegistry.ArtworkEdition",
-          "name": "",
-          "type": "tuple"
+          "internalType": "string",
+          "name": "metadata",
+          "type": "string"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "merkleRoot",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bool",
+          "name": "hasBeenClaimed",
+          "type": "bool"
+        },
+        {
+          "internalType": "bool",
+          "name": "disabled",
+          "type": "bool"
         }
       ],
       "stateMutability": "view",
@@ -704,6 +773,45 @@ export const ARTWORK_REGISTRY_ABI =[
     },
     {
       "inputs": [],
+      "name": "maxEditionSize",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maxReviewsPerUserAndEdition",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "maxReviewsQuery",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
       "name": "owner",
       "outputs": [
         {
@@ -731,6 +839,24 @@ export const ARTWORK_REGISTRY_ABI =[
     {
       "inputs": [],
       "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_editionId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "_newMerkleRoot",
+          "type": "bytes32"
+        }
+      ],
+      "name": "replaceEditionMerkleRoot",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -768,6 +894,45 @@ export const ARTWORK_REGISTRY_ABI =[
         }
       ],
       "name": "setArtistInfo",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_newMaxEditionSize",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaxEditionSize",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_newMaxReviewsPerUserAndEdition",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaxReviewsPerUserAndEdition",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_newMaxReviewsQuery",
+          "type": "uint256"
+        }
+      ],
+      "name": "setMaxReviewsQuery",
       "outputs": [],
       "stateMutability": "nonpayable",
       "type": "function"
@@ -1029,6 +1194,25 @@ export const ARTWORK_TOKENIZATION_ABI =[
         }
       ],
       "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "internalType": "uint256",
+          "name": "tokenId",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "internalType": "string",
+          "name": "newMetadata",
+          "type": "string"
+        }
+      ],
+      "name": "TokenMetadataUpdated",
       "type": "event"
     },
     {
@@ -1384,6 +1568,24 @@ export const ARTWORK_TOKENIZATION_ABI =[
       "inputs": [
         {
           "internalType": "uint256",
+          "name": "_tokenId",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string",
+          "name": "_newMetadata",
+          "type": "string"
+        }
+      ],
+      "name": "updateTokenMetadata",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
           "name": "tokenId",
           "type": "uint256"
         }
@@ -1399,5 +1601,4 @@ export const ARTWORK_TOKENIZATION_ABI =[
       "stateMutability": "view",
       "type": "function"
     }
-  ] as const;
-
+] as const;

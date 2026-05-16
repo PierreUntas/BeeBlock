@@ -21,7 +21,7 @@ export default function AdminPage() {
         functionName: 'owner',
     });
 
-    const { data: isAdminResult, refetch: refetchIsAdmin } = useReadContract({
+    const { data: isAdminResult } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'isAdmin',
@@ -32,46 +32,35 @@ export default function AdminPage() {
         if (address && ownerAddress) {
             setIsOwner(address.toLowerCase() === (ownerAddress as string).toLowerCase());
             setIsCheckingOwner(false);
-        } else if (!isLoadingOwner && ownerAddress) {
+        } else if (!isLoadingOwner) {
             setIsCheckingOwner(false);
         }
     }, [address, ownerAddress, isLoadingOwner]);
 
-    const handleAddAdmin = async (e: React.FormEvent) => {
+    const handleAddAdmin = (e: React.FormEvent) => {
         e.preventDefault();
         if (!newAdminAddress) return;
-
-        try {
-            await writeContract({
-                address: ARTWORK_REGISTRY_ADDRESS,
-                abi: ARTWORK_REGISTRY_ABI,
-                functionName: 'addAdmin',
-                args: [newAdminAddress as `0x${string}`],
-            });
-            setNewAdminAddress('');
-        } catch (error) {
-            console.error('Error adding admin:', error);
-        }
+        writeContract({
+            address: ARTWORK_REGISTRY_ADDRESS,
+            abi: ARTWORK_REGISTRY_ABI,
+            functionName: 'addAdmin',
+            args: [newAdminAddress as `0x${string}`],
+        });
+        setNewAdminAddress('');
     };
 
-    const handleRemoveAdmin = async (e: React.FormEvent) => {
+    const handleRemoveAdmin = (e: React.FormEvent) => {
         e.preventDefault();
         if (!removeAdminAddress) return;
-
-        try {
-            await writeRemoveAdmin({
-                address: ARTWORK_REGISTRY_ADDRESS,
-                abi: ARTWORK_REGISTRY_ABI,
-                functionName: 'removeAdmin',
-                args: [removeAdminAddress as `0x${string}`],
-            });
-            setRemoveAdminAddress('');
-        } catch (error) {
-            console.error('Error removing admin:', error);
-        }
+        writeRemoveAdmin({
+            address: ARTWORK_REGISTRY_ADDRESS,
+            abi: ARTWORK_REGISTRY_ABI,
+            functionName: 'removeAdmin',
+            args: [removeAdminAddress as `0x${string}`],
+        });
+        setRemoveAdminAddress('');
     };
 
-    // Loading state while checking permissions
     if (isCheckingOwner || isLoadingOwner) {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
@@ -87,7 +76,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
+                    <p className="italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
                 </div>
             </div>
         );
@@ -97,7 +86,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
+                    <p className="italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
                         Accès refusé : vous n'êtes pas le propriétaire du contrat
                     </p>
                 </div>
@@ -109,9 +98,9 @@ export default function AdminPage() {
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
                 <div className="text-center mb-12">
-                    <img 
-                        src="/logo-mona.svg" 
-                        alt="Mona Editions Logo" 
+                    <img
+                        src="/logo-mona.svg"
+                        alt="Mona Editions Logo"
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">

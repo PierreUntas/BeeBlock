@@ -1,13 +1,14 @@
-import { createPublicClient, http, fallback } from "viem";
-import { base } from "viem/chains";
+import { createPublicClient, http } from "viem";
+import { activeChain, activeRpcUrl, isProduction } from "@/config/constants";
 
 export const publicClient = createPublicClient({
-    chain: base,
-    transport: http(process.env.NEXT_PUBLIC_RPC_URL_BASE)
+    chain: activeChain,
+    transport: http(activeRpcUrl),
 });
 
-export const DEPLOYMENT_BLOCK = 42793770n;
+const DEPLOYMENT_BLOCK_SEPOLIA = 10845334n;
+const DEPLOYMENT_BLOCK_BASE = 45944713n;
 
-export const getDeploymentBlock = () => {
-    return DEPLOYMENT_BLOCK;
-};
+export const DEPLOYMENT_BLOCK = isProduction ? DEPLOYMENT_BLOCK_BASE : DEPLOYMENT_BLOCK_SEPOLIA;
+
+export const getDeploymentBlock = () => DEPLOYMENT_BLOCK;

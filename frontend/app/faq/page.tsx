@@ -16,7 +16,7 @@ const faqs = [
             },
             {
                 q: "La blockchain utilisée est-elle fiable ?",
-                a: "Oui. Mona Editions utilise le réseau Ethereum (testnet Sepolia en phase de test). Les données enregistrées sur la blockchain sont immuables et permanentes : elles ne peuvent pas être modifiées ou supprimées."
+                a: "Oui. Mona Editions utilise le réseau Base, une blockchain Ethereum de couche 2 reconnue pour sa fiabilité et ses faibles frais de transaction. Les données enregistrées sur la blockchain sont immuables et permanentes : elles ne peuvent pas être modifiées ou supprimées."
             },
         ]
     },

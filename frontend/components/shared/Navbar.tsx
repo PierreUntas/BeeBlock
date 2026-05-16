@@ -22,19 +22,30 @@ export default function Navbar() {
     
     const activeAddress = walletAddress || address;
     
-    const getNetworkName = (id: string | number | undefined) => {
-        if (!id) return chain?.name || 'Non connecté';
-        const numId = typeof id === 'string' ? parseInt(id.replace('eip155:', '')) : id;
-        switch(numId) {
-            case 8453: return 'Base';
-            case 84532: return 'Base Sepolia';
-            case 11155111: return 'Sepolia';
-            case 1: return 'Ethereum';
-            default: return `Chain ${numId}`;
+    const getNetworkName = () => {
+        if (chain) {
+            switch(chain.id) {
+                case 8453: return 'Base';
+                case 84532: return 'Base Sepolia';
+                case 11155111: return 'Sepolia';
+                case 1: return 'Ethereum';
+                default: return chain.name;
+            }
         }
+        if (chainId) {
+            const numId = typeof chainId === 'string' ? parseInt(chainId.replace('eip155:', '')) : chainId;
+            switch(numId) {
+                case 8453: return 'Base';
+                case 84532: return 'Base Sepolia';
+                case 11155111: return 'Sepolia';
+                case 1: return 'Ethereum';
+                default: return `Chain ${numId}`;
+            }
+        }
+        return 'Non connecté';
     };
-    
-    const networkName = getNetworkName(chainId);
+
+    const networkName = getNetworkName();
 
     const { data: ownerAddress } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,

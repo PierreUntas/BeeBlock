@@ -1,5 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const config = {
+    api: { bodyParser: { sizeLimit: '20mb' } },
+};
+
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+
 const PINATA_JWT = process.env.PINATA_JWT;
 
 export async function POST(request: NextRequest) {
@@ -27,7 +33,13 @@ export async function POST(request: NextRequest) {
         }
 
         const file = fileEntry as File;
-        // Received file (internal): name, size -> file.name, file.size
+
+        if (file.size > MAX_FILE_SIZE) {
+            return NextResponse.json(
+                { error: `Fichier trop volumineux. Taille maximale : 20 Mo (reçu : ${(file.size / 1024 / 1024).toFixed(1)} Mo).` },
+                { status: 413 }
+            );
+        }
 
         // Prepare the FormData for Pinata
         const forward = new FormData();

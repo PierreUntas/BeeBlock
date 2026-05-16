@@ -85,6 +85,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     struct ArtworkEdition {
         bytes32 merkleRoot;
         bool hasBeenClaimed;
+        bool disabled;
     }
 
     /**
@@ -202,6 +203,20 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     );
 
     /**
+     * @dev Emitted when an edition is disabled by an admin
+     * @param editionId ID of the disabled edition
+     * @param by Address of the admin who disabled it
+     */
+    event EditionDisabled(uint256 indexed editionId, address indexed by);
+
+    /**
+     * @dev Emitted when an edition's Merkle root is replaced (after a key compromise)
+     * @param editionId ID of the edition
+     * @param newMerkleRoot The new Merkle root
+     */
+    event EditionMerkleRootReplaced(uint256 indexed editionId, bytes32 newMerkleRoot);
+
+    /**
      * @dev Emitted when the maximum edition size configuration is updated
      * @param newValue The new maximum edition size
      */
@@ -259,6 +274,15 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
 
     /// @dev Thrown when trying to update metadata for an edition that doesn't exist
     error EditionDoesNotExist();
+
+    /// @dev Thrown when trying to disable an edition that is already disabled
+    error EditionAlreadyDisabled();
+
+    /// @dev Thrown when trying to replace the Merkle root of an edition that is not disabled
+    error EditionNotDisabled();
+
+    /// @dev Thrown when trying to claim a certificate from a disabled edition
+    error EditionIsDisabled();
 
     /// @dev Thrown when an artist tries to update metadata for an edition they don't own
     error NotYourEdition();
@@ -540,6 +564,54 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         emit EditionMetadataUpdated(msg.sender, _editionId, _newMetadata);
     }
 
+    /**
+     * @dev Disables an edition, preventing any further certificate claims
+     * @param _editionId ID of the edition to disable
+     *
+     * Use this for content moderation (inappropriate artwork) or as the first step
+     * in QR code compromise recovery. Already-claimed tokens are unaffected.
+     *
+     * Requirements:
+     * - Caller must be an admin
+     * - Edition must exist
+     * - Edition must not already be disabled
+     *
+     * Emits an {EditionDisabled} event
+     */
+    function disableEdition(uint256 _editionId) external onlyAdmin {
+        ArtworkEdition storage edition = artworkEditions[_editionId];
+        require(edition.merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(!edition.disabled, EditionAlreadyDisabled());
+        edition.disabled = true;
+        emit EditionDisabled(_editionId, msg.sender);
+    }
+
+    /**
+     * @dev Replaces the Merkle root of a disabled edition with a fresh one and re-enables it
+     * @param _editionId ID of the edition to recover
+     * @param _newMerkleRoot New Merkle root built from fresh secret keys for unclaimed certificates
+     *
+     * Use this after a QR code compromise: disable the edition first, generate new secret keys
+     * only for unclaimed certificates, build a new Merkle tree, then call this function.
+     * The old compromised keys become invalid immediately (they won't verify against the new root).
+     *
+     * Requirements:
+     * - Caller must be an admin
+     * - Edition must exist
+     * - New Merkle root must not be empty
+     *
+     * Emits an {EditionMerkleRootReplaced} event
+     */
+    function replaceEditionMerkleRoot(uint256 _editionId, bytes32 _newMerkleRoot) external onlyAdmin {
+        ArtworkEdition storage edition = artworkEditions[_editionId];
+        require(edition.merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(edition.disabled, EditionNotDisabled());
+        require(_newMerkleRoot != bytes32(0), EmptyMerkleRoot());
+        edition.merkleRoot = _newMerkleRoot;
+        edition.disabled = false;
+        emit EditionMerkleRootReplaced(_editionId, _newMerkleRoot);
+    }
+
     // ============ COLLECTOR FUNCTIONS ============
 
     /**
@@ -576,6 +648,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         ArtworkEdition storage edition = artworkEditions[_editionId];
 
         require(edition.merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(!edition.disabled, EditionIsDisabled());
 
         address artist = artworkTokenization.tokenArtist(_editionId);
 
@@ -585,7 +658,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         );
         require(remainingCertificates > 0, NoCertificateLeft());
 
-        bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
+        bytes32 leaf = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_secretKey))));
         require(!claimedKeys[_editionId][leaf], KeyAlreadyClaimed());
 
         require(
@@ -627,6 +700,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         string memory _metadata
     ) external {
         require(artworkEditions[_editionId].merkleRoot != bytes32(0), EditionDoesNotExist());
+        require(!artworkEditions[_editionId].disabled, EditionIsDisabled());
 
         require(
             artworkTokenization.balanceOf(msg.sender, _editionId) > 0,
@@ -671,17 +745,20 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
      * @return metadata IPFS CID from ArtworkTokenization
      * @return merkleRoot Root hash of the Merkle Tree
      * @return hasBeenClaimed Whether at least one certificate has been claimed
+     * @return disabled Whether the edition has been disabled by an admin
      */
     function getArtworkEdition(uint _id) external view returns (
         string memory metadata,
         bytes32 merkleRoot,
-        bool hasBeenClaimed
+        bool hasBeenClaimed,
+        bool disabled
     ) {
         ArtworkEdition storage edition = artworkEditions[_id];
         return (
             artworkTokenization.uri(_id),
             edition.merkleRoot,
-            edition.hasBeenClaimed
+            edition.hasBeenClaimed,
+            edition.disabled
         );
     }
 
@@ -739,7 +816,7 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         uint256 _editionId,
         string memory _secretKey
     ) external view returns (bool) {
-        bytes32 leaf = keccak256(abi.encodePacked(_secretKey));
+        bytes32 leaf = keccak256(abi.encodePacked(keccak256(abi.encodePacked(_secretKey))));
         return claimedKeys[_editionId][leaf];
     }
 

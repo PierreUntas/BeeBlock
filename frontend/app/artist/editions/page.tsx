@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount, useReadContract } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { getFromIPFSGateway } from '@/app/utils/ipfs';
 import { getCategoryLabel } from '@/app/utils/categories';
@@ -26,11 +27,15 @@ interface EditionInfo {
     metadata: string;
     merkleRoot: string;
     remainingTokens: bigint;
+    disabled: boolean;
     ipfsData?: EditionIPFSData;
 }
 
 export default function ArtistEditionsPage() {
     const { address } = useAccount();
+    const { user } = usePrivy();
+    const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
+    const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [editions, setEditions] = useState<EditionInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
@@ -45,7 +50,7 @@ export default function ArtistEditionsPage() {
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
-        args: address ? [address] : undefined,
+        args: activeAddress ? [activeAddress] : undefined,
     });
 
     useEffect(() => {
@@ -60,14 +65,14 @@ export default function ArtistEditionsPage() {
 
     useEffect(() => {
         const fetchEditions = async () => {
-            if (!address || !isAuthorized || !publicClient) return;
+            if (!activeAddress || !isAuthorized || !publicClient) return;
 
             setLoadingStates(prev => ({ ...prev, fetchingEditions: true }));
             try {
                 const logs = await publicClient.getLogs({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     event: parseAbiItem('event NewArtworkEdition(address indexed artist, uint indexed editionId)'),
-                    args: { artist: address },
+                    args: { artist: activeAddress },
                     fromBlock: getDeploymentBlock(),
                     toBlock: 'latest'
                 });
@@ -77,7 +82,7 @@ export default function ArtistEditionsPage() {
                 for (const log of logs) {
                     const tokenId = log.args.editionId as bigint;
 
-                    const editionInfo = await publicClient.readContract({
+                    const [editionMetadata, editionMerkleRoot, , editionDisabled] = await publicClient.readContract({
                         address: ARTWORK_REGISTRY_ADDRESS,
                         abi: ARTWORK_REGISTRY_ABI,
                         functionName: 'getArtworkEdition',
@@ -88,20 +93,20 @@ export default function ArtistEditionsPage() {
                         address: ARTWORK_TOKENIZATION_ADDRESS,
                         abi: ARTWORK_TOKENIZATION_ABI,
                         functionName: 'balanceOf',
-                        args: [address, tokenId]
+                        args: [activeAddress, tokenId]
                     }) as bigint;
 
                     let artworkTitle = 'Œuvre sans titre';
-                    if (editionInfo.metadata?.trim()) {
+                    if (editionMetadata?.trim()) {
                         try {
-                            const ipfsData = await getFromIPFSGateway(editionInfo.metadata);
+                            const ipfsData = await getFromIPFSGateway(editionMetadata);
                             artworkTitle = ipfsData.title || 'Œuvre sans titre';
                         } catch (e) {
                             console.error('Error loading IPFS:', e);
                         }
                     }
 
-                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionInfo.metadata, merkleRoot: editionInfo.merkleRoot, remainingTokens: balance });
+                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, disabled: editionDisabled });
                 }
 
                 editionsData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
@@ -128,7 +133,7 @@ export default function ArtistEditionsPage() {
         };
 
         fetchEditions();
-    }, [address, isAuthorized]);
+    }, [activeAddress, isAuthorized]);
 
     if (isCheckingAuthorization || isLoadingArtist) {
         return (
@@ -141,7 +146,7 @@ export default function ArtistEditionsPage() {
         );
     }
 
-    if (!address) {
+    if (!activeAddress) {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
@@ -208,9 +213,16 @@ export default function ArtistEditionsPage() {
                                 >
                                     <div className="flex justify-between items-start gap-8">
                                         <div className="flex-1">
-                                            <h2 className=" text-[28px] font-normal text-[#1c1917] mb-3 leading-tight">
-                                                {edition.title}
-                                            </h2>
+                                            <div className="flex items-center gap-3 mb-3">
+                                                <h2 className=" text-[28px] font-normal text-[#1c1917] leading-tight">
+                                                    {edition.title}
+                                                </h2>
+                                                {edition.disabled && (
+                                                    <span className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#dc2626] border border-[#dc2626] px-2 py-0.5 flex-shrink-0">
+                                                        Désactivée
+                                                    </span>
+                                                )}
+                                            </div>
                                             <div className="space-y-1.5">
                                                 <p className="text-[12px] font-light tracking-[0.06em] text-[#a8a29e]">
                                                     ŒUVRE #{edition.tokenId.toString()}

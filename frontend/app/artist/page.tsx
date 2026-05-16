@@ -6,17 +6,23 @@ import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contrac
 import { BASE_URL } from '@/config/constants';
 import { uploadToIPFS, uploadFileToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
 import { base64ToBlob, downloadFile, gatewayUrlToIpfsUri } from '@/app/utils/file';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
+import { publicClient } from '@/lib/client';
 import { encodeFunctionData } from 'viem';
 import QRCode from 'qrcode';
 
 export default function ArtistPage() {
     const { address } = useAccount();
+    const { user } = usePrivy();
+    const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
+    const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [name, setName] = useState('');
     const [location, setLocation] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
     const [isRegistered, setIsRegistered] = useState(false);
+    const [saveSuccess, setSaveSuccess] = useState(false);
 
     // Grouped loading states
     const [loadingStates, setLoadingStates] = useState({
@@ -43,19 +49,26 @@ export default function ArtistPage() {
         }
     });
 
-    const { writeContract, isPending: isRegistering } = useWriteContract();
+    const { isPending: isRegistering } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
-    const { data: artistData, isLoading: isLoadingArtist } = useReadContract({
+    const { data: artistData, isLoading: isLoadingArtist, refetch: refetchArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
-        args: address ? [address] : undefined,
+        args: activeAddress ? [activeAddress] : undefined,
     });
+
+    const MAX_FILE_SIZE = 20 * 1024 * 1024;
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (file) {
+            if (file.size > MAX_FILE_SIZE) {
+                showAlert(`Le logo dépasse la limite de 20 Mo (${(file.size / 1024 / 1024).toFixed(1)} Mo).`);
+                return;
+            }
             setLogoFile(file);
             const reader = new FileReader();
             reader.onloadend = () => setLogoPreview(reader.result as string);
@@ -66,6 +79,11 @@ export default function ArtistPage() {
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
+            const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
+            if (oversized.length > 0) {
+                showAlert(`${oversized.length > 1 ? 'Ces photos dépassent' : 'Cette photo dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
+                return;
+            }
             setPhotoFiles(prev => [...prev, ...files]);
             files.forEach(file => {
                 const reader = new FileReader();
@@ -97,10 +115,10 @@ export default function ArtistPage() {
             const blob = base64ToBlob(base64Data);
             const url = URL.createObjectURL(blob);
             downloadFile(url, `QR_Artist_${name.replace(/\s+/g, '_')}_${address.slice(0, 8)}.png`);
-            alert('QR Code de votre page artiste téléchargé avec succès !');
+            await showAlert('QR Code de votre page artiste téléchargé avec succès !');
         } catch (error) {
             console.error('Error generating artist page QR code:', error);
-            alert('Erreur lors de la génération du QR code');
+            await showAlert('Erreur lors de la génération du QR code');
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -167,6 +185,8 @@ export default function ArtistPage() {
         e.preventDefault();
         setLoadingStates(prev => ({ ...prev, uploading: true }));
 
+        let savedCid = '';
+        let transactionAttempted = false;
         try {
             // Upload logo if a new file was selected, otherwise keep existing IPFS URI
             let logoUri: string | undefined = logoPreview.startsWith('https://ipfs.io/ipfs/')
@@ -213,23 +233,48 @@ export default function ArtistPage() {
                 socialMedia: additionalData.socialMedia,
             };
 
-            const cid = await uploadToIPFS(artistMetadata);
+            savedCid = await uploadToIPFS(artistMetadata);
 
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'setArtistInfo',
-                args: [cid],
+                args: [savedCid],
             });
 
-            await sendTransaction(
+            transactionAttempted = true;
+            const txResult = await sendTransaction(
                 { to: ARTWORK_REGISTRY_ADDRESS, data },
                 { sponsor: true }
             );
+            await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
-            alert('Informations enregistrées avec succès !');
+            setIsRegistered(true);
+            setSaveSuccess(true);
+            setTimeout(() => setSaveSuccess(false), 6000);
+            refetchArtist();
         } catch (error) {
             console.error('Error saving artist:', error);
-            alert('Erreur lors de l\'enregistrement');
+            // Privy sometimes shows its own error notification even when the
+            // transaction succeeds. If we attempted the transaction, wait for
+            // a potential in-flight transaction to mine before concluding failure.
+            if (transactionAttempted && savedCid && activeAddress) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const current = await publicClient.readContract({
+                        address: ARTWORK_REGISTRY_ADDRESS,
+                        abi: ARTWORK_REGISTRY_ABI,
+                        functionName: 'getArtist',
+                        args: [activeAddress],
+                    }) as any;
+                    if (current.metadata === savedCid) {
+                        setIsRegistered(true);
+                        setSaveSuccess(true);
+                        setTimeout(() => setSaveSuccess(false), 6000);
+                        return;
+                    }
+                } catch {}
+            }
+            await showAlert('Erreur lors de l\'enregistrement');
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false }));
         }
@@ -495,10 +540,18 @@ export default function ArtistPage() {
                             </div>
                         </div>
 
+                        {saveSuccess && (
+                            <div className="border border-[#d6d0c8] bg-[#f0fdf4] p-4">
+                                <p className="text-[13px] font-medium text-[#166534]">
+                                    Informations enregistrées avec succès. La transaction est en cours de confirmation sur la blockchain.
+                                </p>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
                             disabled={isRegistering || loadingStates.uploading || loadingStates.loadingIPFS}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                         >
                             {loadingStates.uploading
                                 ? 'Upload IPFS en cours…'

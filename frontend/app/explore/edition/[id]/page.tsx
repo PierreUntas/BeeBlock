@@ -16,6 +16,7 @@ interface EditionDetails {
     metadata: string;
     merkleRoot: string;
     remainingTokens: bigint;
+    disabled: boolean;
 }
 
 interface EditionIPFSData {
@@ -88,7 +89,7 @@ export default function EditionDetailsPage() {
             try {
                 const tokenId = BigInt(editionId);
 
-                const editionInfo = await publicClient.readContract({
+                const [editionMetadata, editionMerkleRoot, , editionDisabled] = await publicClient.readContract({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     abi: ARTWORK_REGISTRY_ABI,
                     functionName: 'getArtworkEdition',
@@ -110,10 +111,10 @@ export default function EditionDetailsPage() {
                 }) as bigint;
 
                 let artworkTitle = 'Œuvre sans titre';
-                if (editionInfo.metadata?.trim()) {
+                if (editionMetadata?.trim()) {
                     setLoadingStates(prev => ({ ...prev, loadingIPFS: true }));
                     try {
-                        const ipfsData = await getFromIPFSGateway(editionInfo.metadata) as EditionIPFSData;
+                        const ipfsData = await getFromIPFSGateway(editionMetadata) as EditionIPFSData;
                         setEditionIPFSData(ipfsData);
                         artworkTitle = ipfsData.title || 'Œuvre sans titre';
                     } catch (error) {
@@ -123,7 +124,7 @@ export default function EditionDetailsPage() {
                     }
                 }
 
-                setEdition({ tokenId, artist: artistAddress, title: artworkTitle, metadata: editionInfo.metadata, merkleRoot: editionInfo.merkleRoot, remainingTokens: balance });
+                setEdition({ tokenId, artist: artistAddress, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, disabled: editionDisabled });
 
                 const artistData = await publicClient.readContract({
                     address: ARTWORK_REGISTRY_ADDRESS,

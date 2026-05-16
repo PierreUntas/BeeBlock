@@ -8,6 +8,7 @@ import Link from 'next/link';
 import { parseAbiItem, encodeFunctionData } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { useSendTransaction } from '@privy-io/react-auth';
+import { useModal } from '@/app/ModalProvider';
 
 interface OwnedToken {
     tokenId: bigint;
@@ -32,6 +33,7 @@ export default function CollectorPage() {
     const [comment, setComment] = useState('');
 
     const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
 
     useEffect(() => {
         const fetchOwnedTokens = async () => {
@@ -60,7 +62,7 @@ export default function CollectorPage() {
                     }) as bigint;
 
                     if (balance > 0n) {
-                        const [editionInfo, artistData] = await Promise.all([
+                        const [[editionMetadata], artistData] = await Promise.all([
                             publicClient.readContract({
                                 address: ARTWORK_REGISTRY_ADDRESS,
                                 abi: ARTWORK_REGISTRY_ABI,
@@ -76,9 +78,9 @@ export default function CollectorPage() {
                         ]);
 
                         let artworkTitle = 'Œuvre sans titre';
-                        if (editionInfo.metadata?.trim()) {
+                        if (editionMetadata?.trim()) {
                             try {
-                                const editionIpfs = await getFromIPFSGateway(editionInfo.metadata);
+                                const editionIpfs = await getFromIPFSGateway(editionMetadata);
                                 artworkTitle = editionIpfs.title || 'Œuvre sans titre';
                             } catch (e) {
                                 console.error('Error loading edition metadata:', e);
@@ -99,7 +101,7 @@ export default function CollectorPage() {
                             tokenId,
                             balance,
                             title: artworkTitle,
-                            metadata: editionInfo.metadata,
+                            metadata: editionMetadata,
                             artist: artistAddress,
                             artistName: artistName
                         });
@@ -124,11 +126,16 @@ export default function CollectorPage() {
 
         const token = ownedTokens.find(t => t.tokenId === selectedToken);
         if (token && address && token.artist.toLowerCase() === address.toLowerCase()) {
-            alert('Vous ne pouvez pas laisser un avis sur vos propres œuvres');
+            await showAlert('Vous ne pouvez pas laisser un avis sur vos propres œuvres');
             return;
         }
 
         setLoadingStates(prev => ({ ...prev, commenting: true }));
+        let transactionAttempted = false;
+        let countBefore = 0n;
+        try {
+            countBefore = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+        } catch {}
         try {
             const reviewMetadata = { rating, comment };
             const cid = await uploadToIPFS(reviewMetadata);
@@ -139,15 +146,28 @@ export default function CollectorPage() {
                 args: [selectedToken, rating, cid]
             });
 
-            await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            transactionAttempted = true;
+            const txResult = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
-            alert('Avis envoyé avec succès !');
+            await showAlert('Avis envoyé avec succès !');
             setSelectedToken(null);
             setRating(5);
             setComment('');
         } catch (error) {
             console.error('Error adding comment:', error);
-            alert('Erreur lors de l\'ajout du commentaire');
+            if (transactionAttempted) {
+                await new Promise(r => setTimeout(r, 5000));
+                try {
+                    const countAfter = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+                    if (countAfter > countBefore) {
+                        await showAlert('Avis envoyé avec succès !');
+                        setSelectedToken(null); setRating(5); setComment('');
+                        return;
+                    }
+                } catch {}
+            }
+            await showAlert('Erreur lors de l\'ajout du commentaire');
         } finally {
             setLoadingStates(prev => ({ ...prev, commenting: false }));
         }
@@ -249,17 +269,21 @@ export default function CollectorPage() {
                             <form onSubmit={handleAddComment} className="space-y-5">
                                 <div>
                                     <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                        Note (0–5)
+                                        Note
                                     </label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        max="5"
+                                    <select
                                         value={rating}
                                         onChange={(e) => setRating(Number(e.target.value))}
-                                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors cursor-pointer"
                                         required
-                                    />
+                                    >
+                                        <option value={5}>⭐⭐⭐⭐⭐ 5 / 5</option>
+                                        <option value={4}>⭐⭐⭐⭐ 4 / 5</option>
+                                        <option value={3}>⭐⭐⭐ 3 / 5</option>
+                                        <option value={2}>⭐⭐ 2 / 5</option>
+                                        <option value={1}>⭐ 1 / 5</option>
+                                        <option value={0}>0 / 5</option>
+                                    </select>
                                 </div>
                                 <div>
                                     <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">

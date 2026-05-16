@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isProduction } from '@/config/constants';
 
 export default function ContactPage() {
     const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
@@ -141,7 +142,7 @@ export default function ContactPage() {
                     <div className="w-px h-8 bg-[#d6d0c8] hidden md:block" />
                     <div>
                         <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">Réseau</p>
-                        <p className="text-[14px] font-light text-[#78716c]">Sepolia Testnet · Ethereum</p>
+                        <p className="text-[14px] font-light text-[#78716c]">{isProduction ? 'Base Mainnet · Ethereum L2' : 'Sepolia Testnet · Ethereum'}</p>
                     </div>
                 </div>
             </div>

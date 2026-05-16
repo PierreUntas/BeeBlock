@@ -28,6 +28,7 @@ interface EditionInfo {
     title: string;
     metadata: string;
     remainingTokens: bigint;
+    disabled: boolean;
     ipfsData?: EditionIPFSData;
     averageRating?: number;
     commentsCount?: number;
@@ -66,7 +67,7 @@ function ExplorePageContent() {
                 const editionsPromises = logs.map(async (log) => {
                     const tokenId = log.args.editionId as bigint;
                     const artistAddress = log.args.artist as `0x${string}`;
-                    const [editionInfo, balance, artistData] = await Promise.all([
+                    const [[editionMetadata, , , editionDisabled], balance, artistData] = await Promise.all([
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [tokenId] }) as Promise<any>,
                         publicClient.readContract({ address: ARTWORK_TOKENIZATION_ADDRESS, abi: ARTWORK_TOKENIZATION_ABI, functionName: 'balanceOf', args: [artistAddress, tokenId] }) as Promise<bigint>,
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtist', args: [artistAddress] }) as Promise<any>
@@ -85,9 +86,9 @@ function ExplorePageContent() {
                     }
 
                     let artworkTitle = 'Œuvre sans titre';
-                    if (editionInfo.metadata?.trim()) {
+                    if (editionMetadata?.trim()) {
                         try {
-                            const editionIpfsData = await getFromIPFSGateway(editionInfo.metadata);
+                            const editionIpfsData = await getFromIPFSGateway(editionMetadata);
                             artworkTitle = editionIpfsData.title || 'Œuvre sans titre';
                         } catch (e) {
                             console.error('Error loading edition IPFS data:', e);
@@ -95,7 +96,7 @@ function ExplorePageContent() {
                     }
 
                     return {
-                        edition: { tokenId, artist: artistAddress, title: artworkTitle, metadata: editionInfo.metadata, remainingTokens: balance },
+                        edition: { tokenId, artist: artistAddress, title: artworkTitle, metadata: editionMetadata, remainingTokens: balance, disabled: editionDisabled },
                         artistInfo: { address: artistAddress, name: artistName, location: artistLocation }
                     };
                 });
@@ -134,7 +135,8 @@ function ExplorePageContent() {
                         const count = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [edition.tokenId] }) as bigint;
                         if (count > 0n) {
                             const comments = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviews', args: [edition.tokenId, 0n, count] }) as any[];
-                            return { tokenId: edition.tokenId, averageRating: comments.reduce((s, c) => s + Number(c[1]), 0) / comments.length, commentsCount: Number(count) };
+                            const avg = comments.length > 0 ? comments.reduce((s, c) => s + Number(c[1]), 0) / comments.length : undefined;
+                            return { tokenId: edition.tokenId, averageRating: avg, commentsCount: Number(count) };
                         }
                         return null;
                     } catch { return null; }
@@ -157,10 +159,11 @@ function ExplorePageContent() {
     }, []);
 
     // Filter by category (from new IPFS structure)
-    const uniqueCategories = Array.from(new Set(editions.map(b => b.ipfsData?.category).filter(Boolean))) as string[];
+    const activeEditions = editions.filter(e => !e.disabled);
+    const uniqueCategories = Array.from(new Set(activeEditions.map(b => b.ipfsData?.category).filter(Boolean))) as string[];
     const filteredEditions = filterCategory === 'all'
-        ? editions
-        : editions.filter(b => b.ipfsData?.category === filterCategory);
+        ? activeEditions
+        : activeEditions.filter(b => b.ipfsData?.category === filterCategory);
 
     return (
         <div className="min-h-screen bg-[#f5f3ef]">
@@ -183,7 +186,7 @@ function ExplorePageContent() {
                             </p>
                         </div>
                         <div className="text-right hidden md:block">
-                            <span className=" italic text-[48px] text-[#e7e3dc] leading-none">{editions.length}</span>
+                            <span className=" italic text-[48px] text-[#e7e3dc] leading-none">{activeEditions.length}</span>
                             <span className="block text-[11px] font-light tracking-[0.08em] text-[#a8a29e] mt-1">œuvres certifiées</span>
                         </div>
                     </div>
@@ -192,11 +195,11 @@ function ExplorePageContent() {
                 {/* Filters by category */}
                 <div className="flex gap-2 flex-wrap mb-10">
                     <FilterBtn active={filterCategory === 'all'} onClick={() => setFilterCategory('all')}>
-                        Toutes ({editions.length})
+                        Toutes ({activeEditions.length})
                     </FilterBtn>
                     {uniqueCategories.map(cat => (
                         <FilterBtn key={cat} active={filterCategory === cat} onClick={() => setFilterCategory(cat)}>
-                            {getCategoryLabel(cat)} ({editions.filter(b => b.ipfsData?.category === cat).length})
+                            {getCategoryLabel(cat)} ({activeEditions.filter(b => b.ipfsData?.category === cat).length})
                         </FilterBtn>
                     ))}
                 </div>
@@ -268,9 +271,9 @@ function ExplorePageContent() {
                                         <p className="text-[11px] font-light text-[#a8a29e]">{edition.ipfsData.year}</p>
                                     )}
 
-                                    {edition.commentsCount !== undefined && edition.commentsCount > 0 && (
+                                    {edition.commentsCount !== undefined && edition.commentsCount > 0 && edition.averageRating !== undefined && !isNaN(edition.averageRating) && (
                                         <p className="text-[12px] font-light text-[#78716c]">
-                                            {edition.averageRating?.toFixed(1)} · {edition.commentsCount} avis vérifié{edition.commentsCount > 1 ? 's' : ''}
+                                            {edition.averageRating.toFixed(1)} · {edition.commentsCount} avis vérifié{edition.commentsCount > 1 ? 's' : ''}
                                         </p>
                                     )}
                                 </div>
