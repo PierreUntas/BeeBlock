@@ -44,8 +44,10 @@ export default function PrivyProvider({ children }: { children: React.ReactNode 
                 loginMethods: ["email"], // ["email", "wallet"]
                 appearance: {
                     theme: "light",
-                    accentColor: "#fbbf24",
+                    accentColor: "#1c1917",
                     logo: "/monaeditions-logo.png",
+                    landingHeader: "Bienvenue chez Mona Editions",
+                    loginMessage: "Authentifiez vos œuvres ou réclamez votre certificat",
                 },
                 // embeddedWallets: {
                 //     createOnLogin: "users-without-wallets",
