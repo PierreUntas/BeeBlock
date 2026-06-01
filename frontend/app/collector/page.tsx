@@ -197,15 +197,9 @@ export default function CollectorPage() {
                     </div>
                 ) : ownedTokens.length === 0 ? (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-                        <p className=" italic text-[18px] text-[#78716c] mb-6">
+                        <p className=" italic text-[18px] text-[#78716c]">
                             Vous ne possédez pas encore de certificat
                         </p>
-                        <Link
-                            href="/collector/claim"
-                            className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
-                        >
-                            Réclamer mon premier certificat
-                        </Link>
                     </div>
                 ) : (
                     <div className="space-y-px">
@@ -319,15 +313,6 @@ export default function CollectorPage() {
                         </div>
                     </div>
                 )}
-
-                <div className="flex justify-center mt-20">
-                    <Link
-                        href="/collector/claim"
-                        className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
-                    >
-                        Réclamer un certificat
-                    </Link>
-                </div>
 
                 <div className="flex justify-center mt-20">
                     <div className="flex flex-col items-center gap-3">
