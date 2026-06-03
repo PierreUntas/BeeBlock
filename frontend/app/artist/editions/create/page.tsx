@@ -347,8 +347,9 @@ export default function CreateEditionPage() {
         let transactionAttempted = false;
         const publicClientInstance = createPublicClient({ chain: activeChain, transport: http(activeRpcUrl) });
         try {
-            // IPFS object matching the target structure
             const artworkMetadata: {
+                name: string;
+                image: string;
                 title: string;
                 year: number;
                 description: string;
@@ -358,6 +359,8 @@ export default function CreateEditionPage() {
                 editionSize: number;
                 category: string;
             } = {
+                name: editionData.title,
+                image: editionData.images[0] ?? '',
                 title: editionData.title,
                 year: editionData.year,
                 description: editionData.description,

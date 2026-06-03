@@ -9,7 +9,7 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [scrolled, setScrolled] = useState(false);
-    const { login, logout, authenticated, user } = usePrivy();
+    const { login, logout, authenticated, user, exportWallet } = usePrivy();
     const { address, chain } = useAccount();
 
     const [isOwner, setIsOwner] = useState(false);
@@ -191,13 +191,23 @@ export default function Navbar() {
                                         </p>
                                     )}
                                     {walletAddress && (
-                                        <button
-                                            onClick={copyAddress}
-                                            className="text-[11px] font-mono text-[#78716c] bg-transparent border-0 p-0
-                                                cursor-pointer flex items-center gap-2 w-full">
-                                            <span>{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
-                                            <span className="ml-auto text-[#4a5240]">{copied ? '✓' : '⧉'}</span>
-                                        </button>
+                                        <>
+                                            <button
+                                                onClick={copyAddress}
+                                                className="text-[11px] font-mono text-[#78716c] bg-transparent border-0 p-0
+                                                    cursor-pointer flex items-center gap-2 w-full">
+                                                <span>{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+                                                <span className="ml-auto text-[#4a5240]">{copied ? '✓' : '⧉'}</span>
+                                            </button>
+                                            {user?.wallet && (
+                                                <button
+                                                    onClick={() => exportWallet()}
+                                                    className="mt-1.5 text-[10px] tracking-[0.06em] text-[#a8a29e] bg-transparent border-0 p-0
+                                                        cursor-pointer hover:text-[#78716c] transition-colors duration-150 text-left">
+                                                    Exporter la clé privée →
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                     {(isOwner || isAdmin || isArtist) && (
                                         <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[#e7e3dc]">
