@@ -5,7 +5,7 @@ import { useAccount } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { getFromIPFSGateway, uploadToIPFS } from '@/app/utils/ipfs';
 import Link from 'next/link';
-import { parseAbiItem, encodeFunctionData } from 'viem';
+import { parseAbiItem, encodeFunctionData, isAddress } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { useSendTransaction } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
@@ -26,11 +26,18 @@ export default function CollectorPage() {
     const [loadingStates, setLoadingStates] = useState({
         fetchingTokens: true,
         commenting: false,
+        transferring: false,
     });
-    
+
     const [selectedToken, setSelectedToken] = useState<bigint | null>(null);
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
+
+    const [transferToken, setTransferToken] = useState<OwnedToken | null>(null);
+    const [transferStep, setTransferStep] = useState<'form' | 'confirm'>('form');
+    const [recipientAddress, setRecipientAddress] = useState('');
+    const [transferAmount, setTransferAmount] = useState(1);
+    const [recipientError, setRecipientError] = useState('');
 
     const { sendTransaction } = useSendTransaction();
     const { showAlert } = useModal();
@@ -173,6 +180,65 @@ export default function CollectorPage() {
         }
     };
 
+    const openTransferModal = (token: OwnedToken) => {
+        setTransferToken(token);
+        setTransferStep('form');
+        setRecipientAddress('');
+        setTransferAmount(1);
+        setRecipientError('');
+    };
+
+    const closeTransferModal = () => {
+        setTransferToken(null);
+        setTransferStep('form');
+        setRecipientAddress('');
+        setRecipientError('');
+    };
+
+    const handleTransferPreview = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!isAddress(recipientAddress)) {
+            setRecipientError('Adresse invalide — elle doit commencer par 0x et faire 42 caractères');
+            return;
+        }
+        if (address && recipientAddress.toLowerCase() === address.toLowerCase()) {
+            setRecipientError('Vous ne pouvez pas transférer vers votre propre adresse');
+            return;
+        }
+        setRecipientError('');
+        setTransferStep('confirm');
+    };
+
+    const handleTransferConfirm = async () => {
+        if (!transferToken || !address) return;
+        setLoadingStates(prev => ({ ...prev, transferring: true }));
+        try {
+            const data = encodeFunctionData({
+                abi: ARTWORK_TOKENIZATION_ABI,
+                functionName: 'safeTransferFrom',
+                args: [address, recipientAddress as `0x${string}`, transferToken.tokenId, BigInt(transferAmount), '0x'],
+            });
+            const tx = await sendTransaction({ to: ARTWORK_TOKENIZATION_ADDRESS, data }, { sponsor: true });
+            await publicClient.waitForTransactionReceipt({ hash: tx.hash });
+
+            setOwnedTokens(prev => {
+                const updated = prev.map(t => {
+                    if (t.tokenId !== transferToken.tokenId) return t;
+                    return { ...t, balance: t.balance - BigInt(transferAmount) };
+                }).filter(t => t.balance > 0n);
+                return updated;
+            });
+
+            closeTransferModal();
+            await showAlert(`Transfert effectué avec succès !`);
+        } catch (error) {
+            console.error('Transfer error:', error);
+            await showAlert('Erreur lors du transfert');
+        } finally {
+            setLoadingStates(prev => ({ ...prev, transferring: false }));
+        }
+    };
+
     const isOwnArtist = (token: OwnedToken) =>
         address && token.artist.toLowerCase() === address.toLowerCase();
 
@@ -247,6 +313,12 @@ export default function CollectorPage() {
                                             Laisser un avis
                                         </button>
                                     )}
+                                    <button
+                                        onClick={() => openTransferModal(token)}
+                                        className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
+                                    >
+                                        Transférer
+                                    </button>
                                 </div>
                             </div>
                         ))}
@@ -310,6 +382,116 @@ export default function CollectorPage() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+                    </div>
+                )}
+
+                {/* Transfer modal */}
+                {transferToken && (
+                    <div className="fixed inset-0 bg-[#1c1917]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 max-w-md w-full">
+
+                            {transferStep === 'form' ? (
+                                <>
+                                    <h3 className="text-[28px] font-normal text-[#1c1917] mb-1 leading-tight">
+                                        Transférer le certificat
+                                    </h3>
+                                    <p className="text-[13px] font-light text-[#78716c] mb-6">
+                                        {transferToken.title}
+                                    </p>
+                                    <form onSubmit={handleTransferPreview} className="space-y-5">
+                                        <div>
+                                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                                Adresse du destinataire
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={recipientAddress}
+                                                onChange={(e) => { setRecipientAddress(e.target.value); setRecipientError(''); }}
+                                                placeholder="0x..."
+                                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] font-mono text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                                required
+                                            />
+                                            {recipientError && (
+                                                <p className="mt-2 text-[12px] text-[#dc2626]">{recipientError}</p>
+                                            )}
+                                        </div>
+                                        {transferToken.balance > 1n && (
+                                            <div>
+                                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                                    Nombre d'exemplaires à transférer
+                                                </label>
+                                                <input
+                                                    type="number"
+                                                    value={transferAmount}
+                                                    onChange={(e) => setTransferAmount(Math.min(Number(e.target.value), Number(transferToken.balance)))}
+                                                    min={1}
+                                                    max={Number(transferToken.balance)}
+                                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                                    required
+                                                />
+                                                <p className="mt-1.5 text-[11px] text-[#a8a29e]">
+                                                    Vous possédez {transferToken.balance.toString()} exemplaire{transferToken.balance > 1n ? 's' : ''}
+                                                </p>
+                                            </div>
+                                        )}
+                                        <div className="flex gap-2 pt-2">
+                                            <button
+                                                type="button"
+                                                onClick={closeTransferModal}
+                                                className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
+                                            >
+                                                Annuler
+                                            </button>
+                                            <button
+                                                type="submit"
+                                                className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
+                                            >
+                                                Prévisualiser le transfert →
+                                            </button>
+                                        </div>
+                                    </form>
+                                </>
+                            ) : (
+                                <>
+                                    <h3 className="text-[28px] font-normal text-[#1c1917] mb-6 leading-tight">
+                                        Confirmer le transfert
+                                    </h3>
+                                    <div className="border border-[#d6d0c8] bg-[#f5f3ef] p-5 space-y-3 mb-6">
+                                        <div>
+                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Œuvre</p>
+                                            <p className="text-[13px] text-[#1c1917]">{transferToken.title} <span className="text-[#a8a29e]">#{transferToken.tokenId.toString()}</span></p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Exemplaires</p>
+                                            <p className="text-[13px] text-[#1c1917]">{transferAmount}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Destinataire</p>
+                                            <p className="text-[12px] font-mono text-[#1c1917] break-all">{recipientAddress}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-[12px] font-medium text-[#dc2626] mb-6">
+                                        Cette action est irréversible. Vérifiez bien l'adresse du destinataire avant de confirmer.
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <button
+                                            onClick={() => setTransferStep('form')}
+                                            disabled={loadingStates.transferring}
+                                            className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 disabled:opacity-50"
+                                        >
+                                            Modifier
+                                        </button>
+                                        <button
+                                            onClick={handleTransferConfirm}
+                                            disabled={loadingStates.transferring}
+                                            className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                        >
+                                            {loadingStates.transferring ? 'Transfert en cours…' : 'Confirmer le transfert'}
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 )}
