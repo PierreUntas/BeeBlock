@@ -27,6 +27,7 @@ interface EditionInfo {
     metadata: string;
     merkleRoot: string;
     remainingTokens: bigint;
+    hasBeenClaimed: boolean;
     disabled: boolean;
     ipfsData?: EditionIPFSData;
 }
@@ -82,7 +83,7 @@ export default function ArtistEditionsPage() {
                 for (const log of logs) {
                     const tokenId = log.args.editionId as bigint;
 
-                    const [editionMetadata, editionMerkleRoot, , editionDisabled] = await publicClient.readContract({
+                    const [editionMetadata, editionMerkleRoot, editionHasBeenClaimed, editionDisabled] = await publicClient.readContract({
                         address: ARTWORK_REGISTRY_ADDRESS,
                         abi: ARTWORK_REGISTRY_ABI,
                         functionName: 'getArtworkEdition',
@@ -106,7 +107,7 @@ export default function ArtistEditionsPage() {
                         }
                     }
 
-                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, disabled: editionDisabled });
+                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, hasBeenClaimed: editionHasBeenClaimed, disabled: editionDisabled });
                 }
 
                 editionsData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
@@ -206,58 +207,77 @@ export default function ArtistEditionsPage() {
                         )}
                         <div className="space-y-px">
                             {editions.map((edition) => (
-                                <Link
+                                <div
                                     key={edition.tokenId.toString()}
-                                    href={`/explore/edition/${edition.tokenId}`}
-                                    className="block border border-[#d6d0c8] bg-[#fafaf8] p-8 hover:bg-[#f5f3ef] transition-colors duration-200"
+                                    className="border border-[#d6d0c8] bg-[#fafaf8]"
                                 >
-                                    <div className="flex justify-between items-start gap-8">
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-3 mb-3">
-                                                <h2 className=" text-[28px] font-normal text-[#1c1917] leading-tight">
-                                                    {edition.title}
-                                                </h2>
-                                                {edition.disabled && (
-                                                    <span className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#dc2626] border border-[#dc2626] px-2 py-0.5 flex-shrink-0">
-                                                        Désactivée
-                                                    </span>
-                                                )}
+                                    <Link
+                                        href={`/explore/edition/${edition.tokenId}`}
+                                        className="block p-8 hover:bg-[#f5f3ef] transition-colors duration-200"
+                                    >
+                                        <div className="flex justify-between items-start gap-8">
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <h2 className=" text-[28px] font-normal text-[#1c1917] leading-tight">
+                                                        {edition.title}
+                                                    </h2>
+                                                    {edition.disabled && (
+                                                        <span className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#dc2626] border border-[#dc2626] px-2 py-0.5 flex-shrink-0">
+                                                            Désactivée
+                                                        </span>
+                                                    )}
+                                                    {edition.hasBeenClaimed && !edition.disabled && (
+                                                        <span className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#78716c] border border-[#d6d0c8] px-2 py-0.5 flex-shrink-0">
+                                                            Réclamée
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="space-y-1.5">
+                                                    <p className="text-[12px] font-light tracking-[0.06em] text-[#a8a29e]">
+                                                        ŒUVRE #{edition.tokenId.toString()}
+                                                    </p>
+                                                    {edition.ipfsData?.category && (
+                                                        <p className="text-[13px] font-light text-[#78716c]">
+                                                            {getCategoryLabel(edition.ipfsData.category)}
+                                                        </p>
+                                                    )}
+                                                    {edition.ipfsData?.technique && (
+                                                        <p className="text-[13px] font-light text-[#78716c]">
+                                                            {edition.ipfsData.technique}
+                                                            {edition.ipfsData.dimensions ? ` — ${edition.ipfsData.dimensions}` : ''}
+                                                        </p>
+                                                    )}
+                                                    {edition.ipfsData?.year && (
+                                                        <p className="text-[13px] font-light text-[#a8a29e]">
+                                                            {edition.ipfsData.year}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div className="space-y-1.5">
-                                                <p className="text-[12px] font-light tracking-[0.06em] text-[#a8a29e]">
-                                                    ŒUVRE #{edition.tokenId.toString()}
+                                            <div className="text-right flex-shrink-0">
+                                                <p className="text-[11px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                                    Exemplaires restants
                                                 </p>
-                                                {edition.ipfsData?.category && (
-                                                    <p className="text-[13px] font-light text-[#78716c]">
-                                                        {getCategoryLabel(edition.ipfsData.category)}
-                                                    </p>
-                                                )}
-                                                {edition.ipfsData?.technique && (
-                                                    <p className="text-[13px] font-light text-[#78716c]">
-                                                        {edition.ipfsData.technique}
-                                                        {edition.ipfsData.dimensions ? ` — ${edition.ipfsData.dimensions}` : ''}
-                                                    </p>
-                                                )}
-                                                {edition.ipfsData?.year && (
-                                                    <p className="text-[13px] font-light text-[#a8a29e]">
-                                                        {edition.ipfsData.year}
-                                                    </p>
+                                                <p className=" text-[36px] font-normal text-[#1c1917] leading-none">
+                                                    {edition.remainingTokens.toString()}
+                                                </p>
+                                                {edition.ipfsData?.editionSize && (
+                                                    <p className="text-[11px] text-[#a8a29e] mt-1">/ {edition.ipfsData.editionSize}</p>
                                                 )}
                                             </div>
                                         </div>
-                                        <div className="text-right flex-shrink-0">
-                                            <p className="text-[11px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                                Exemplaires restants
-                                            </p>
-                                            <p className=" text-[36px] font-normal text-[#1c1917] leading-none">
-                                                {edition.remainingTokens.toString()}
-                                            </p>
-                                            {edition.ipfsData?.editionSize && (
-                                                <p className="text-[11px] text-[#a8a29e] mt-1">/ {edition.ipfsData.editionSize}</p>
-                                            )}
+                                    </Link>
+                                    {!edition.hasBeenClaimed && !edition.disabled && (
+                                        <div className="px-8 pb-4 border-t border-[#f0ece6]">
+                                            <Link
+                                                href={`/artist/editions/${edition.tokenId}/edit`}
+                                                className="inline-block mt-3 text-[11px] font-medium tracking-[0.08em] text-[#78716c] border border-[#d6d0c8] px-4 py-1.5 hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                                            >
+                                                Modifier les métadonnées
+                                            </Link>
                                         </div>
-                                    </div>
-                                </Link>
+                                    )}
+                                </div>
                             ))}
                         </div>
                     </>
