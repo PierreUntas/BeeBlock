@@ -72,6 +72,14 @@ function ClaimTokenForm() {
                 ? merkleProofInput.split(',').map(hash => hash.trim() as `0x${string}`)
                 : [];
 
+            await publicClient.simulateContract({
+                address: ARTWORK_REGISTRY_ADDRESS,
+                abi: ARTWORK_REGISTRY_ABI,
+                functionName: 'claimCertificate',
+                args: [BigInt(editionId), secretKey, merkleProof],
+                account: address,
+            });
+
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'claimCertificate',
