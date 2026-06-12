@@ -332,7 +332,7 @@ describe("ArtworkRegistry", function () {
             expect(metadata).to.equal(newCID);
         })
 
-        it("Should not allow to update metadata after a claim", async function () {
+        it("Should not allow to update metadata after a claim (balance < initial)", async function () {
             await artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 5, edition.merkleRoot);
 
             const keyData = edition.keyWithProofs[0];
@@ -340,6 +340,48 @@ describe("ArtworkRegistry", function () {
 
             await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
                 .to.revertedWithCustomError(artworkRegistry, "MetadataLocked");
+        })
+
+        it("Should not allow to update metadata after a direct ERC-1155 transfer out of the artist's wallet", async function () {
+            await artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 5, edition.merkleRoot);
+
+            // The artist sells / sends a certificate off-platform, bypassing claimCertificate.
+            // The balance drops below initial — metadata must be locked.
+            await artworkTokenization.connect(artist).safeTransferFrom(
+                await artist.getAddress(),
+                await collector.getAddress(),
+                editionId,
+                1,
+                "0x"
+            );
+
+            await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
+                .to.revertedWithCustomError(artworkRegistry, "MetadataLocked");
+        })
+
+        it("Should not allow to update metadata after a partial batch transfer", async function () {
+            await artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 5, edition.merkleRoot);
+
+            // Sell 2 out of 5 directly. Even partial outgoing transfer locks metadata.
+            await artworkTokenization.connect(artist).safeTransferFrom(
+                await artist.getAddress(),
+                await collector.getAddress(),
+                editionId,
+                2,
+                "0x"
+            );
+
+            await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
+                .to.revertedWithCustomError(artworkRegistry, "MetadataLocked");
+        })
+
+        it("Should still allow metadata update while artist holds the full initial supply", async function () {
+            await artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 5, edition.merkleRoot);
+
+            // No transfer happened: balance == initialEditionSize, update is allowed.
+            await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
+                .to.emit(artworkRegistry, "EditionMetadataUpdated")
+                .withArgs(await artist.getAddress(), editionId, newCID);
         })
 
         it("Should not allow another artist to update metadata", async function () {
@@ -683,6 +725,22 @@ describe("ArtworkRegistry", function () {
             await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
                 .to.emit(artworkTokenization, "TokenMetadataUpdated")
                 .withArgs(editionId, newCID);
+        })
+
+        it("Should emit standard EIP-1155 URI event when an edition is minted", async function () {
+            const newEdition = generateSecretKeys(3);
+
+            await expect(artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 3, newEdition.merkleRoot))
+                .to.emit(artworkTokenization, "URI")
+                .withArgs(fakeCID, 2); // editionId 2 because the beforeEach already minted #1
+        })
+
+        it("Should emit standard EIP-1155 URI event when metadata is updated", async function () {
+            const newCID = "QmNewMetadataCIDCorrectLengthForTestingPurposesXX";
+
+            await expect(artworkRegistry.connect(artist).updateEditionMetadata(editionId, newCID))
+                .to.emit(artworkTokenization, "URI")
+                .withArgs(newCID, editionId);
         })
     })
 

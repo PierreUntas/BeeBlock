@@ -16,6 +16,7 @@ Cette documentation est répartie en deux espaces :
 | [03-frontend.md](technique/03-frontend.md) | Architecture Next.js : routes, auth Privy, intégration Wagmi, IPFS, wizard de création d'édition, design system |
 | [04-flux-certification.md](technique/04-flux-certification.md) | Cycle de vie complet : onboarding artiste, création d'édition, distribution physique, claim collectionneur, remédiation |
 | [05-deploiement.md](technique/05-deploiement.md) | Procédure de déploiement Hardhat Ignition, vérification Basescan, build Vercel, gas sponsoring, modèle de sécurité, monitoring |
+| [06-evolution-v2.md](technique/06-evolution-v2.md) | Note de scope minimaliste pour la v2 des contrats : invariant métadonnée basé sur la possession + émission de l'événement URI standard ERC-1155 |
 
 ---
 
@@ -30,8 +31,6 @@ Cette documentation est répartie en deux espaces :
 | [05-cas-usage.md](commercial/05-cas-usage.md) | Cinq scénarios concrets : artiste indépendant, galerie, revente long terme, école d'art, catalogue raisonné |
 | [06-email-onboarding-artiste-fr.md](commercial/06-email-onboarding-artiste-fr.md) | Template de mail de premier contact à un·e artiste (français), validé et prêt à adapter |
 | [07-email-onboarding-artiste-de.md](commercial/07-email-onboarding-artiste-de.md) | Template de mail de premier contact à un·e artiste (allemand), traduction du précédent |
-
-> **Note.** Les documents internes sensibles (audit de sécurité, playbook de communication, modèle commercial chiffré) sont placés dans `docs-private/` à la racine du repo, exclus du versioning via `.gitignore`.
 
 ---
 

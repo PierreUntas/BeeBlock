@@ -86,6 +86,10 @@ contract ArtworkTokenization is ERC1155, Ownable {
         _mint(_artist, newTokenId, _amount, "");
 
         emit ArtworkEditionMinted(_artist, newTokenId, _amount);
+        // Standard EIP-1155 URI event so that external marketplaces and
+        // wallets (OpenSea, Rarible, Zerion, Rainbow, etc.) automatically
+        // index the new edition's metadata.
+        emit URI(_uri, newTokenId);
         return newTokenId;
     }
 
@@ -109,5 +113,8 @@ contract ArtworkTokenization is ERC1155, Ownable {
         if (bytes(_newMetadata).length < 40 || bytes(_newMetadata).length > 100) revert InvalidIPFSCID();
         _tokenURIs[_tokenId] = _newMetadata;
         emit TokenMetadataUpdated(_tokenId, _newMetadata);
+        // Standard EIP-1155 URI event for external indexers and marketplaces
+        // to refresh their cached metadata.
+        emit URI(_newMetadata, _tokenId);
     }
 }

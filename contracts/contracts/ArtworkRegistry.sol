@@ -110,6 +110,10 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     /// @dev Mapping from edition ID to edition information
     mapping(uint => ArtworkEdition) private artworkEditions;
 
+    /// @dev Mapping from edition ID to its initial mint size, used to enforce the
+    ///      metadata-immutability invariant based on the artist's remaining balance.
+    mapping(uint256 => uint256) private initialEditionSize;
+
     /// @dev Mapping from edition ID to array of reviews
     mapping(uint => Review[]) private editionReviews;
 
@@ -521,22 +525,27 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
 
         ArtworkEdition storage edition = artworkEditions[tokenId];
         edition.merkleRoot = _merkleRoot;
+        initialEditionSize[tokenId] = _amount;
 
         emit NewArtworkEdition(msg.sender, tokenId);
     }
 
     /**
-     * @dev Allows an artist to update edition metadata ONLY before any certificate has been claimed
+     * @dev Allows an artist to update edition metadata ONLY while the artist
+     *      still holds every certificate of the original mint.
      * @param _editionId ID of the edition to update
      * @param _newMetadata New IPFS CID pointing to updated edition metadata JSON
      *
-     * This ensures that once a collector has purchased and claimed a certificate,
-     * the edition information becomes permanently immutable, maintaining authenticity integrity.
+     * The invariant is based on the artist's current ERC-1155 balance compared
+     * to the initial mint size. Any outgoing transfer — whether through the
+     * official `claimCertificate` flow or via a direct ERC-1155 transfer
+     * (private sale, marketplace, etc.) — freezes the metadata. This protects
+     * buyers regardless of how they acquired their certificate.
      *
      * Requirements:
      * - Caller must be an authorized artist
      * - Artist must be the creator of this edition
-     * - NO certificate must have been claimed yet (hasBeenClaimed = false)
+     * - Artist must still hold the full initial supply of this edition
      * - New metadata must be a valid IPFS CID
      *
      * Emits an {EditionMetadataUpdated} event
@@ -549,10 +558,17 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
 
         require(edition.merkleRoot != bytes32(0), EditionDoesNotExist());
 
-        require(!edition.hasBeenClaimed, MetadataLocked());
-
         address artist = artworkTokenization.tokenArtist(_editionId);
         require(artist == msg.sender, NotYourEdition());
+
+        // The artist must still hold every certificate of the original mint.
+        // This invariant protects buyers regardless of how a certificate
+        // leaves the artist's wallet (claim, direct ERC-1155 transfer, sale
+        // on a secondary marketplace, etc.).
+        require(
+            artworkTokenization.balanceOf(artist, _editionId) == initialEditionSize[_editionId],
+            MetadataLocked()
+        );
 
         require(
             bytes(_newMetadata).length >= 40 && bytes(_newMetadata).length <= 100,
