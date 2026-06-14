@@ -48,11 +48,21 @@ npx hardhat verify --network base <address>        # Verify on Basescan
 
 **Key security**: `claimedKeys[editionId][keccak256(secretKey)]` prevents replay. ReentrancyGuard on mint.
 
-**Deployed addresses** (Base mainnet):
-- `ArtworkRegistry`: `0x157DbA323117DC54A7907E55d0cA7553974E79a5`
-- `ArtworkTokenization`: `0x73D6Dd9498Fed8F85cc7ceBAc8593eE6C93b3A54`
+**Deployed addresses** (Base mainnet — v2, current production):
+- `ArtworkRegistry`: `0xc17d2c192290D72828345486a33892Ac805010fE`
+- `ArtworkTokenization`: `0xE3D0F890B474799B661E6a66eB9950BFC2216F49`
 
-**Deployed addresses** (Sepolia testnet):
+The v2 differs from v1 by removing the `hasBeenClaimed` flag and replacing
+the metadata-immutability invariant with a balance-based check (the artist
+must still hold the full initial supply to update metadata). It also emits
+the standard EIP-1155 `URI` event on mint and metadata update so external
+marketplaces auto-index changes. See `docs/technique/06-evolution-v2.md`.
+
+**Legacy addresses** (Base mainnet — v1, kept on-chain for existing certificates):
+- `ArtworkRegistry` v1: `0x157DbA323117DC54A7907E55d0cA7553974E79a5`
+- `ArtworkTokenization` v1: `0x73D6Dd9498Fed8F85cc7ceBAc8593eE6C93b3A54`
+
+**Deployed addresses** (Sepolia testnet — v1):
 - `ArtworkRegistry`: `0xfa954e2AEC0827Bb69433db64F99F6E9df562113`
 - `ArtworkTokenization`: `0x1f7Bac7B3F6B49E2147541aB58f2C6365A7Ed148`
 
