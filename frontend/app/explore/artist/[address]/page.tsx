@@ -112,7 +112,7 @@ export default function ArtistDetailsPage() {
                 const editionsData: EditionInfo[] = [];
                 for (const log of logs) {
                     const tokenId = log.args.editionId as bigint;
-                    const [[editionMetadata, , , editionDisabled], balance] = await Promise.all([
+                    const [[editionMetadata, , editionDisabled], balance] = await Promise.all([
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [tokenId] }) as Promise<any>,
                         publicClient.readContract({ address: ARTWORK_TOKENIZATION_ADDRESS, abi: ARTWORK_TOKENIZATION_ABI, functionName: 'balanceOf', args: [artistAddress as `0x${string}`, tokenId] }) as Promise<bigint>
                     ]);

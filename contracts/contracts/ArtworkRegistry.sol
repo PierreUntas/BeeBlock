@@ -80,11 +80,14 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     /**
      * @dev Structure representing an artwork edition
      * @param merkleRoot Root hash of the Merkle Tree containing all secret keys for this edition
-     * @param hasBeenClaimed Flag indicating if at least one certificate has been claimed (locks metadata)
+     * @param disabled Whether the edition has been disabled by an admin
+     *
+     * Note: the immutability invariant on metadata is enforced via the
+     * `initialEditionSize` mapping and the artist's current ERC-1155 balance,
+     * not via a stored flag.
      */
     struct ArtworkEdition {
         bytes32 merkleRoot;
-        bool hasBeenClaimed;
         bool disabled;
     }
 
@@ -683,7 +686,6 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
         );
 
         claimedKeys[_editionId][leaf] = true;
-        edition.hasBeenClaimed = true;
 
         artworkTokenization.safeTransferFrom(
             artist,
@@ -760,20 +762,17 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
      * @param _id ID of the edition to query
      * @return metadata IPFS CID from ArtworkTokenization
      * @return merkleRoot Root hash of the Merkle Tree
-     * @return hasBeenClaimed Whether at least one certificate has been claimed
      * @return disabled Whether the edition has been disabled by an admin
      */
     function getArtworkEdition(uint _id) external view returns (
         string memory metadata,
         bytes32 merkleRoot,
-        bool hasBeenClaimed,
         bool disabled
     ) {
         ArtworkEdition storage edition = artworkEditions[_id];
         return (
             artworkTokenization.uri(_id),
             edition.merkleRoot,
-            edition.hasBeenClaimed,
             edition.disabled
         );
     }
@@ -846,12 +845,18 @@ contract ArtworkRegistry is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Checks if an edition has had any certificates claimed (metadata locked)
+     * @dev Checks whether an edition's metadata is locked.
+     *      The edition is considered locked as soon as the artist no longer
+     *      holds the full initial supply — through any channel (claim, direct
+     *      ERC-1155 transfer, marketplace sale).
      * @param _editionId ID of the edition to check
-     * @return True if at least one certificate has been claimed, false otherwise
+     * @return True if at least one certificate has left the artist's wallet,
+     *         false otherwise (including for non-existent editions).
      */
     function isEditionLocked(uint256 _editionId) external view returns (bool) {
-        return artworkEditions[_editionId].hasBeenClaimed;
+        address artist = artworkTokenization.tokenArtist(_editionId);
+        if (artist == address(0)) return false;
+        return artworkTokenization.balanceOf(artist, _editionId) < initialEditionSize[_editionId];
     }
 
     /**

@@ -89,7 +89,7 @@ export default function EditionDetailsPage() {
             try {
                 const tokenId = BigInt(editionId);
 
-                const [editionMetadata, editionMerkleRoot, , editionDisabled] = await publicClient.readContract({
+                const [editionMetadata, editionMerkleRoot, editionDisabled] = await publicClient.readContract({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     abi: ARTWORK_REGISTRY_ABI,
                     functionName: 'getArtworkEdition',

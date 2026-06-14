@@ -67,7 +67,7 @@ function ExplorePageContent() {
                 const editionsPromises = logs.map(async (log) => {
                     const tokenId = log.args.editionId as bigint;
                     const artistAddress = log.args.artist as `0x${string}`;
-                    const [[editionMetadata, , , editionDisabled], balance, artistData] = await Promise.all([
+                    const [[editionMetadata, , editionDisabled], balance, artistData] = await Promise.all([
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [tokenId] }) as Promise<any>,
                         publicClient.readContract({ address: ARTWORK_TOKENIZATION_ADDRESS, abi: ARTWORK_TOKENIZATION_ABI, functionName: 'balanceOf', args: [artistAddress, tokenId] }) as Promise<bigint>,
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtist', args: [artistAddress] }) as Promise<any>

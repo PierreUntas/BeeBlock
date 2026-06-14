@@ -392,7 +392,7 @@ describe("ArtworkRegistry", function () {
                 .to.revertedWithCustomError(artworkRegistry, "NotYourEdition");
         })
 
-        it("Should set hasBeenClaimed to true after first claim", async function () {
+        it("Should report isEditionLocked correctly before and after first claim", async function () {
             await artworkRegistry.connect(artist).createArtworkEdition(fakeCID, 5, edition.merkleRoot);
 
             const keyData = edition.keyWithProofs[0];

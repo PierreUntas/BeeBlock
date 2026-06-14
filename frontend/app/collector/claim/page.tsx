@@ -63,7 +63,7 @@ function ClaimTokenForm() {
                 functionName: 'getArtworkEdition',
                 args: [BigInt(editionId)],
             }) as any;
-            if (editionData[3] === true) {
+            if (editionData[2] === true) {
                 setError('Cette édition a été désactivée et n\'accepte plus de nouvelles réclamations.');
                 return;
             }

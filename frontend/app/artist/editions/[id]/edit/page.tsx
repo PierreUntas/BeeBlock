@@ -1,11 +1,11 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { useAccount, useReadContract } from 'wagmi';
 import { usePrivy, useSendTransaction } from '@privy-io/react-auth';
 import { encodeFunctionData } from 'viem';
-import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
+import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { uploadToIPFS, uploadFileToIPFS, getFromIPFSGateway, getIPFSUrl } from '@/app/utils/ipfs';
 import { CATEGORIES_EN, CATEGORIES_FR } from '@/app/utils/categories';
 import { useModal } from '@/app/ModalProvider';
@@ -47,7 +47,6 @@ export default function EditEditionPage() {
     });
 
     const [isLoading, setIsLoading] = useState(true);
-    const [hasBeenClaimed, setHasBeenClaimed] = useState(false);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [loadingStates, setLoadingStates] = useState({
         uploadingImage: false,
@@ -70,14 +69,37 @@ export default function EditEditionPage() {
         args: [editionId],
     });
 
+    // v2 : on lit la balance courante de l'artiste pour cette édition,
+    // afin de détecter aussi les sorties de certificats hors flux QR
+    // (transferts directs ERC-1155, ventes sur marketplace tierce).
+    const { data: artistBalance } = useReadContract({
+        address: ARTWORK_TOKENIZATION_ADDRESS,
+        abi: ARTWORK_TOKENIZATION_ABI,
+        functionName: 'balanceOf',
+        args: activeAddress ? [activeAddress, editionId] : undefined,
+    });
+
     useEffect(() => {
         if (artistData) setIsAuthorized((artistData as any).authorized === true);
     }, [artistData]);
 
+    // Verrouillage métadonnée selon l'invariant v2 :
+    // la modification n'est possible que si l'artiste détient encore
+    // l'intégralité du tirage initial. Tout transfert sortant (claim,
+    // transfert direct ERC-1155, vente sur marketplace tierce) verrouille.
+    const metadataIsLocked = useMemo(() => {
+        if (artistBalance === undefined) return false; // pas encore chargé
+        if (!editionData.editionSize) return false;     // métadonnée IPFS pas encore chargée
+        try {
+            return BigInt(artistBalance as bigint) < BigInt(editionData.editionSize);
+        } catch {
+            return false;
+        }
+    }, [artistBalance, editionData.editionSize]);
+
     useEffect(() => {
         if (!editionOnChain) return;
-        const [metadata, , claimed] = editionOnChain as [string, `0x${string}`, boolean, boolean];
-        setHasBeenClaimed(claimed);
+        const [metadata] = editionOnChain as [string, `0x${string}`, boolean];
 
         if (!metadata) { setIsLoading(false); return; }
 
@@ -159,7 +181,15 @@ export default function EditEditionPage() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
             await showAlert('Métadonnées mises à jour avec succès !');
         } catch (error: any) {
-            await showAlert(`Erreur : ${error?.message || 'Échec de la mise à jour'}`);
+            const rawMessage = error?.message || '';
+            if (rawMessage.includes('MetadataLocked')) {
+                await showAlert(
+                    "Modification impossible : au moins un certificat de cette édition a quitté votre portefeuille. " +
+                    "Les métadonnées sont désormais immuables."
+                );
+            } else {
+                await showAlert(`Erreur : ${rawMessage || 'Échec de la mise à jour'}`);
+            }
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false, saving: false }));
         }
@@ -192,7 +222,7 @@ export default function EditEditionPage() {
         );
     }
 
-    if (hasBeenClaimed) {
+    if (metadataIsLocked) {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="max-w-3xl mx-auto px-6 pt-28 pb-20">
@@ -202,7 +232,7 @@ export default function EditEditionPage() {
                             Métadonnées <em className="italic text-[#78716c]">verrouillées</em>
                         </h1>
                         <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8">
-                            Au moins un certificat a été réclamé pour cette édition. Les métadonnées sont désormais immuables afin de garantir l'authenticité des œuvres.
+                            Au moins un certificat de cette édition a quitté votre portefeuille — par réclamation, transfert ou vente. Les métadonnées sont désormais immuables afin de garantir l'authenticité aux détenteurs.
                         </p>
                         <Link
                             href="/artist/editions"

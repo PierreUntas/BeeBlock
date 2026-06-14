@@ -608,11 +608,6 @@ export const ARTWORK_REGISTRY_ABI =[
         },
         {
           "internalType": "bool",
-          "name": "hasBeenClaimed",
-          "type": "bool"
-        },
-        {
-          "internalType": "bool",
           "name": "disabled",
           "type": "bool"
         }

@@ -27,7 +27,6 @@ interface EditionInfo {
     metadata: string;
     merkleRoot: string;
     remainingTokens: bigint;
-    hasBeenClaimed: boolean;
     disabled: boolean;
     ipfsData?: EditionIPFSData;
 }
@@ -64,6 +63,20 @@ export default function ArtistEditionsPage() {
         }
     }, [artistData, isLoadingArtist]);
 
+    // Verrouillage métadonnée v2 : l'édition est figée dès qu'au moins
+    // un certificat a quitté le portefeuille de l'artiste, peu importe
+    // par quel canal (claim QR officiel, transfert ERC-1155 direct,
+    // vente sur marketplace tierce).
+    const isEditionLocked = (edition: EditionInfo): boolean => {
+        const initial = edition.ipfsData?.editionSize;
+        if (!initial) return false; // métadonnée IPFS pas encore chargée
+        try {
+            return edition.remainingTokens < BigInt(initial);
+        } catch {
+            return false;
+        }
+    };
+
     useEffect(() => {
         const fetchEditions = async () => {
             if (!activeAddress || !isAuthorized || !publicClient) return;
@@ -83,7 +96,7 @@ export default function ArtistEditionsPage() {
                 for (const log of logs) {
                     const tokenId = log.args.editionId as bigint;
 
-                    const [editionMetadata, editionMerkleRoot, editionHasBeenClaimed, editionDisabled] = await publicClient.readContract({
+                    const [editionMetadata, editionMerkleRoot, editionDisabled] = await publicClient.readContract({
                         address: ARTWORK_REGISTRY_ADDRESS,
                         abi: ARTWORK_REGISTRY_ABI,
                         functionName: 'getArtworkEdition',
@@ -107,7 +120,7 @@ export default function ArtistEditionsPage() {
                         }
                     }
 
-                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, hasBeenClaimed: editionHasBeenClaimed, disabled: editionDisabled });
+                    editionsData.push({ tokenId, title: artworkTitle, metadata: editionMetadata, merkleRoot: editionMerkleRoot, remainingTokens: balance, disabled: editionDisabled });
                 }
 
                 editionsData.sort((a, b) => Number(b.tokenId) - Number(a.tokenId));
@@ -226,9 +239,9 @@ export default function ArtistEditionsPage() {
                                                             Désactivée
                                                         </span>
                                                     )}
-                                                    {edition.hasBeenClaimed && !edition.disabled && (
+                                                    {isEditionLocked(edition) && !edition.disabled && (
                                                         <span className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#78716c] border border-[#d6d0c8] px-2 py-0.5 flex-shrink-0">
-                                                            Réclamée
+                                                            Verrouillée
                                                         </span>
                                                     )}
                                                 </div>
@@ -267,7 +280,7 @@ export default function ArtistEditionsPage() {
                                             </div>
                                         </div>
                                     </Link>
-                                    {!edition.hasBeenClaimed && !edition.disabled && (
+                                    {!isEditionLocked(edition) && !edition.disabled && (
                                         <div className="px-8 pb-4 border-t border-[#f0ece6]">
                                             <Link
                                                 href={`/artist/editions/${edition.tokenId}/edit`}

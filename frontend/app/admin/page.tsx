@@ -244,7 +244,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 await new Promise(r => setTimeout(r, 5000));
                 try {
                     const edition = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtworkEdition', args: [BigInt(disableEditionId)] }) as any;
-                    if (edition[3] === true) { await showAlert(`Édition #${disableEditionId} désactivée.`); setDisableEditionId(''); return; }
+                    if (edition[2] === true) { await showAlert(`Édition #${disableEditionId} désactivée.`); setDisableEditionId(''); return; }
                 } catch {}
             }
             await showAlert('Erreur lors de la désactivation.');
