@@ -4,10 +4,6 @@ import { parseAbiItem } from 'viem';
 export const ARTWORK_REGISTRY_ADDRESS = process.env.NEXT_PUBLIC_ARTWORK_REGISTRY_ADDRESS as `0x${string}`;
 export const ARTWORK_TOKENIZATION_ADDRESS = process.env.NEXT_PUBLIC_ARTWORK_TOKENIZATION_ADDRESS as `0x${string}`;
 
-// Backward compatibility aliases
-export const PRODUCT_TRACE_STORAGE_ADDRESS = ARTWORK_REGISTRY_ADDRESS;
-export const PRODUCT_TOKENIZATION_ADDRESS = ARTWORK_TOKENIZATION_ADDRESS;
-
 // ABI ArtworkRegistry
 export const ARTWORK_REGISTRY_ABI =[
     {
