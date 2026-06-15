@@ -34,10 +34,17 @@ export const fileToBase64 = (file: File): Promise<string> => {
     });
 };
 
+const IPFS_HTTP_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL || 'https://ipfs.io/ipfs/';
+
 /**
  * Convert IPFS gateway URL to ipfs:// URI
  */
 export const gatewayUrlToIpfsUri = (url: string): string => {
+    if (!url) return url;
+    if (url.startsWith(IPFS_HTTP_GATEWAY)) {
+        return `ipfs://${url.replace(IPFS_HTTP_GATEWAY, '')}`;
+    }
+    // Legacy fallback for any data still pointing at ipfs.io
     if (url.startsWith('https://ipfs.io/ipfs/')) {
         return `ipfs://${url.replace('https://ipfs.io/ipfs/', '')}`;
     }
@@ -49,7 +56,7 @@ export const gatewayUrlToIpfsUri = (url: string): string => {
  */
 export const ipfsToHttp = (url: string): string => {
     if (url?.startsWith('ipfs://')) {
-        return `https://ipfs.io/ipfs/${url.replace('ipfs://', '')}`;
+        return `${IPFS_HTTP_GATEWAY}${url.replace('ipfs://', '')}`;
     }
     return url;
 };

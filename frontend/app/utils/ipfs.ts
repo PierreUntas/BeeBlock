@@ -4,8 +4,7 @@ const IPFS_API = '/api/ipfs';
 // In-memory cache to avoid repeated requests
 const ipfsCache = new Map<string, any>();
 
-// Public IPFS gateway (fast and reliable)
-const IPFS_GATEWAY = 'https://ipfs.io/ipfs/';
+const IPFS_GATEWAY = process.env.NEXT_PUBLIC_IPFS_GATEWAY_URL || 'https://ipfs.io/ipfs/';
 
 // Helper function to parse error responses
 async function parseErrorResponse(response: Response, defaultMessage: string): Promise<string> {
