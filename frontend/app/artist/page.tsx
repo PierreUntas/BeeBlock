@@ -11,6 +11,8 @@ import { useModal } from '@/app/ModalProvider';
 import { publicClient } from '@/lib/client';
 import { encodeFunctionData } from 'viem';
 import QRCode from 'qrcode';
+import { useSubscription } from '@/app/hooks/useSubscription';
+import { QuotaBadge } from '@/components/shared/SubscriptionGate';
 
 export default function ArtistPage() {
     const { address } = useAccount();
@@ -52,6 +54,7 @@ export default function ArtistPage() {
     const { isPending: isRegistering } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const { showAlert } = useModal();
+    const { snapshot: subscription } = useSubscription();
 
     const { data: artistData, isLoading: isLoadingArtist, refetch: refetchArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
@@ -337,6 +340,27 @@ export default function ArtistPage() {
                     <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6 text-center">
                         Chargement des données IPFS…
                     </p>
+                )}
+
+                {subscription?.status === 'past_due' && (
+                    <div className="border-2 border-[#dc2626] bg-[#fef2f2] p-5 mb-px">
+                        <p className="text-[14px] font-medium text-[#991b1b] mb-1">
+                            Échec de paiement de votre abonnement
+                        </p>
+                        <p className="text-[13px] font-light text-[#991b1b] leading-[1.7]">
+                            Mettez à jour votre moyen de paiement depuis{' '}
+                            <a href="/artist/subscription" className="underline underline-offset-4 hover:no-underline">
+                                votre espace abonnement
+                            </a>{' '}
+                            pour continuer à certifier vos œuvres.
+                        </p>
+                    </div>
+                )}
+
+                {isRegistered && subscription && (
+                    <div className="mb-px">
+                        <QuotaBadge snapshot={subscription} />
+                    </div>
                 )}
 
                 {isRegistered && (
