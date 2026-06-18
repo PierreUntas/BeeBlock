@@ -11,6 +11,8 @@ import { MerkleTree } from 'merkletreejs';
 import { keccak256, encodeFunctionData, decodeEventLog, createPublicClient, http } from 'viem';
 import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
+import { useSubscription, incrementEdition } from '@/app/hooks/useSubscription';
+import SubscriptionGate, { QuotaBadge } from '@/components/shared/SubscriptionGate';
 import QRCode from 'qrcode';
 import * as XLSX from 'xlsx';
 
@@ -25,9 +27,10 @@ const getMerkleProofForKey = (key: string, merkleTree: MerkleTree): string => {
 
 export default function CreateEditionPage() {
     const { address } = useAccount();
-    const { user } = usePrivy();
+    const { user, getAccessToken } = usePrivy();
     const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
     const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
+    const { snapshot: subscription, refresh: refreshSubscription } = useSubscription();
     const [amount, setAmount] = useState('');
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
@@ -406,6 +409,13 @@ export default function CreateEditionPage() {
                 }) as any;
                 const editionId = decoded.args.editionId?.toString();
                 setCreatedEditionId(editionId);
+                // Record the edition off-chain for quota tracking (fire and forget)
+                try {
+                    await incrementEdition(getAccessToken, BigInt(editionId), txHash.hash);
+                    await refreshSubscription();
+                } catch (e) {
+                    console.warn('Failed to increment subscription counter:', e);
+                }
                 await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
             } else {
                 console.error('NewArtworkEdition event not found in logs');
@@ -427,6 +437,12 @@ export default function CreateEditionPage() {
                     if (logs.length > 0) {
                         const editionId = (logs[logs.length - 1] as any).args?.editionId?.toString();
                         setCreatedEditionId(editionId);
+                        try {
+                            await incrementEdition(getAccessToken, BigInt(editionId));
+                            await refreshSubscription();
+                        } catch (e) {
+                            console.warn('Failed to increment subscription counter:', e);
+                        }
                         await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
                         return;
                     }
@@ -511,9 +527,9 @@ export default function CreateEditionPage() {
                 )}
 
                 <div className="text-center mb-12">
-                    <img 
-                        src="/logo-mona.svg" 
-                        alt="Mona Editions Logo" 
+                    <img
+                        src="/logo-mona.svg"
+                        alt="Mona Editions Logo"
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
@@ -521,6 +537,15 @@ export default function CreateEditionPage() {
                     </h1>
                 </div>
 
+                {subscription && subscription.remainingQuota > 0 && (
+                    <div className="mb-px">
+                        <QuotaBadge snapshot={subscription} />
+                    </div>
+                )}
+
+                {subscription && subscription.remainingQuota === 0 && !createdEditionId ? (
+                    <SubscriptionGate snapshot={subscription} />
+                ) : (
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
 
@@ -697,6 +722,7 @@ export default function CreateEditionPage() {
                         </button>
                     </form>
                 </div>
+                )}
 
                 {/* Post-creation: QR codes */}
                 {createdEditionId && secretKeys.length > 0 && merkleTree && (
