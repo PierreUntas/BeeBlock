@@ -3,12 +3,18 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useAccount } from 'wagmi';
 import { useSearchParams } from 'next/navigation';
-import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
+import {
+    ARTWORK_REGISTRY_ADDRESS,
+    ARTWORK_REGISTRY_ABI,
+    ARTWORK_TOKENIZATION_ADDRESS,
+    ARTWORK_TOKENIZATION_ABI,
+} from '@/config/contracts';
 import Image from 'next/image';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
 import { encodeFunctionData } from 'viem';
 import { publicClient } from '@/lib/client';
+import { getFromIPFSGateway } from '@/app/utils/ipfs';
 
 function ClaimTokenForm() {
     const { address } = useAccount();
@@ -27,7 +33,79 @@ function ClaimTokenForm() {
     });
 
     const { sendTransaction } = useSendTransaction();
+    const { getAccessToken } = usePrivy();
     const { showAlert } = useModal();
+
+    /**
+     * Best-effort enrichment + email notification after a successful claim.
+     * Failures are silenced — the on-chain transaction has already succeeded.
+     */
+    const sendClaimNotification = async (
+        editionIdValue: string,
+        txHash: string,
+    ): Promise<void> => {
+        let artworkTitle = '';
+        let artistName = '';
+        try {
+            const id = BigInt(editionIdValue);
+            const [editionData, artistAddress] = await Promise.all([
+                publicClient.readContract({
+                    address: ARTWORK_REGISTRY_ADDRESS,
+                    abi: ARTWORK_REGISTRY_ABI,
+                    functionName: 'getArtworkEdition',
+                    args: [id],
+                }) as Promise<readonly [string, string, boolean]>,
+                publicClient.readContract({
+                    address: ARTWORK_TOKENIZATION_ADDRESS,
+                    abi: ARTWORK_TOKENIZATION_ABI,
+                    functionName: 'tokenArtist',
+                    args: [id],
+                }) as Promise<`0x${string}`>,
+            ]);
+
+            const [editionMeta, artistInfo] = await Promise.all([
+                getFromIPFSGateway(editionData[0]).catch(() => null),
+                publicClient.readContract({
+                    address: ARTWORK_REGISTRY_ADDRESS,
+                    abi: ARTWORK_REGISTRY_ABI,
+                    functionName: 'getArtist',
+                    args: [artistAddress],
+                }) as Promise<{ authorized: boolean; metadata: string }>,
+            ]);
+
+            if (editionMeta && (editionMeta as any).title) {
+                artworkTitle = (editionMeta as any).title;
+            }
+            if (artistInfo?.metadata) {
+                const artistMeta = await getFromIPFSGateway(artistInfo.metadata).catch(() => null);
+                if (artistMeta && (artistMeta as any).name) {
+                    artistName = (artistMeta as any).name;
+                }
+            }
+        } catch (e) {
+            console.warn('Could not enrich claim email:', e);
+        }
+
+        try {
+            const token = await getAccessToken();
+            if (!token) return;
+            await fetch('/api/collector/notify-claim', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    editionId: Number(editionIdValue),
+                    txHash,
+                    artworkTitle,
+                    artistName,
+                }),
+            });
+        } catch (e) {
+            console.warn('Could not send claim notification:', e);
+        }
+    };
 
     useEffect(() => {
         const editionIdParam = searchParams.get('editionId');
@@ -100,6 +178,8 @@ function ClaimTokenForm() {
             const receipt = await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
             if (receipt.status === 'success') {
                 setSuccess(true);
+                // Best-effort confirmation email — runs in background, doesn't block UX
+                void sendClaimNotification(editionId, txResult.hash);
                 await showAlert('Token réclamé avec succès !');
                 setEditionId('');
                 setSecretKey('');
@@ -120,6 +200,9 @@ function ClaimTokenForm() {
                     });
                     if (claimed) {
                         setSuccess(true);
+                        // No tx hash available in this fallback path — pass empty
+                        // string so the API skips Basescan link gracefully.
+                        void sendClaimNotification(editionId, '');
                         await showAlert('Token réclamé avec succès !');
                         setEditionId(''); setSecretKey(''); setMerkleProofInput('');
                         return;

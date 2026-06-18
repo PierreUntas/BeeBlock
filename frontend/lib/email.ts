@@ -183,6 +183,67 @@ Pierre`;
     await send(to, subject, shell(subject, body), text);
 }
 
+/**
+ * Sent to a collector right after they successfully claim a certificate.
+ * Confirms what they received and points them to their collection page.
+ */
+export async function sendClaimReceipt(
+    to: string,
+    params: {
+        artworkTitle: string;
+        artistName: string;
+        editionId: number;
+        txHash: string;
+    },
+): Promise<void> {
+    const { artworkTitle, artistName, editionId, txHash } = params;
+    const subject = `Votre certificat « ${artworkTitle} » est confirmé — Mona Editions`;
+    const editionUrl = `https://www.monaeditions.com/explore/edition/${editionId}`;
+    const hasTxHash = typeof txHash === 'string' && txHash.length > 0;
+    const explorerUrl = hasTxHash ? `https://basescan.org/tx/${txHash}` : null;
+
+    const text = `Bonjour,
+
+Votre certificat pour l'œuvre « ${artworkTitle} » de ${artistName} a bien été réceptionné sur la blockchain Base.
+
+Vous pouvez consulter votre certificat à tout moment depuis votre espace :
+https://www.monaeditions.com/collector
+
+Page publique de l'œuvre :
+${editionUrl}
+${explorerUrl ? `\nTransaction blockchain (preuve d'enregistrement) :\n${explorerUrl}\n` : ''}
+Le certificat est désormais lié à votre portefeuille de manière permanente. Si vous transférez l'œuvre physique un jour à un autre collectionneur, vous pouvez aussi lui transférer le certificat numérique.
+
+À bientôt,
+Pierre — Mona Editions`;
+
+    const explorerHtml = explorerUrl
+        ? `<p style="margin:0 0 16px 0;font-size:13px;color:#78716c;">
+            Preuve blockchain :
+            <a href="${explorerUrl}" style="color:#1c1917;text-decoration:underline;">consulter sur Basescan</a>
+        </p>`
+        : '';
+
+    const body = `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;">Certificat confirmé.</p>
+        <p style="margin:0 0 16px 0;">L'œuvre <strong>« ${artworkTitle} »</strong> de <strong>${artistName}</strong> est désormais associée à votre portefeuille sur la blockchain Base.</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="https://www.monaeditions.com/collector" style="display:inline-block;background:#1c1917;color:#fafaf8;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #1c1917;">
+                VOIR MA COLLECTION
+            </a>
+        </p>
+        <p style="margin:24px 0 8px 0;font-size:12px;color:#78716c;letter-spacing:0.06em;text-transform:uppercase;font-weight:500;">Liens utiles</p>
+        <p style="margin:0 0 6px 0;font-size:13px;color:#78716c;">
+            Page de l'œuvre :
+            <a href="${editionUrl}" style="color:#1c1917;text-decoration:underline;">${editionUrl}</a>
+        </p>
+        ${explorerHtml}
+        <p style="margin:24px 0 0 0;font-size:13px;color:#78716c;">Le certificat est lié de manière permanente à votre portefeuille. Si vous transférez l'œuvre physique un jour, vous pouvez aussi transférer le certificat à son nouveau propriétaire.</p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">À bientôt,<br>Pierre — Mona Editions</p>
+    `;
+    await send(to, subject, shell(subject, body), text);
+}
+
 /** Sent when the artist manually renews an Atelier cycle ahead of time. */
 export async function sendRenewalConfirmation(to: string, periodEnd: Date | null): Promise<void> {
     const subject = "Nouvelle période ouverte — Mona Editions";

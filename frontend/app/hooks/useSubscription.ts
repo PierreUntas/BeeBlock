@@ -25,6 +25,23 @@ export interface SubscriptionSnapshot {
     quotaLimit: number;
     periodEditionsUsed: number;
     freeQuotaUsed: number;
+    privacyAcceptedAt: string | null;
+}
+
+/**
+ * Helper: record acceptance of the privacy policy by the authenticated user.
+ * Idempotent: subsequent calls don't overwrite the original timestamp.
+ */
+export async function acceptPrivacy(
+    getAccessToken: () => Promise<string | null>,
+): Promise<boolean> {
+    const token = await getAccessToken();
+    if (!token) return false;
+    const res = await fetch('/api/legal/accept', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+    });
+    return res.ok;
 }
 
 interface UseSubscriptionState {

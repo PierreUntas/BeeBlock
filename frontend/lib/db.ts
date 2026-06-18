@@ -28,6 +28,7 @@ export interface ArtistSubscription {
     currentPeriodEnd: Date | null;
     cancelAtPeriodEnd: boolean;
     freeQuotaUsed: number;
+    privacyAcceptedAt: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -42,6 +43,7 @@ export interface SubscriptionSnapshot {
     quotaLimit: number;              // 5 for free, 50 for atelier
     periodEditionsUsed: number;      // editions used in the current window
     freeQuotaUsed: number;
+    privacyAcceptedAt: Date | null;  // null = never accepted RGPD privacy policy
 }
 
 // ---- Constants -------------------------------------------------------------
@@ -74,6 +76,7 @@ function rowToSubscription(row: any): ArtistSubscription | null {
         currentPeriodEnd: row.current_period_end ? new Date(row.current_period_end) : null,
         cancelAtPeriodEnd: row.cancel_at_period_end,
         freeQuotaUsed: row.free_quota_used,
+        privacyAcceptedAt: row.privacy_accepted_at ? new Date(row.privacy_accepted_at) : null,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     };
@@ -156,6 +159,7 @@ export async function buildSnapshot(
             quotaLimit: ATELIER_QUOTA_LIMIT,
             periodEditionsUsed,
             freeQuotaUsed: sub.freeQuotaUsed,
+            privacyAcceptedAt: sub.privacyAcceptedAt,
         };
     }
 
@@ -170,6 +174,7 @@ export async function buildSnapshot(
         quotaLimit: FREE_QUOTA_LIMIT,
         periodEditionsUsed: sub.freeQuotaUsed,
         freeQuotaUsed: sub.freeQuotaUsed,
+        privacyAcceptedAt: sub.privacyAcceptedAt,
     };
 }
 

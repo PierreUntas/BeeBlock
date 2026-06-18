@@ -7,9 +7,12 @@
 Le responsable du traitement des données personnelles collectées sur Mona Editions est :
 
 **Pierre Untas**
+Entrepreneur individuel — auto-entreprise en cours d'immatriculation (SIRET à venir)
+88 rue Lagrange, 33000 Bordeaux, France
+Téléphone : 06 42 48 03 57
 Email : pierre.untas@gmail.com
 
-Au stade actuel du projet, l'éditeur n'a pas désigné de Délégué à la Protection des Données (DPO) — non requis légalement compte tenu de la nature et du volume des traitements.
+Au stade actuel du projet, l'éditeur n'a pas désigné de Délégué à la Protection des Données (DPO) — non requis légalement compte tenu de la nature et du volume des traitements. Toute demande relative aux données personnelles peut être adressée directement à l'éditeur aux coordonnées ci-dessus.
 
 ## 2. Données collectées et finalités
 

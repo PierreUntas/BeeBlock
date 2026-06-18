@@ -12,17 +12,26 @@ Ce dossier contient les **brouillons de travail** des documents juridiques néce
 
 ## Check-list avant publication officielle
 
-- [ ] Compléter les champs `(à compléter)` (SIRET, adresse, médiateur conso, etc.)
-- [ ] Faire relire par un juriste spécialisé en droit du numérique ou de la consommation (budget indicatif : 150-400 €)
-- [ ] Adhérer à un dispositif de médiation de la consommation (obligatoire dès l'activité B2C, env. 80-200 €/an selon CMAP, Médicys, etc.)
-- [ ] Publier les 3 documents en pages publiques sur le site :
-  - `/mentions-legales`
-  - `/confidentialite`
-  - `/conditions-abonnement`
-- [ ] Renseigner ces URLs dans Stripe Dashboard (Settings → Public details → Terms of service URL + Privacy policy URL)
-- [ ] Réactiver dans le code `consent_collection.terms_of_service: 'required'` dans `frontend/app/api/subscription/checkout/route.ts` (ligne commentée)
-- [ ] Ajouter une case à cocher RGPD au moment de l'inscription artiste (acceptation de la politique de confidentialité)
-- [ ] Mettre à jour le footer du site avec les 3 liens
+### Pré-remplissage (juin 2026)
+
+- [x] Identité éditeur : Pierre Untas, 88 rue Lagrange 33000 Bordeaux, 06 42 48 03 57
+- [x] Statut : auto-entreprise en cours d'immatriculation
+- [x] Code APE pré-rempli : 62.01Z (Programmation informatique)
+- [x] Régime TVA : franchise en base, art. 293 B CGI
+- [x] Médiateur : Médicys (à confirmer après adhésion réelle)
+- [x] Tribunal compétent B2B : Tribunal de commerce de Bordeaux
+- [x] Publication des 3 documents en pages publiques : `/legal/mentions`, `/legal/privacy`, `/legal/terms`
+- [x] Footer du site mis à jour avec les 3 liens
+
+### Reste à faire (côté Pierre, externe)
+
+- [ ] **Finaliser la déclaration auto-entreprise** sur autoentrepreneur.urssaf.fr → recevoir le SIRET (~7 jours)
+- [ ] **Compléter le SIRET** dans les 3 documents dès réception (chercher « SIRET à venir » et remplacer)
+- [ ] **Adhérer à Médicys** sur medicys.fr (~120 € HT/an)
+- [ ] **Faire relire les 3 documents par un juriste** — dans le cas de Pierre, sa femme avocate (voir notes pour juriste plus bas)
+- [ ] **Renseigner les URLs juridiques dans Stripe** (Settings → Public details → Terms of service URL + Privacy policy URL)
+- [ ] **Réactiver dans le code `consent_collection.terms_of_service: 'required'`** dans `frontend/app/api/subscription/checkout/route.ts` (la ligne actuellement commentée)
+- [ ] **Ajouter une case à cocher RGPD** au moment de l'inscription artiste (acceptation de la politique de confidentialité)
 
 ## Adaptation selon le statut juridique de l'éditeur
 

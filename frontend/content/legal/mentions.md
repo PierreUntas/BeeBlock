@@ -5,11 +5,13 @@
 ## Éditeur du site
 
 **Nom** : Pierre Untas
-**Statut** : *(à compléter — particulier en cours de création d'auto-entreprise, ou auto-entrepreneur enregistré au RCS/RM si déjà fait)*
-**Adresse postale** : *(à compléter — adresse personnelle ou siège auto-entreprise)*
-**SIRET** : *(à compléter une fois reçu)*
+**Statut** : Entrepreneur individuel — auto-entreprise en cours d'immatriculation auprès de l'URSSAF (SIRET à venir)
+**Activité principale** : Programmation informatique (code APE 62.01Z — sous réserve de classement définitif par l'INSEE)
+**Adresse postale** : 88 rue Lagrange, 33000 Bordeaux, France
+**Téléphone** : 06 42 48 03 57
 **Email de contact** : pierre.untas@gmail.com
 **Directeur de la publication** : Pierre Untas
+**TVA** : non applicable, franchise en base de TVA conformément à l'article 293 B du Code général des impôts
 
 ## Hébergement
 

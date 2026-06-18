@@ -11,11 +11,11 @@ import { useModal } from '@/app/ModalProvider';
 import { publicClient } from '@/lib/client';
 import { encodeFunctionData } from 'viem';
 import QRCode from 'qrcode';
-import { useSubscription } from '@/app/hooks/useSubscription';
+import { useSubscription, acceptPrivacy } from '@/app/hooks/useSubscription';
 
 export default function ArtistPage() {
     const { address } = useAccount();
-    const { user } = usePrivy();
+    const { user, getAccessToken } = usePrivy();
     const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
     const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
     const [name, setName] = useState('');
@@ -53,7 +53,13 @@ export default function ArtistPage() {
     const { isPending: isRegistering } = useWriteContract();
     const { sendTransaction } = useSendTransaction();
     const { showAlert } = useModal();
-    const { snapshot: subscription } = useSubscription();
+    const { snapshot: subscription, refresh: refreshSubscription } = useSubscription();
+
+    // RGPD: the artist must accept the privacy policy on first registration.
+    // Once accepted (server-side timestamp set), the checkbox is hidden.
+    const [privacyAccepted, setPrivacyAccepted] = useState(false);
+    const needsPrivacyAcceptance =
+        subscription !== null && subscription.privacyAcceptedAt === null;
 
     const { data: artistData, isLoading: isLoadingArtist, refetch: refetchArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
@@ -185,6 +191,23 @@ export default function ArtistPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // RGPD: require explicit acceptance of the privacy policy before
+        // creating an artist account. Once accepted server-side, the
+        // checkbox is hidden so existing artists aren't prompted again.
+        if (needsPrivacyAcceptance) {
+            if (!privacyAccepted) {
+                showAlert("Veuillez accepter la politique de confidentialité avant de continuer.");
+                return;
+            }
+            const ok = await acceptPrivacy(getAccessToken);
+            if (!ok) {
+                showAlert("Impossible d'enregistrer votre acceptation. Réessayez dans un instant.");
+                return;
+            }
+            await refreshSubscription();
+        }
+
         setLoadingStates(prev => ({ ...prev, uploading: true }));
 
         let savedCid = '';
@@ -565,9 +588,40 @@ export default function ArtistPage() {
                             </div>
                         )}
 
+                        {needsPrivacyAcceptance && (
+                            <div className="border border-[#d6d0c8] bg-[#ede9e3] p-5">
+                                <label className="flex items-start gap-3 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={privacyAccepted}
+                                        onChange={(e) => setPrivacyAccepted(e.target.checked)}
+                                        required
+                                        className="mt-1 w-4 h-4 accent-[#1c1917] cursor-pointer flex-shrink-0"
+                                    />
+                                    <span className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                                        J'ai lu et j'accepte la{' '}
+                                        <a
+                                            href="/legal/privacy"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="underline underline-offset-2 hover:no-underline font-medium"
+                                        >
+                                            politique de confidentialité
+                                        </a>
+                                        , notamment ses dispositions relatives aux données enregistrées sur la blockchain et au stockage IPFS qui présentent un caractère permanent.
+                                    </span>
+                                </label>
+                            </div>
+                        )}
+
                         <button
                             type="submit"
-                            disabled={isRegistering || loadingStates.uploading || loadingStates.loadingIPFS}
+                            disabled={
+                                isRegistering ||
+                                loadingStates.uploading ||
+                                loadingStates.loadingIPFS ||
+                                (needsPrivacyAcceptance && !privacyAccepted)
+                            }
                             className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                         >
                             {loadingStates.uploading

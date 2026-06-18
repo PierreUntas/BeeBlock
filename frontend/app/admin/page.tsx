@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAccount, useReadContract } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
 import { encodeFunctionData, keccak256 } from 'viem';
 import { MerkleTree } from 'merkletreejs';
@@ -35,8 +35,32 @@ export default function AdminPage() {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
     const [isGeneratingKeys, setIsGeneratingKeys] = useState(false);
 
+    // Subscription comp section (off-chain Atelier grant/revoke)
+    const [compArtistAddress, setCompArtistAddress] = useState('');
+    const [isGrantingAtelier, setIsGrantingAtelier] = useState(false);
+    const [isRevokingAtelier, setIsRevokingAtelier] = useState(false);
+
+    // Artists dashboard
+    interface ArtistRow {
+        walletAddress: string;
+        email: string | null;
+        plan: 'free' | 'atelier';
+        status: string;
+        currentPeriodEnd: string | null;
+        cancelAtPeriodEnd: boolean;
+        freeQuotaUsed: number;
+        privacyAcceptedAt: string | null;
+        createdAt: string;
+        editionsCount: number;
+        hasStripeSubscription: boolean;
+    }
+    const [artists, setArtists] = useState<ArtistRow[]>([]);
+    const [isLoadingArtists, setIsLoadingArtists] = useState(false);
+    const [artistsSearch, setArtistsSearch] = useState('');
+
     const router = useRouter();
     const { sendTransaction } = useSendTransaction();
+    const { getAccessToken } = usePrivy();
     const { showAlert, showConfirm } = useModal();
 
     const { data: isAdminResult, isLoading: isLoadingAdmin } = useReadContract({
@@ -145,6 +169,94 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
             }
         } finally {
             setIsRevokingArtist(false);
+        }
+    };
+
+    const loadArtists = async () => {
+        setIsLoadingArtists(true);
+        try {
+            const token = await getAccessToken();
+            const res = await fetch('/api/admin/artists', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'fetch_failed');
+            setArtists(data.artists || []);
+        } catch (err: any) {
+            console.error('Failed to load artists:', err);
+        } finally {
+            setIsLoadingArtists(false);
+        }
+    };
+
+    // Auto-load on first render when the user is confirmed as admin
+    useEffect(() => {
+        if (isAdmin) loadArtists();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isAdmin]);
+
+    const handleGrantAtelier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!compArtistAddress) return;
+        const confirmed = await showConfirm(
+            `Offrir un abonnement Atelier gratuit (illimité) à ${compArtistAddress.slice(0, 6)}…${compArtistAddress.slice(-4)} ?`,
+        );
+        if (!confirmed) return;
+        setIsGrantingAtelier(true);
+        try {
+            const token = await getAccessToken();
+            const res = await fetch('/api/admin/grant-atelier', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ walletAddress: compArtistAddress }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'request_failed');
+            await showAlert('Abonnement Atelier offert avec succès.');
+            setCompArtistAddress('');
+            loadArtists();
+        } catch (err: any) {
+            await showAlert(`Erreur : ${err?.message || 'inconnue'}`);
+        } finally {
+            setIsGrantingAtelier(false);
+        }
+    };
+
+    const handleRevokeAtelier = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!compArtistAddress) return;
+        const confirmed = await showConfirm(
+            `Révoquer l'abonnement Atelier offert à ${compArtistAddress.slice(0, 6)}…${compArtistAddress.slice(-4)} ? L'artiste rebascule sur le palier Découverte.`,
+        );
+        if (!confirmed) return;
+        setIsRevokingAtelier(true);
+        try {
+            const token = await getAccessToken();
+            const res = await fetch('/api/admin/revoke-atelier', {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ walletAddress: compArtistAddress }),
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                if (data.error === 'cannot_revoke_stripe_managed_subscription') {
+                    throw new Error("Cet artiste a un abonnement Stripe actif — ne peut pas être révoqué depuis ici. Il doit annuler depuis son Customer Portal.");
+                }
+                throw new Error(data.error || 'request_failed');
+            }
+            await showAlert('Abonnement Atelier révoqué.');
+            setCompArtistAddress('');
+            loadArtists();
+        } catch (err: any) {
+            await showAlert(`Erreur : ${err?.message || 'inconnue'}`);
+        } finally {
+            setIsRevokingAtelier(false);
         }
     };
 
@@ -549,6 +661,161 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                             </form>
                         </div>
                     )}
+                </div>
+
+                {/* Subscription comp — off-chain Atelier grant/revoke */}
+                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                    <h2 className="text-[22px] font-normal text-[#1c1917] mb-2">
+                        Offrir un <em className="italic text-[#78716c]">abonnement Atelier</em>
+                    </h2>
+                    <p className="text-[13px] font-light text-[#78716c] mb-5 leading-[1.7]">
+                        Octroi off-chain d'un abonnement Atelier gratuit illimité à un artiste (typiquement pour les pilotes). Aucune transaction Stripe n'est créée. Pour révoquer un abonnement Stripe payant, l'artiste doit passer par son Customer Portal.
+                    </p>
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                Adresse du wallet artiste
+                            </label>
+                            <input
+                                type="text"
+                                value={compArtistAddress}
+                                onChange={(e) => setCompArtistAddress(e.target.value)}
+                                placeholder="0x..."
+                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                pattern="^0x[a-fA-F0-9]{40}$"
+                            />
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <button
+                                type="button"
+                                onClick={handleGrantAtelier}
+                                disabled={isGrantingAtelier || isRevokingAtelier || !compArtistAddress}
+                                className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            >
+                                {isGrantingAtelier ? 'Octroi en cours…' : "Offrir l'Atelier"}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={handleRevokeAtelier}
+                                disabled={isGrantingAtelier || isRevokingAtelier || !compArtistAddress}
+                                className="w-full bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#d6d0c8] disabled:opacity-50 hover:border-[#1c1917] transition-all duration-200"
+                            >
+                                {isRevokingAtelier ? 'Révocation…' : "Révoquer l'Atelier offert"}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Artists dashboard */}
+                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                    <div className="flex items-start justify-between mb-5 gap-4 flex-wrap">
+                        <div>
+                            <h2 className="text-[22px] font-normal text-[#1c1917]">
+                                Artistes <em className="italic text-[#78716c]">inscrits</em>
+                            </h2>
+                            <p className="text-[13px] font-light text-[#78716c] mt-1">
+                                {artists.length} artiste{artists.length > 1 ? 's' : ''} en base — toutes plateformes confondues
+                            </p>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={loadArtists}
+                            disabled={isLoadingArtists}
+                            className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] border border-[#d6d0c8] hover:border-[#1c1917] px-4 py-2 transition-all"
+                        >
+                            {isLoadingArtists ? 'Chargement…' : '↻ Rafraîchir'}
+                        </button>
+                    </div>
+
+                    <input
+                        type="text"
+                        value={artistsSearch}
+                        onChange={(e) => setArtistsSearch(e.target.value)}
+                        placeholder="Filtrer par adresse, email…"
+                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors mb-5"
+                    />
+
+                    {artists.length === 0 && !isLoadingArtists && (
+                        <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
+                            Aucun artiste inscrit pour l'instant.
+                        </p>
+                    )}
+
+                    <div className="space-y-px">
+                        {artists
+                            .filter((a) => {
+                                if (!artistsSearch) return true;
+                                const q = artistsSearch.toLowerCase();
+                                return (
+                                    a.walletAddress.toLowerCase().includes(q) ||
+                                    (a.email?.toLowerCase().includes(q) ?? false)
+                                );
+                            })
+                            .map((a) => {
+                                const isAtelierActive = a.plan === 'atelier' && a.status === 'active';
+                                const isPastDue = a.status === 'past_due';
+                                const isCanceled = a.status === 'canceled';
+                                const isComp = isAtelierActive && !a.hasStripeSubscription;
+                                let planLabel = 'Découverte';
+                                let planClass = 'text-[#78716c] border-[#d6d0c8]';
+                                if (isAtelierActive) {
+                                    planLabel = isComp ? 'Atelier (offert)' : 'Atelier';
+                                    planClass = 'text-[#1c1917] border-[#1c1917]';
+                                }
+                                if (isPastDue) {
+                                    planLabel = 'Atelier (paiement échoué)';
+                                    planClass = 'text-[#991b1b] border-[#dc2626]';
+                                }
+                                if (isCanceled) {
+                                    planLabel = 'Atelier (annulé)';
+                                    planClass = 'text-[#a8a29e] border-[#d6d0c8]';
+                                }
+
+                                return (
+                                    <div
+                                        key={a.walletAddress}
+                                        className="border border-[#d6d0c8] bg-[#f5f3ef] p-4 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3"
+                                    >
+                                        <div className="space-y-1.5 min-w-0">
+                                            <div className="flex items-center gap-2 flex-wrap">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setCompArtistAddress(a.walletAddress)}
+                                                    className="font-mono text-[12px] text-[#1c1917] hover:underline cursor-pointer text-left"
+                                                    title="Copier dans le champ de comp"
+                                                >
+                                                    {a.walletAddress.slice(0, 10)}…{a.walletAddress.slice(-6)}
+                                                </button>
+                                                <span className={`inline-block text-[10px] font-medium tracking-[0.06em] uppercase border px-2 py-0.5 ${planClass}`}>
+                                                    {planLabel}
+                                                </span>
+                                                {a.privacyAcceptedAt && (
+                                                    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#4a5240] border border-[#4a5240] px-2 py-0.5">
+                                                        RGPD ✓
+                                                    </span>
+                                                )}
+                                                {!a.privacyAcceptedAt && (
+                                                    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-2 py-0.5">
+                                                        RGPD —
+                                                    </span>
+                                                )}
+                                            </div>
+                                            <p className="text-[12px] font-light text-[#78716c] truncate">
+                                                {a.email || <em className="italic">email non renseigné</em>}
+                                            </p>
+                                            <p className="text-[11px] font-light text-[#a8a29e]">
+                                                {a.editionsCount} œuvre{a.editionsCount > 1 ? 's' : ''} certifiée{a.editionsCount > 1 ? 's' : ''}
+                                                {a.plan === 'free' && ` · ${a.freeQuotaUsed}/5 quota Découverte`}
+                                                {isAtelierActive && a.currentPeriodEnd && ` · expire le ${new Date(a.currentPeriodEnd).toLocaleDateString('fr-FR')}`}
+                                            </p>
+                                            <p className="text-[10px] font-light text-[#a8a29e]">
+                                                Inscrit le {new Date(a.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                            </p>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                    </div>
                 </div>
 
                 {/* Footer mark */}

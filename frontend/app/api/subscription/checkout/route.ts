@@ -48,10 +48,13 @@ export async function POST(req: NextRequest) {
             metadata: {
                 wallet_address: auth.walletAddress,
             },
-            // Note: `consent_collection.terms_of_service` would be enabled here
-            // once a Terms of Service URL is configured in Stripe Dashboard
-            // (Settings → Public details). Required for the EU consumer-rights
-            // compliance step; harmless to leave off during testing.
+            // EU consumer-rights compliance: explicit ToS acceptance.
+            // Requires a Terms of Service URL configured in Stripe Dashboard
+            // → Settings → Public details → Terms of service URL pointing to
+            // https://www.monaeditions.com/legal/terms before this is enabled.
+            consent_collection: {
+                terms_of_service: 'required',
+            },
         });
 
         if (!session.url) {
