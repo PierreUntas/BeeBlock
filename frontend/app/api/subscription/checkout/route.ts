@@ -45,15 +45,13 @@ export async function POST(req: NextRequest) {
             line_items: [{ price: STRIPE_PRICE_ID, quantity: 1 }],
             success_url: `${APP_URL}/artist/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
             cancel_url: `${APP_URL}/artist/subscription?canceled=true`,
-            // Required by EU regulations: explicit acceptance of the terms
-            consent_collection: {
-                terms_of_service: 'required',
-            },
-            // Tells Stripe we're EU-based; respects EU VAT rules when applicable
-            automatic_tax: { enabled: false },
             metadata: {
                 wallet_address: auth.walletAddress,
             },
+            // Note: `consent_collection.terms_of_service` would be enabled here
+            // once a Terms of Service URL is configured in Stripe Dashboard
+            // (Settings → Public details). Required for the EU consumer-rights
+            // compliance step; harmless to leave off during testing.
         });
 
         if (!session.url) {
@@ -61,9 +59,22 @@ export async function POST(req: NextRequest) {
         }
         return NextResponse.json({ url: session.url });
     } catch (err: any) {
-        const status = err?.status ?? 500;
+        // Log the full error to Vercel function logs so we can diagnose
+        // mismatches between code / Stripe account configuration / env vars.
+        console.error('[checkout] failed:', {
+            message: err?.message,
+            code: err?.code,
+            type: err?.type,
+            statusCode: err?.statusCode,
+            raw: err?.raw,
+        });
+        const status = err?.statusCode ?? err?.status ?? 500;
         return NextResponse.json(
-            { error: err?.message || 'internal_error' },
+            {
+                error: err?.message || 'internal_error',
+                code: err?.code,
+                type: err?.type,
+            },
             { status },
         );
     }
