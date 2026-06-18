@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import Link from 'next/link';
@@ -11,7 +11,31 @@ import {
     useSubscription,
 } from '@/app/hooks/useSubscription';
 
+/**
+ * Next.js requires components using useSearchParams() to be wrapped in a
+ * <Suspense> boundary so the page can be partially prerendered at build time.
+ * We split the inner content into its own component for that reason.
+ */
 export default function ArtistSubscriptionPage() {
+    return (
+        <Suspense
+            fallback={
+                <div className="min-h-screen bg-[#f5f3ef]">
+                    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
+                        <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
+                            Chargement de votre abonnement…
+                        </p>
+                    </div>
+                </div>
+            }
+        >
+            <ArtistSubscriptionPageInner />
+        </Suspense>
+    );
+}
+
+function ArtistSubscriptionPageInner() {
     const { authenticated, getAccessToken, ready } = usePrivy();
     const { snapshot, loading, error, refresh } = useSubscription();
     const params = useSearchParams();
