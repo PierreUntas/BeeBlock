@@ -100,7 +100,7 @@ const Footer = () => {
                     <span className="text-[#d6d0c8]">·</span>
                     <FooterLink href="/legal/mentions">Mentions légales</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/legal/terms">CGU</FooterLink>
+                    <FooterLink href="/legal/terms">Conditions d'abonnement</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
                     <FooterLink href="/legal/privacy">Confidentialité</FooterLink>
                 </div>

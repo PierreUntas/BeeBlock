@@ -20,6 +20,7 @@
     "ipfs-http-client": "^60.0.1",
     "jszip": "^3.10.1",
     "lucide-react": "^0.555.0",
+    "marked": "^18.0.5",
     "merkletreejs": "^0.6.0",
     "next": "16.0.10",
     "pinata": "^2.5.1",
