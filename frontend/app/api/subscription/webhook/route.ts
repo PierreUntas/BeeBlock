@@ -24,6 +24,12 @@ import {
     normalizeWallet,
 } from '@/lib/db';
 import { getStripe } from '@/lib/stripe';
+import {
+    sendWelcomeAtelier,
+    sendSubscriptionCanceled,
+    sendPaymentFailed,
+    sendRenewalConfirmation,
+} from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 // Stripe needs the raw request body to verify the signature
@@ -97,6 +103,18 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     await updateSubscription(normalizeWallet(wallet), {
         stripeCustomerId: customerId,
     });
+
+    // Send an email — welcome for first subscription, renewal confirmation
+    // when triggered by the manual renewal flow.
+    const email = session.customer_details?.email || session.customer_email;
+    if (email) {
+        const isRenewal = session.metadata?.renewal === 'true';
+        if (isRenewal) {
+            await sendRenewalConfirmation(email, null);
+        } else {
+            await sendWelcomeAtelier(email);
+        }
+    }
 }
 
 async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
@@ -120,6 +138,11 @@ async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
         ? new Date((sub as any).current_period_end * 1000)
         : null;
 
+    // Detect cancellation transition: cancel_at_period_end changed
+    // from false to true on this update. We send the email only once.
+    const willCancelAtPeriodEnd =
+        sub.cancel_at_period_end && !dbSub.cancelAtPeriodEnd;
+
     await updateSubscription(dbSub.walletAddress, {
         stripeSubscriptionId: sub.id,
         plan: isActiveOrTrialing ? 'atelier' : 'free',
@@ -128,6 +151,10 @@ async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
         currentPeriodEnd: periodEnd,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
     });
+
+    if (willCancelAtPeriodEnd && dbSub.email) {
+        await sendSubscriptionCanceled(dbSub.email, periodEnd);
+    }
 }
 
 async function handleSubscriptionDeleted(sub: Stripe.Subscription) {
@@ -151,6 +178,10 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     const dbSub = await findByStripeCustomerId(customerId);
     if (!dbSub) return;
     await updateSubscription(dbSub.walletAddress, { status: 'past_due' });
+    // Notify the artist they should update their card.
+    if (dbSub.email) {
+        await sendPaymentFailed(dbSub.email);
+    }
 }
 
 // ---- Helpers ---------------------------------------------------------------
