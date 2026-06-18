@@ -50,7 +50,7 @@ L'Artiste est redirigé vers une page sécurisée Stripe pour saisir ses informa
 
 ### 4.2 Prix et facturation
 
-Les prix sont affichés en euros TTC. À ce stade, la plateforme n'est pas assujettie à la TVA française *(à compléter selon le statut juridique définitif de l'Éditeur)*.
+Les prix sont affichés en euros, toutes taxes éventuelles comprises. L'Éditeur bénéficie de la franchise en base de TVA conformément à l'article 293 B du Code général des impôts : **la TVA n'est pas applicable** et n'est donc ni facturée ni récupérable. Les factures émises porteront la mention « TVA non applicable, art. 293 B du CGI ».
 
 Une facture est émise par Stripe à chaque échéance et envoyée à l'adresse email de l'Artiste. Elle reste accessible dans l'espace client Stripe (« Customer Portal ») accessible depuis la page abonnement.
 
@@ -101,24 +101,76 @@ Si après 21 jours aucun paiement n'a pu être effectué, l'abonnement est autom
 
 ## Article 8 — Données blockchain et IPFS — Irrévocabilité
 
-L'Artiste reconnaît expressément que **les certificats émis sur la blockchain Base sont permanents et irrévocables**. Une fois publiés, ils :
+### 8.1 Information préalable
 
-- Ne peuvent pas être supprimés par Mona Editions ni par l'Artiste
-- Restent consultables par toute personne disposant d'un accès à la blockchain
-- Continuent d'exister même après résiliation de l'abonnement
-- Continuent d'exister même en cas d'arrêt de la plateforme Mona Editions
+Conformément à la délibération CNIL n°2018-352 du 24 septembre 2018 relative à la blockchain et au RGPD, Mona Editions informe explicitement l'Artiste, avant toute souscription, des particularités techniques irréductibles suivantes.
 
-De même, les métadonnées et images publiées sur IPFS sont stockées de manière redondante et difficiles à retirer du réseau public IPFS une fois propagées.
+### 8.2 Données enregistrées sur la blockchain Base
 
-L'Artiste est donc invité à **vérifier soigneusement les informations et images de chaque œuvre avant validation** de la certification.
+Lors de la certification d'une édition, Mona Editions enregistre sur la blockchain Base les seules informations suivantes :
+
+- L'adresse de portefeuille de l'Artiste (donnée pseudonyme au sens du RGPD)
+- L'adresse de portefeuille du Collectionneur lors d'une réclamation (idem)
+- L'empreinte cryptographique (hash CID IPFS) des métadonnées de l'œuvre — pas le contenu lui-même
+- L'identifiant numérique de l'édition et sa taille
+
+Conformément à la recommandation de minimisation de la CNIL, **aucune donnée personnelle en clair** (nom, biographie, image, titre d'œuvre) n'est jamais publiée directement sur la blockchain.
+
+Ces données blockchain sont :
+
+- Permanentes : ni Mona Editions ni l'Artiste ne peuvent les supprimer après émission
+- Publiques : consultables par toute personne disposant d'un nœud Base
+- Maintenues même après résiliation de l'abonnement ou arrêt de la plateforme
+
+### 8.3 Métadonnées et images stockées sur IPFS
+
+Les métadonnées en clair (titre, description, technique, dimensions, images de l'œuvre, profil artiste) sont stockées sur le réseau **IPFS** via le prestataire Pinata Technologies Inc.
+
+À la demande de l'Artiste, Mona Editions peut :
+
+- **Retirer (« dépinner »)** ces contenus du service Pinata, ce qui les supprime de notre infrastructure
+- **Demander à Pinata** de procéder à un effacement définitif côté prestataire
+
+Mona Editions **ne peut pas garantir** la purge complète des contenus IPFS si ces derniers ont été répliqués par des nœuds tiers du réseau public IPFS antérieurement à la demande d'effacement. Cette limitation est purement technique et tient à la nature décentralisée du protocole IPFS.
+
+### 8.4 Conséquences sur le droit à l'effacement (art. 17 RGPD)
+
+Le droit à l'effacement s'applique pleinement aux données détenues par Mona Editions hors blockchain (compte artiste, email, données de facturation, logs).
+
+Pour les données on-chain et IPFS, ce droit fait l'objet d'une limitation due à l'impossibilité technique d'effacement, conformément aux exceptions reconnues par la CNIL. Mona Editions s'engage néanmoins à :
+
+- Dépinner sur demande tous contenus IPFS qu'elle contrôle
+- Cesser tout traitement et affichage actif des données concernées
+- Anonymiser au mieux ses bases off-chain
+
+### 8.5 Précaution recommandée
+
+L'Artiste est explicitement invité à **vérifier scrupuleusement les informations, métadonnées et images de chaque œuvre avant validation de la certification**. Une fois la transaction blockchain confirmée, les données ne pourront plus être effacées par les moyens habituels.
+
+Une mise à jour des métadonnées reste possible tant que l'Artiste détient l'intégralité de l'édition (cf. article 4.1 du contrat technique) ; elle remplace alors le hash on-chain mais ne supprime pas l'historique des versions précédentes.
 
 ## Article 9 — Propriété intellectuelle
 
-L'Artiste garantit qu'il détient l'intégralité des droits de propriété intellectuelle nécessaires sur les œuvres qu'il certifie : droits d'auteur, droits voisins, droits à l'image des personnes représentées le cas échéant.
+### 9.1 Pleine propriété de l'Artiste
 
-L'Artiste accorde à Mona Editions, pour la durée de l'abonnement et 1 an après sa résiliation, un droit non-exclusif d'utiliser le titre, les images, les métadonnées et le nom de l'Artiste aux seules fins d'affichage public sur la plateforme et de promotion du service.
+L'Artiste conserve **l'intégralité de ses droits de propriété intellectuelle** sur les œuvres qu'il certifie sur la plateforme : droits patrimoniaux, droits moraux, droit d'exploitation, droit de reproduction, droit de représentation.
 
-Aucun droit de propriété sur les œuvres certifiées n'est transféré à Mona Editions.
+Mona Editions n'acquiert **aucun droit de propriété, aucune licence d'exploitation, aucun droit dérivé** sur les œuvres certifiées. Les certificats émis par la plateforme attestent uniquement de l'identité du créateur et de la chaîne de propriété d'un exemplaire physique de l'œuvre ; ils n'opèrent aucun transfert de droits de propriété intellectuelle.
+
+### 9.2 Garantie de l'Artiste
+
+L'Artiste garantit qu'il détient les droits nécessaires sur les œuvres qu'il certifie : droits d'auteur sur les œuvres originales, droits voisins le cas échéant, droits à l'image des personnes représentées si applicable. Il garantit Mona Editions contre toute revendication d'un tiers en lien avec une œuvre certifiée.
+
+### 9.3 Autorisation technique d'affichage
+
+Pour permettre le fonctionnement technique du service, l'Artiste autorise expressément Mona Editions à **héberger, afficher et faire afficher** les images, métadonnées et informations qu'il a lui-même téléversées sur la plateforme. Cette autorisation :
+
+- Est strictement limitée à l'affichage sur les pages publiques de Mona Editions et dans les certificats émis
+- N'inclut **aucun usage commercial, promotionnel ou publicitaire** de l'œuvre en dehors de la plateforme
+- N'inclut **aucun droit de modification, d'adaptation ou d'œuvre dérivée**
+- Cesse à la résiliation de l'abonnement (à l'exception du caractère permanent des certificats blockchain déjà émis, cf. article 8)
+
+Si Mona Editions souhaite, à titre exceptionnel, communiquer publiquement sur une œuvre certifiée (article de blog, réseaux sociaux, etc.), une **autorisation écrite expresse** de l'Artiste sera systématiquement sollicitée au préalable.
 
 ## Article 10 — Responsabilité
 
@@ -149,13 +201,19 @@ Le traitement des données personnelles de l'Artiste est régi par la [Politique
 
 ## Article 13 — Médiation de la consommation
 
-Conformément à l'article L.612-1 du Code de la consommation, l'Artiste consommateur peut recourir gratuitement à un médiateur de la consommation en cas de litige non résolu avec l'Éditeur. Coordonnées du médiateur compétent : *(à compléter — l'Éditeur doit adhérer à un dispositif de médiation et indiquer son nom + URL)*.
+Conformément aux articles L.612-1 et suivants du Code de la consommation, l'Artiste consommateur peut, en cas de litige non résolu avec l'Éditeur, recourir gratuitement au médiateur de la consommation dont l'Éditeur relève :
+
+**Médicys** — Centre de médiation et règlement amiable des huissiers de justice
+73 boulevard de Clichy, 75009 Paris
+Site web : https://www.medicys.fr
+
+L'Artiste doit avoir tenté au préalable de résoudre le litige amiablement avec l'Éditeur par écrit (email à pierre.untas@gmail.com) avant de saisir le médiateur.
 
 ## Article 14 — Droit applicable et juridiction
 
 Les présentes CGA sont régies par le droit français. Tout litige relatif à leur formation, leur exécution ou leur interprétation relève des tribunaux français compétents, sauf disposition impérative contraire bénéficiant au consommateur.
 
-Pour les litiges B2B, compétence exclusive du Tribunal de commerce du ressort du siège de l'Éditeur.
+Pour les litiges B2B (entre professionnels), compétence exclusive est attribuée au **Tribunal de commerce de Bordeaux**, lieu du siège de l'Éditeur.
 
 ## Article 15 — Contact
 
