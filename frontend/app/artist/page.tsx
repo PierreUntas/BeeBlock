@@ -12,7 +12,6 @@ import { publicClient } from '@/lib/client';
 import { encodeFunctionData } from 'viem';
 import QRCode from 'qrcode';
 import { useSubscription } from '@/app/hooks/useSubscription';
-import { QuotaBadge } from '@/components/shared/SubscriptionGate';
 
 export default function ArtistPage() {
     const { address } = useAccount();
@@ -354,12 +353,6 @@ export default function ArtistPage() {
                             </a>{' '}
                             pour continuer à certifier vos œuvres.
                         </p>
-                    </div>
-                )}
-
-                {isRegistered && subscription && (
-                    <div className="mb-px">
-                        <QuotaBadge snapshot={subscription} />
                     </div>
                 )}
 

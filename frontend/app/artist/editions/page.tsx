@@ -9,8 +9,6 @@ import { getCategoryLabel } from '@/app/utils/categories';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
-import { useSubscription } from '@/app/hooks/useSubscription';
-import { QuotaBadge } from '@/components/shared/SubscriptionGate';
 
 interface EditionIPFSData {
     title: string;
@@ -41,7 +39,6 @@ export default function ArtistEditionsPage() {
     const [editions, setEditions] = useState<EditionInfo[]>([]);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
-    const { snapshot: subscription } = useSubscription();
 
     // Grouped loading states
     const [loadingStates, setLoadingStates] = useState({
@@ -204,27 +201,6 @@ export default function ArtistEditionsPage() {
                         + Créer une œuvre
                     </Link>
                 </div>
-
-                {subscription?.status === 'past_due' && (
-                    <div className="border-2 border-[#dc2626] bg-[#fef2f2] p-5 mb-px">
-                        <p className="text-[14px] font-medium text-[#991b1b] mb-1">
-                            Échec de paiement de votre abonnement
-                        </p>
-                        <p className="text-[13px] font-light text-[#991b1b] leading-[1.7]">
-                            Mettez à jour votre moyen de paiement depuis{' '}
-                            <Link href="/artist/subscription" className="underline underline-offset-4 hover:no-underline">
-                                votre espace abonnement
-                            </Link>{' '}
-                            pour continuer à certifier vos œuvres.
-                        </p>
-                    </div>
-                )}
-
-                {subscription && (
-                    <div className="mb-6">
-                        <QuotaBadge snapshot={subscription} />
-                    </div>
-                )}
 
                 {loadingStates.fetchingEditions ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
