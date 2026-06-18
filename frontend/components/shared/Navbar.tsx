@@ -267,6 +267,7 @@ export default function Navbar() {
                                 <PanelLink href="/artist" onClick={() => setIsOpen(false)}>Mon profil</PanelLink>
                                 <PanelLink href="/artist/editions" onClick={() => setIsOpen(false)}>Mes œuvres</PanelLink>
                                 <PanelLink href="/artist/editions/create" onClick={() => setIsOpen(false)}>Certifier une œuvre</PanelLink>
+                                <PanelLink href="/artist/subscription" onClick={() => setIsOpen(false)}>Mon abonnement</PanelLink>
                             </>
                         )}
                     </div>
