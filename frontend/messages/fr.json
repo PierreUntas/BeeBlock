@@ -1,0 +1,143 @@
+{
+  "Navbar": {
+    "gallery": "Galerie",
+    "artists": "Artistes",
+    "about": "À propos",
+    "menu": "Menu",
+    "connect": "Connexion",
+    "connected": "Connecté",
+    "exportPrivateKey": "Exporter la clé privée →",
+    "logout": "Déconnexion",
+    "signIn": "Se connecter",
+    "panel": {
+      "home": "Accueil",
+      "explore": "Explorer",
+      "galleryWorks": "Galerie d'œuvres",
+      "artistsList": "Artistes",
+      "info": "Informations",
+      "aboutLink": "À propos",
+      "admin": "Administration",
+      "owner": "Propriétaire",
+      "adminLink": "Administrateur",
+      "collector": "Collectionneur",
+      "myWorks": "Mes œuvres",
+      "artist": "Artiste",
+      "myProfile": "Mon profil",
+      "myArtworks": "Mes œuvres",
+      "certifyWork": "Certifier une œuvre",
+      "mySubscription": "Mon abonnement"
+    },
+    "roles": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "artist": "Artiste"
+    },
+    "networkNotConnected": "Non connecté"
+  },
+  "Footer": {
+    "tagline": "Certifier, exposer et transférer la propriété d'une œuvre de manière simple, sécurisée et économique.",
+    "exploreTitle": "Explorer",
+    "galleryWorks": "Galerie d'œuvres",
+    "artistsList": "Artistes",
+    "aboutLink": "À propos",
+    "collectorTitle": "Collectionneur",
+    "myCertificates": "Mes certificats",
+    "claimCertificate": "Réclamer un certificat",
+    "artistTitle": "Espace artiste",
+    "dashboard": "Dashboard",
+    "myArtworks": "Mes œuvres",
+    "certifyWork": "Certifier une œuvre",
+    "contactUs": "Nous contacter",
+    "faq": "FAQ",
+    "legalNotice": "Mentions légales",
+    "termsOfService": "Conditions d'abonnement",
+    "privacyPolicy": "Confidentialité",
+    "copyright": "Tous droits réservés"
+  },
+  "LanguageSwitcher": {
+    "label": "Langue",
+    "fr": "Français",
+    "de": "Deutsch",
+    "frShort": "FR",
+    "deShort": "DE"
+  },
+  "Home": {
+    "hero": {
+      "eyebrow": "Plateforme de certification d'art",
+      "titleStart": "Certifier",
+      "titleAccent": "vos œuvres",
+      "titleEnd": "sur la blockchain",
+      "subtitle": "Mona Editions permet aux artistes de certifier leurs œuvres physiques par jeton numérique, et à leurs collectionneurs de recevoir un certificat permanent qui les accompagne pour toujours."
+    },
+    "personas": {
+      "artist": {
+        "eyebrow": "Vous êtes artiste",
+        "title": "Certifier mes œuvres",
+        "description": "Enregistrez votre profil et émettez des certificats que vous remettez à vos collectionneurs.",
+        "cta": "Mon profil artiste"
+      },
+      "collector": {
+        "eyebrow": "Vous êtes collectionneur",
+        "title": "Mes certificats",
+        "description": "Consultez la liste des œuvres dont vous êtes propriétaire et accédez aux certificats associés à chacune d'entre elles.",
+        "cta": "Voir mes certificats"
+      },
+      "visitor": {
+        "eyebrow": "Simple visiteur",
+        "title": "Explorer les œuvres",
+        "description": "Parcourez la galerie des œuvres certifiées et découvrez le travail des artistes inscrits.",
+        "cta": "Voir la galerie"
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "Comment ça marche",
+      "title": "Trois étapes",
+      "titleAccent": "simples",
+      "step1": {
+        "title": "L'artiste s'inscrit",
+        "description": "Il crée son profil (nom, bio, photos) et soumet sa demande d'autorisation. Une fois validée par Mona Editions, il peut commencer à certifier."
+      },
+      "step2": {
+        "title": "Il certifie une œuvre",
+        "description": "Il décrit son œuvre, choisit la taille de l'édition, et reçoit un fichier Excel avec autant de QR codes que d'exemplaires à distribuer."
+      },
+      "step3": {
+        "title": "Le collectionneur réclame",
+        "description": "Le QR code remis avec l'œuvre physique mène à une page où le collectionneur signe gratuitement la transaction. Le certificat est à lui pour toujours."
+      }
+    },
+    "gallery": {
+      "eyebrow": "Œuvres récemment certifiées",
+      "titleStart": "Le catalogue",
+      "titleAccent": "vivant",
+      "viewAll": "Toute la galerie",
+      "featured": "À LA UNE",
+      "noImage": "Pas d'image"
+    },
+    "trust": {
+      "eyebrow": "Pérennité et sécurité",
+      "titleStart": "Pour",
+      "titleAccent": "toujours",
+      "blockchain": {
+        "title": "Blockchain publique Base",
+        "description": "Les certificats sont émis sur Base, un réseau Layer 2 d'Ethereum exploité par Coinbase. Ils existent indépendamment de Mona Editions."
+      },
+      "contracts": {
+        "title": "Smart contracts vérifiés",
+        "description": "Notre code source est public et auditable sur Basescan. Aucune modification cachée n'est possible."
+      },
+      "ipfs": {
+        "title": "Stockage IPFS redondant",
+        "description": "Les images et descriptions sont stockées sur IPFS, un réseau de fichiers distribué qui répartit le contenu sur plusieurs nœuds."
+      }
+    },
+    "cta": {
+      "eyebrow": "Prêt à commencer",
+      "titleStart": "Connectez-vous en",
+      "titleAccent": "quelques secondes",
+      "subtitle": "Avec une simple adresse email. Aucun téléchargement requis, aucune connaissance technique nécessaire.",
+      "button": "Se connecter"
+    },
+    "aboutLink": "En savoir plus sur Mona Editions →"
+  }
+}

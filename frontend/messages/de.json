@@ -1,0 +1,143 @@
+{
+  "Navbar": {
+    "gallery": "Galerie",
+    "artists": "Künstler",
+    "about": "Über uns",
+    "menu": "Menü",
+    "connect": "Anmelden",
+    "connected": "Verbunden",
+    "exportPrivateKey": "Privaten Schlüssel exportieren →",
+    "logout": "Abmelden",
+    "signIn": "Anmelden",
+    "panel": {
+      "home": "Startseite",
+      "explore": "Entdecken",
+      "galleryWorks": "Werkgalerie",
+      "artistsList": "Künstler",
+      "info": "Informationen",
+      "aboutLink": "Über uns",
+      "admin": "Verwaltung",
+      "owner": "Eigentümer",
+      "adminLink": "Administrator",
+      "collector": "Sammler",
+      "myWorks": "Meine Werke",
+      "artist": "Künstler",
+      "myProfile": "Mein Profil",
+      "myArtworks": "Meine Werke",
+      "certifyWork": "Werk zertifizieren",
+      "mySubscription": "Mein Abonnement"
+    },
+    "roles": {
+      "owner": "Eigentümer",
+      "admin": "Administrator",
+      "artist": "Künstler"
+    },
+    "networkNotConnected": "Nicht verbunden"
+  },
+  "Footer": {
+    "tagline": "Werke einfach, sicher und kostengünstig zertifizieren, ausstellen und Eigentum übertragen.",
+    "exploreTitle": "Entdecken",
+    "galleryWorks": "Werkgalerie",
+    "artistsList": "Künstler",
+    "aboutLink": "Über uns",
+    "collectorTitle": "Sammler",
+    "myCertificates": "Meine Zertifikate",
+    "claimCertificate": "Zertifikat einlösen",
+    "artistTitle": "Künstlerbereich",
+    "dashboard": "Dashboard",
+    "myArtworks": "Meine Werke",
+    "certifyWork": "Werk zertifizieren",
+    "contactUs": "Kontakt",
+    "faq": "FAQ",
+    "legalNotice": "Impressum",
+    "termsOfService": "Abonnementbedingungen",
+    "privacyPolicy": "Datenschutz",
+    "copyright": "Alle Rechte vorbehalten"
+  },
+  "LanguageSwitcher": {
+    "label": "Sprache",
+    "fr": "Französisch",
+    "de": "Deutsch",
+    "frShort": "FR",
+    "deShort": "DE"
+  },
+  "Home": {
+    "hero": {
+      "eyebrow": "Plattform für Kunstzertifizierung",
+      "titleStart": "Zertifizieren Sie",
+      "titleAccent": "Ihre Werke",
+      "titleEnd": "auf der Blockchain",
+      "subtitle": "Mona Editions ermöglicht es Künstlern, ihre physischen Werke durch ein digitales Token zu zertifizieren, und ihren Sammlern, ein dauerhaftes Zertifikat zu erhalten, das sie für immer begleitet."
+    },
+    "personas": {
+      "artist": {
+        "eyebrow": "Sie sind Künstler",
+        "title": "Meine Werke zertifizieren",
+        "description": "Erstellen Sie Ihr Profil und übermitteln Sie Zertifikate, die Sie Ihren Sammlern weitergeben.",
+        "cta": "Mein Künstlerprofil"
+      },
+      "collector": {
+        "eyebrow": "Sie sind Sammler",
+        "title": "Meine Zertifikate",
+        "description": "Sehen Sie die Liste der Werke, deren Eigentümer Sie sind, und greifen Sie auf die zugehörigen Zertifikate zu.",
+        "cta": "Meine Zertifikate ansehen"
+      },
+      "visitor": {
+        "eyebrow": "Einfacher Besucher",
+        "title": "Werke entdecken",
+        "description": "Durchstöbern Sie die Galerie der zertifizierten Werke und entdecken Sie die Arbeit der eingetragenen Künstler.",
+        "cta": "Galerie ansehen"
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "So funktioniert es",
+      "title": "Drei einfache",
+      "titleAccent": "Schritte",
+      "step1": {
+        "title": "Der Künstler meldet sich an",
+        "description": "Er erstellt sein Profil (Name, Bio, Fotos) und reicht seinen Antrag auf Freischaltung ein. Nach Genehmigung durch Mona Editions kann er mit dem Zertifizieren beginnen."
+      },
+      "step2": {
+        "title": "Er zertifiziert ein Werk",
+        "description": "Er beschreibt sein Werk, wählt die Auflagengröße und erhält eine Excel-Datei mit so vielen QR-Codes wie zu verteilende Exemplare."
+      },
+      "step3": {
+        "title": "Der Sammler löst ein",
+        "description": "Der mit dem physischen Werk übergebene QR-Code führt zu einer Seite, auf der der Sammler die Transaktion kostenlos signiert. Das Zertifikat gehört für immer ihm."
+      }
+    },
+    "gallery": {
+      "eyebrow": "Kürzlich zertifizierte Werke",
+      "titleStart": "Der lebende",
+      "titleAccent": "Katalog",
+      "viewAll": "Gesamte Galerie",
+      "featured": "IM FOKUS",
+      "noImage": "Kein Bild"
+    },
+    "trust": {
+      "eyebrow": "Beständigkeit und Sicherheit",
+      "titleStart": "Für",
+      "titleAccent": "immer",
+      "blockchain": {
+        "title": "Öffentliche Base-Blockchain",
+        "description": "Die Zertifikate werden auf Base ausgegeben, einem von Coinbase betriebenen Layer-2-Netzwerk von Ethereum. Sie bestehen unabhängig von Mona Editions."
+      },
+      "contracts": {
+        "title": "Verifizierte Smart Contracts",
+        "description": "Unser Quellcode ist öffentlich und auf Basescan prüfbar. Keine versteckten Änderungen sind möglich."
+      },
+      "ipfs": {
+        "title": "Redundanter IPFS-Speicher",
+        "description": "Bilder und Beschreibungen werden auf IPFS gespeichert, einem verteilten Dateinetzwerk, das die Inhalte auf mehrere Knoten verteilt."
+      }
+    },
+    "cta": {
+      "eyebrow": "Bereit zum Start",
+      "titleStart": "Melden Sie sich in",
+      "titleAccent": "wenigen Sekunden an",
+      "subtitle": "Mit einer einfachen E-Mail-Adresse. Kein Download erforderlich, keine technischen Kenntnisse nötig.",
+      "button": "Anmelden"
+    },
+    "aboutLink": "Mehr über Mona Editions →"
+  }
+}

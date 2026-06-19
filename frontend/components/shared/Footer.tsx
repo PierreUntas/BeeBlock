@@ -1,12 +1,14 @@
 "use client";
 
-import Link from 'next/link';
+import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { usePrivy } from '@privy-io/react-auth';
 import { useAccount, useReadContract } from 'wagmi';
 import { useEffect, useState } from 'react';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
 
 const Footer = () => {
+    const t = useTranslations('Footer');
     const { authenticated } = usePrivy();
     const { address } = useAccount();
     const [isArtist, setIsArtist] = useState(false);
@@ -46,19 +48,19 @@ const Footer = () => {
                             />
                         </div>
                         <p className="text-[13px] font-light text-[#78716c] leading-[1.7] max-w-[220px]">
-                            Certifier, exposer et transférer la propriété d'une oeuvre de manière simple, sécurisée et économique.
+                            {t('tagline')}
                         </p>
                     </div>
 
                     {/* Explorer — toujours visible */}
                     <div className="flex flex-col gap-4">
                         <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
-                            Explorer
+                            {t('exploreTitle')}
                         </p>
                         <nav className="flex flex-col gap-2.5">
-                            <FooterLink href="/explore/editions">Galerie d'œuvres</FooterLink>
-                            <FooterLink href="/explore/artists">Artistes</FooterLink>
-                            <FooterLink href="/about">À propos</FooterLink>
+                            <FooterLink href="/explore/editions">{t('galleryWorks')}</FooterLink>
+                            <FooterLink href="/explore/artists">{t('artistsList')}</FooterLink>
+                            <FooterLink href="/about">{t('aboutLink')}</FooterLink>
                         </nav>
                     </div>
 
@@ -66,11 +68,10 @@ const Footer = () => {
                     {authenticated && (
                         <div className="flex flex-col gap-4">
                             <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
-                                Collectionneur
+                                {t('collectorTitle')}
                             </p>
                             <nav className="flex flex-col gap-2.5">
-                                <FooterLink href="/collector">Mes certificats</FooterLink>
-                                <FooterLink href="/collector/claim">Réclamer un certificat</FooterLink>
+                                <FooterLink href="/collector">{t('myCertificates')}</FooterLink>
                             </nav>
                         </div>
                     )}
@@ -79,12 +80,12 @@ const Footer = () => {
                     {isArtist && (
                         <div className="flex flex-col gap-4">
                             <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
-                                Espace artiste
+                                {t('artistTitle')}
                             </p>
                             <nav className="flex flex-col gap-2.5">
-                                <FooterLink href="/artist">Dashboard</FooterLink>
-                                <FooterLink href="/artist/editions">Mes œuvres</FooterLink>
-                                <FooterLink href="/artist/editions/create">Certifier une œuvre</FooterLink>
+                                <FooterLink href="/artist">{t('dashboard')}</FooterLink>
+                                <FooterLink href="/artist/editions">{t('myArtworks')}</FooterLink>
+                                <FooterLink href="/artist/editions/create">{t('certifyWork')}</FooterLink>
                             </nav>
                         </div>
                     )}
@@ -94,15 +95,15 @@ const Footer = () => {
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-6 border-b border-[#d6d0c8]">
                     <a href="mailto:pierre.untas@gmail.com" className="text-[12px] font-light text-[#78716c] hover:text-[#1c1917] transition-colors no-underline">pierre.untas@gmail.com</a>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/contact">Nous contacter</FooterLink>
+                    <FooterLink href="/contact">{t('contactUs')}</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/faq">FAQ</FooterLink>
+                    <FooterLink href="/faq">{t('faq')}</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/legal/mentions">Mentions légales</FooterLink>
+                    <FooterLink href="/legal/mentions">{t('legalNotice')}</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/legal/terms">Conditions d'abonnement</FooterLink>
+                    <FooterLink href="/legal/terms">{t('termsOfService')}</FooterLink>
                     <span className="text-[#d6d0c8]">·</span>
-                    <FooterLink href="/legal/privacy">Confidentialité</FooterLink>
+                    <FooterLink href="/legal/privacy">{t('privacyPolicy')}</FooterLink>
                 </div>
 
                 {/* Copyright */}
@@ -112,7 +113,7 @@ const Footer = () => {
                         <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
                     </div>
                     <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.04em]">
-                        &copy; Mona Editions {new Date().getFullYear()} — Tous droits réservés
+                        &copy; Mona Editions {new Date().getFullYear()} — {t('copyright')}
                     </p>
                 </div>
             </div>

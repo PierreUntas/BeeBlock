@@ -3,14 +3,26 @@
 import { useState, useEffect } from "react";
 import { usePrivy } from "@privy-io/react-auth";
 import { useAccount, useReadContract } from "wagmi";
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter, usePathname } from '@/i18n/navigation';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
 
 export default function Navbar() {
+    const t = useTranslations('Navbar');
+    const tLang = useTranslations('LanguageSwitcher');
+    const locale = useLocale();
+    const router = useRouter();
+    const pathname = usePathname();
+
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const { login, logout, authenticated, user, exportWallet } = usePrivy();
     const { address, chain } = useAccount();
+
+    const switchLocale = (newLocale: 'fr' | 'de') => {
+        router.replace(pathname, { locale: newLocale });
+    };
 
     const [isOwner, setIsOwner] = useState(false);
     const [isAdmin, setIsAdmin] = useState(false);
@@ -112,11 +124,11 @@ export default function Navbar() {
                 {/* Center links */}
                 <nav className="hidden md:flex gap-9 absolute left-1/2 -translate-x-1/2">
                     {[
-                        { href: '/explore/editions', label: 'Galerie' },
-                        { href: '/explore/artists', label: 'Artistes' },
-                        { href: '/about', label: 'À propos' },
+                        { href: '/explore/editions', label: t('gallery') },
+                        { href: '/explore/artists', label: t('artists') },
+                        { href: '/about', label: t('about') },
                     ].map(({ href, label }) => (
-                        <a key={href} href={href}
+                        <a key={href} href={locale === 'fr' ? href : `/${locale}${href}`}
                             className="text-xs font-normal tracking-[0.06em] text-[#78716c] no-underline
                                 pb-0.5 border-b border-transparent
                                 hover:text-[#1c1917] hover:border-[#1c1917] transition-all duration-200">
@@ -141,7 +153,7 @@ export default function Navbar() {
                             className="text-[11px] font-medium tracking-[0.08em] text-[#1c1917] bg-transparent
                                 border border-[#d6d0c8] px-[18px] py-[7px] cursor-pointer
                                 hover:bg-[#1c1917] hover:text-[#f5f3ef] hover:border-[#1c1917] transition-all duration-200">
-                            Connexion
+                            {t('connect')}
                         </button>
                     )}
 
@@ -150,7 +162,7 @@ export default function Navbar() {
                         onClick={() => setIsOpen(!isOpen)}
                         className="w-8 h-8 border border-[#d6d0c8] bg-[#fafaf8] flex flex-col items-center justify-center gap-1
                             cursor-pointer hover:border-[#1c1917] transition-all duration-200 p-0"
-                        aria-label="Menu"
+                        aria-label={t('menu')}
                     >
                         <span className={`block w-3.5 h-px bg-[#78716c] transition-all duration-250
                             ${isOpen ? 'translate-y-[5px] rotate-45' : ''}`} />
@@ -183,7 +195,7 @@ export default function Navbar() {
                             <div className="space-y-2.5">
                                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-3.5">
                                     <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-1.5">
-                                        Connecté
+                                        {t('connected')}
                                     </p>
                                     {user?.email?.address && (
                                         <p className="text-[13px] text-[#1c1917] truncate mb-1">
@@ -204,16 +216,16 @@ export default function Navbar() {
                                                     onClick={() => exportWallet()}
                                                     className="mt-1.5 text-[10px] tracking-[0.06em] text-[#a8a29e] bg-transparent border-0 p-0
                                                         cursor-pointer hover:text-[#78716c] transition-colors duration-150 text-left">
-                                                    Exporter la clé privée →
+                                                    {t('exportPrivateKey')}
                                                 </button>
                                             )}
                                         </>
                                     )}
                                     {(isOwner || isAdmin || isArtist) && (
                                         <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[#e7e3dc]">
-                                            {isOwner && <RoleBadge>Propriétaire</RoleBadge>}
-                                            {isAdmin && <RoleBadge>Administrateur</RoleBadge>}
-                                            {isArtist && <RoleBadge>Artiste</RoleBadge>}
+                                            {isOwner && <RoleBadge>{t('roles.owner')}</RoleBadge>}
+                                            {isAdmin && <RoleBadge>{t('roles.admin')}</RoleBadge>}
+                                            {isArtist && <RoleBadge>{t('roles.artist')}</RoleBadge>}
                                         </div>
                                     )}
                                 </div>
@@ -222,7 +234,7 @@ export default function Navbar() {
                                     className="w-full text-xs font-normal text-[#78716c] bg-transparent
                                         border border-[#d6d0c8] py-2.5 cursor-pointer
                                         hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200">
-                                    Déconnexion
+                                    {t('logout')}
                                 </button>
                             </div>
                         ) : (
@@ -230,46 +242,73 @@ export default function Navbar() {
                                 onClick={() => { login(); setIsOpen(false); }}
                                 className="w-full text-xs font-medium tracking-[0.06em] text-[#f5f3ef] bg-[#1c1917]
                                     border-0 py-3 cursor-pointer hover:opacity-80 transition-opacity duration-200">
-                                Se connecter
+                                {t('signIn')}
                             </button>
                         )}
                     </div>
 
                     {/* Nav links */}
                     <div className="flex-1 px-6 py-4 overflow-y-auto space-y-0.5">
-                        <PanelLink href="/" onClick={() => setIsOpen(false)}>Accueil</PanelLink>
+                        <PanelLink locale={locale} href="/" onClick={() => setIsOpen(false)}>{t('panel.home')}</PanelLink>
 
-                        <PanelDivider>Explorer</PanelDivider>
-                        <PanelLink href="/explore/editions" onClick={() => setIsOpen(false)}>Galerie d'œuvres</PanelLink>
-                        <PanelLink href="/explore/artists" onClick={() => setIsOpen(false)}>Artistes</PanelLink>
+                        <PanelDivider>{t('panel.explore')}</PanelDivider>
+                        <PanelLink locale={locale} href="/explore/editions" onClick={() => setIsOpen(false)}>{t('panel.galleryWorks')}</PanelLink>
+                        <PanelLink locale={locale} href="/explore/artists" onClick={() => setIsOpen(false)}>{t('panel.artistsList')}</PanelLink>
 
-                        <PanelDivider>Informations</PanelDivider>
-                        <PanelLink href="/about" onClick={() => setIsOpen(false)}>À propos</PanelLink>
+                        <PanelDivider>{t('panel.info')}</PanelDivider>
+                        <PanelLink locale={locale} href="/about" onClick={() => setIsOpen(false)}>{t('panel.aboutLink')}</PanelLink>
 
                         {(isOwner || isAdmin) && (
                             <>
-                                <PanelDivider>Administration</PanelDivider>
-                                {isOwner && <PanelLink href="/owner" onClick={() => setIsOpen(false)}>Propriétaire</PanelLink>}
-                                {isAdmin && <PanelLink href="/admin" onClick={() => setIsOpen(false)}>Administrateur</PanelLink>}
+                                <PanelDivider>{t('panel.admin')}</PanelDivider>
+                                {isOwner && <PanelLink locale={locale} href="/owner" onClick={() => setIsOpen(false)}>{t('panel.owner')}</PanelLink>}
+                                {isAdmin && <PanelLink locale={locale} href="/admin" onClick={() => setIsOpen(false)}>{t('panel.adminLink')}</PanelLink>}
                             </>
                         )}
 
                         {authenticated && (
                             <>
-                                <PanelDivider>Collectionneur</PanelDivider>
-                                <PanelLink href="/collector" onClick={() => setIsOpen(false)}>Mes œuvres</PanelLink>
+                                <PanelDivider>{t('panel.collector')}</PanelDivider>
+                                <PanelLink locale={locale} href="/collector" onClick={() => setIsOpen(false)}>{t('panel.myWorks')}</PanelLink>
                             </>
                         )}
 
                         {isArtist && (
                             <>
-                                <PanelDivider>Artiste</PanelDivider>
-                                <PanelLink href="/artist" onClick={() => setIsOpen(false)}>Mon profil</PanelLink>
-                                <PanelLink href="/artist/editions" onClick={() => setIsOpen(false)}>Mes œuvres</PanelLink>
-                                <PanelLink href="/artist/editions/create" onClick={() => setIsOpen(false)}>Certifier une œuvre</PanelLink>
-                                <PanelLink href="/artist/subscription" onClick={() => setIsOpen(false)}>Mon abonnement</PanelLink>
+                                <PanelDivider>{t('panel.artist')}</PanelDivider>
+                                <PanelLink locale={locale} href="/artist" onClick={() => setIsOpen(false)}>{t('panel.myProfile')}</PanelLink>
+                                <PanelLink locale={locale} href="/artist/editions" onClick={() => setIsOpen(false)}>{t('panel.myArtworks')}</PanelLink>
+                                <PanelLink locale={locale} href="/artist/editions/create" onClick={() => setIsOpen(false)}>{t('panel.certifyWork')}</PanelLink>
+                                <PanelLink locale={locale} href="/artist/subscription" onClick={() => setIsOpen(false)}>{t('panel.mySubscription')}</PanelLink>
                             </>
                         )}
+
+                        {/* Language switcher */}
+                        <PanelDivider>{tLang('label')}</PanelDivider>
+                        <div className="flex gap-1.5 px-3 pt-1">
+                            <button
+                                type="button"
+                                onClick={() => { switchLocale('fr'); setIsOpen(false); }}
+                                className={`text-[11px] font-medium tracking-[0.08em] py-1.5 px-3 border transition-all ${
+                                    locale === 'fr'
+                                        ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
+                                        : 'bg-transparent text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
+                                }`}
+                            >
+                                {tLang('frShort')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => { switchLocale('de'); setIsOpen(false); }}
+                                className={`text-[11px] font-medium tracking-[0.08em] py-1.5 px-3 border transition-all ${
+                                    locale === 'de'
+                                        ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
+                                        : 'bg-transparent text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
+                                }`}
+                            >
+                                {tLang('deShort')}
+                            </button>
+                        </div>
                     </div>
 
                     {/* Panel footer */}
@@ -286,9 +325,24 @@ export default function Navbar() {
     );
 }
 
-function PanelLink({ href, children, onClick }: { href: string; children: React.ReactNode; onClick?: () => void }) {
+function PanelLink({
+    href,
+    children,
+    onClick,
+    locale,
+}: {
+    href: string;
+    children: React.ReactNode;
+    onClick?: () => void;
+    locale?: string;
+}) {
+    // Prepend the locale prefix only when it's a non-default locale.
+    // Default locale ('fr') stays at the root for backward compatibility
+    // with existing URLs (e.g. QR codes already deployed in the wild).
+    const localizedHref =
+        !locale || locale === 'fr' ? href : `/${locale}${href === '/' ? '' : href}`;
     return (
-        <a href={href} onClick={onClick}
+        <a href={localizedHref} onClick={onClick}
             className="block text-[13px] font-light text-[#78716c] no-underline
                 px-3 py-2.5 border-l border-transparent
                 hover:text-[#1c1917] hover:border-l-[#1c1917] hover:pl-4 hover:bg-[#1c1917]/[0.03]

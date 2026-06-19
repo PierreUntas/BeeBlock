@@ -1,4 +1,8 @@
 import type { NextConfig } from "next";
+import createNextIntlPlugin from 'next-intl/plugin';
+
+// Points the plugin to our i18n/request.ts config file
+const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
 
 const nextConfig: NextConfig = {
     webpack: (config, { isServer, webpack }) => {
@@ -40,4 +44,4 @@ const nextConfig: NextConfig = {
     transpilePackages: ['@metamask/sdk'],
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);
