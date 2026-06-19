@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@parcel/watcher": "^2.5.6",
     "@privy-io/react-auth": "^3.10.2",
     "@privy-io/server-auth": "^1.32.5",
     "@privy-io/wagmi": "^2.1.3",

@@ -61,6 +61,13 @@
     "frShort": "FR",
     "deShort": "DE"
   },
+  "NotFound": {
+    "code": "404",
+    "title": "Page introuvable",
+    "subtitle": "Cette page n'existe plus ou n'a jamais existé. Elle a peut-être été déplacée vers une autre adresse.",
+    "homeButton": "Retour à l'accueil",
+    "galleryButton": "Explorer la galerie"
+  },
   "Home": {
     "hero": {
       "eyebrow": "Plateforme de certification d'art",

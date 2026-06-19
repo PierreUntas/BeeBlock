@@ -61,6 +61,13 @@
     "frShort": "FR",
     "deShort": "DE"
   },
+  "NotFound": {
+    "code": "404",
+    "title": "Seite nicht gefunden",
+    "subtitle": "Diese Seite existiert nicht mehr oder hat nie existiert. Möglicherweise wurde sie an eine andere Adresse verschoben.",
+    "homeButton": "Zur Startseite",
+    "galleryButton": "Galerie entdecken"
+  },
   "Home": {
     "hero": {
       "eyebrow": "Plattform für Kunstzertifizierung",
