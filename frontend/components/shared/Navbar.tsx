@@ -316,9 +316,10 @@ export default function Navbar() {
                         {isArtist && (
                             <>
                                 <PanelDivider>{t('panel.artist')}</PanelDivider>
-                                <PanelLink locale={locale} href="/artist" onClick={() => setIsOpen(false)}>{t('panel.myProfile')}</PanelLink>
+                                <PanelLink locale={locale} href="/artist" onClick={() => setIsOpen(false)}>{t('panel.myDashboard')}</PanelLink>
                                 <PanelLink locale={locale} href="/artist/editions" onClick={() => setIsOpen(false)}>{t('panel.myArtworks')}</PanelLink>
                                 <PanelLink locale={locale} href="/artist/editions/create" onClick={() => setIsOpen(false)}>{t('panel.certifyWork')}</PanelLink>
+                                <PanelLink locale={locale} href="/artist/profile" onClick={() => setIsOpen(false)}>{t('panel.myProfile')}</PanelLink>
                                 <PanelLink locale={locale} href="/artist/subscription" onClick={() => setIsOpen(false)}>{t('panel.mySubscription')}</PanelLink>
                             </>
                         )}

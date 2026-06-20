@@ -1,650 +1,670 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { useAccount, useWriteContract, useReadContract } from 'wagmi';
-import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
-import { BASE_URL } from '@/config/constants';
-import { uploadToIPFS, uploadFileToIPFS, getFromIPFSGateway } from '@/app/utils/ipfs';
-import { base64ToBlob, downloadFile, gatewayUrlToIpfsUri } from '@/app/utils/file';
-import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
-import { useModal } from '@/app/ModalProvider';
-import { publicClient } from '@/lib/client';
-import { encodeFunctionData } from 'viem';
-import QRCode from 'qrcode';
-import { useTranslations } from 'next-intl';
-import { useSubscription, acceptPrivacy } from '@/app/hooks/useSubscription';
+/**
+ * Artist dashboard — the landing page for authenticated artists at /artist.
+ *
+ * This is intentionally read-only: it surfaces stats and quick actions so
+ * a returning artist immediately sees what's happening with their editions
+ * without scrolling through a profile form. Profile editing lives at
+ * /artist/profile (the previous content of this page).
+ *
+ * All data is read on-chain or from IPFS. No new contracts, no DB writes.
+ *
+ * Sections (in display order):
+ *  1. Hero — name, member-since, links to public page and profile editing
+ *  2. Subscription card (state-aware: active / past_due / inactive)
+ *  3. Stats — editions / claims / unique collectors + 30-day activity
+ *  4. Recent editions — 3 latest with claim-rate progress bar
+ *  5. Primary CTA — Create new edition (or first edition for newcomers)
+ *  6. QR code download — preserved from the old page; useful for printing
+ *     a physical card with the artist's public page URL.
+ */
 
-export default function ArtistPage() {
-    const t = useTranslations('Artist');
-    const tCommon = useTranslations('Common');
+import { useState, useEffect } from 'react';
+import { useAccount, useReadContract } from 'wagmi';
+import { usePrivy } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
+import { parseAbiItem } from 'viem';
+import QRCode from 'qrcode';
+import Link from 'next/link';
+import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
+import { BASE_URL } from '@/config/constants';
+import { publicClient, getDeploymentBlock } from '@/lib/client';
+import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { ipfsToHttp, base64ToBlob, downloadFile } from '@/app/utils/file';
+import { useModal } from '@/app/ModalProvider';
+import { useSubscription } from '@/app/hooks/useSubscription';
+
+interface ArtistIPFSData {
+    name?: string;
+    location?: string;
+    logo?: string;
+    portfolio?: string[];
+}
+
+interface EditionSummary {
+    tokenId: bigint;
+    title: string;
+    imageUrl: string | null;
+    editionSize: number; // total mintable supply (from IPFS metadata)
+    claimed: number;     // editionSize - artist's current balance
+    disabled: boolean;
+}
+
+interface DashboardStats {
+    editionsCount: number;
+    totalClaims: number;
+    uniqueCollectors: number;
+    claimsLast30Days: number;
+    memberSinceYear?: number;
+}
+
+const SECONDS_PER_DAY = 86400;
+
+export default function ArtistDashboardPage() {
+    const t = useTranslations('Artist.dashboard');
+    const tArtist = useTranslations('Artist');
     const { address } = useAccount();
-    const { user, getAccessToken } = usePrivy();
+    const { user, ready: privyReady, authenticated } = usePrivy();
     const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
     const activeAddress = (walletAddress || address) as `0x${string}` | undefined;
-    const [name, setName] = useState('');
-    const [location, setLocation] = useState('');
-    const [isAuthorized, setIsAuthorized] = useState(false);
-    const [isCheckingAuthorization, setIsCheckingAuthorization] = useState(true);
-    const [isRegistered, setIsRegistered] = useState(false);
-    const [saveSuccess, setSaveSuccess] = useState(false);
 
-    // Grouped loading states
-    const [loadingStates, setLoadingStates] = useState({
-        uploading: false,
-        loadingIPFS: false,
-        generatingQR: false,
-    });
-
-    const [logoFile, setLogoFile] = useState<File | null>(null);
-    const [logoPreview, setLogoPreview] = useState<string>('');
-    const [photoFiles, setPhotoFiles] = useState<File[]>([]);
-    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
-    const logoInputRef = useRef<HTMLInputElement>(null);
-    const photosInputRef = useRef<HTMLInputElement>(null);
-
-    const [additionalData, setAdditionalData] = useState({
-        website: '',
-        bio: '',
-        exhibitions: [] as string[],
-        socialMedia: {
-            instagram: '',
-            twitter: '',
-            facebook: ''
-        }
-    });
-
-    const { isPending: isRegistering } = useWriteContract();
-    const { sendTransaction } = useSendTransaction();
     const { showAlert } = useModal();
-    const { snapshot: subscription, refresh: refreshSubscription } = useSubscription();
+    const { snapshot: subscription } = useSubscription();
 
-    // RGPD: the artist must accept the privacy policy on first registration.
-    // Once accepted (server-side timestamp set), the checkbox is hidden.
-    const [privacyAccepted, setPrivacyAccepted] = useState(false);
-    const needsPrivacyAcceptance =
-        subscription !== null && subscription.privacyAcceptedAt === null;
+    const [artistIPFSData, setArtistIPFSData] = useState<ArtistIPFSData | null>(null);
+    const [recentEditions, setRecentEditions] = useState<EditionSummary[]>([]);
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [isLoadingData, setIsLoadingData] = useState(true);
+    const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
-    const { data: artistData, isLoading: isLoadingArtist, refetch: refetchArtist } = useReadContract({
+    // -------- Authorization gate --------
+    const { data: artistData, isLoading: isLoadingArtist } = useReadContract({
         address: ARTWORK_REGISTRY_ADDRESS,
         abi: ARTWORK_REGISTRY_ABI,
         functionName: 'getArtist',
         args: activeAddress ? [activeAddress] : undefined,
     });
 
-    const MAX_FILE_SIZE = 20 * 1024 * 1024;
+    const onChainArtist = artistData as { authorized?: boolean; metadata?: string } | undefined;
+    const isAuthorized = !!onChainArtist?.authorized;
+    const isRegistered = !!onChainArtist?.metadata && onChainArtist.metadata.length > 0;
 
-    const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            if (file.size > MAX_FILE_SIZE) {
-                showAlert(`Le logo dépasse la limite de 20 Mo (${(file.size / 1024 / 1024).toFixed(1)} Mo).`);
-                return;
-            }
-            setLogoFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => setLogoPreview(reader.result as string);
-            reader.readAsDataURL(file);
+    // -------- Load IPFS profile + stats once we have the address --------
+    useEffect(() => {
+        if (!activeAddress || !isRegistered || !onChainArtist?.metadata) {
+            // Either no address yet or no on-chain registration: nothing to load.
+            // We still flip isLoadingData off once authorization check is done.
+            if (!isLoadingArtist) setIsLoadingData(false);
+            return;
         }
-    };
 
-    const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = Array.from(e.target.files || []);
-        if (files.length > 0) {
-            const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
-            if (oversized.length > 0) {
-                showAlert(`${oversized.length > 1 ? 'Ces photos dépassent' : 'Cette photo dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
-                return;
+        let cancelled = false;
+
+        const load = async () => {
+            setIsLoadingData(true);
+            try {
+                // 1. Artist IPFS profile (name, photo) — best-effort
+                let ipfs: ArtistIPFSData | null = null;
+                try {
+                    ipfs = await getFromIPFSGateway(onChainArtist.metadata!) as ArtistIPFSData;
+                } catch (e) {
+                    console.error('Failed to load artist IPFS profile:', e);
+                }
+                if (cancelled) return;
+                setArtistIPFSData(ipfs);
+
+                // 2. Editions of this artist via NewArtworkEdition log
+                const editionLogs = await publicClient.getLogs({
+                    address: ARTWORK_REGISTRY_ADDRESS,
+                    event: parseAbiItem('event NewArtworkEdition(address indexed artist, uint indexed editionId)'),
+                    args: { artist: activeAddress },
+                    fromBlock: getDeploymentBlock(),
+                    toBlock: 'latest',
+                });
+
+                // 3. Claim activity via TransferSingle from artist wallet.
+                //    Each such transfer represents one collector claim.
+                const transferLogs = await publicClient.getLogs({
+                    address: ARTWORK_TOKENIZATION_ADDRESS,
+                    event: parseAbiItem('event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)'),
+                    args: { from: activeAddress },
+                    fromBlock: getDeploymentBlock(),
+                    toBlock: 'latest',
+                });
+
+                const collectors = new Set<string>();
+                let totalClaims = 0;
+                for (const log of transferLogs) {
+                    const to = (log.args.to as string | undefined)?.toLowerCase();
+                    const value = log.args.value as bigint | undefined;
+                    if (!to || to === activeAddress.toLowerCase()) continue;
+                    collectors.add(to);
+                    totalClaims += Number(value ?? 0n);
+                }
+
+                // 4. 30-day activity — bucket recent claim events by current
+                //    block timestamp minus 30 days. We fetch the latest block
+                //    once and compare block numbers vs. an approximate cutoff.
+                let claimsLast30Days = 0;
+                try {
+                    const latestBlock = await publicClient.getBlock({ blockTag: 'latest' });
+                    const cutoffTimestamp = Number(latestBlock.timestamp) - 30 * SECONDS_PER_DAY;
+                    // To stay efficient, batch the timestamp lookups.
+                    const blockNumbers = Array.from(new Set(
+                        transferLogs
+                            .filter(l => l.blockNumber !== null)
+                            .map(l => l.blockNumber as bigint)
+                    ));
+                    const blockTimestamps = await Promise.all(
+                        blockNumbers.map(bn => publicClient.getBlock({ blockNumber: bn }).then(b => [bn, Number(b.timestamp)] as const).catch(() => [bn, 0] as const))
+                    );
+                    const blockTsMap = new Map(blockTimestamps);
+                    for (const log of transferLogs) {
+                        if (log.blockNumber === null) continue;
+                        const ts = blockTsMap.get(log.blockNumber);
+                        if (ts && ts >= cutoffTimestamp) {
+                            claimsLast30Days += Number(log.args.value ?? 0n);
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to compute 30-day claims:', e);
+                }
+
+                // 5. Member-since year — earliest edition timestamp.
+                let memberSinceYear: number | undefined;
+                if (editionLogs.length > 0) {
+                    try {
+                        const earliest = editionLogs.reduce((min, l) =>
+                            (l.blockNumber !== null && (min.blockNumber === null || l.blockNumber < min.blockNumber)) ? l : min
+                        );
+                        if (earliest.blockNumber !== null) {
+                            const block = await publicClient.getBlock({ blockNumber: earliest.blockNumber });
+                            memberSinceYear = new Date(Number(block.timestamp) * 1000).getFullYear();
+                        }
+                    } catch (e) {
+                        console.error('Failed to fetch earliest edition timestamp:', e);
+                    }
+                }
+
+                if (cancelled) return;
+                setStats({
+                    editionsCount: editionLogs.length,
+                    totalClaims,
+                    uniqueCollectors: collectors.size,
+                    claimsLast30Days,
+                    memberSinceYear,
+                });
+
+                // 6. Recent editions — keep 3 most recent (highest tokenId),
+                //    fetch their IPFS metadata + remaining supply in parallel.
+                const sortedLogs = [...editionLogs].sort((a, b) =>
+                    Number((b.args.editionId as bigint) - (a.args.editionId as bigint))
+                );
+                const top3 = sortedLogs.slice(0, 3);
+
+                const recent: EditionSummary[] = await Promise.all(
+                    top3.map(async (log) => {
+                        const tokenId = log.args.editionId as bigint;
+                        let title = `#${tokenId.toString()}`;
+                        let imageUrl: string | null = null;
+                        let editionSize = 0;
+                        let claimed = 0;
+                        let disabled = false;
+                        try {
+                            const [editionMetadata, , editionDisabled] = await publicClient.readContract({
+                                address: ARTWORK_REGISTRY_ADDRESS,
+                                abi: ARTWORK_REGISTRY_ABI,
+                                functionName: 'getArtworkEdition',
+                                args: [tokenId],
+                            }) as readonly [string, string, boolean];
+                            disabled = editionDisabled;
+
+                            const balance = await publicClient.readContract({
+                                address: ARTWORK_TOKENIZATION_ADDRESS,
+                                abi: ARTWORK_TOKENIZATION_ABI,
+                                functionName: 'balanceOf',
+                                args: [activeAddress, tokenId],
+                            }) as bigint;
+
+                            if (editionMetadata?.trim()) {
+                                try {
+                                    const meta = await getFromIPFSGateway(editionMetadata);
+                                    if (meta?.title) title = meta.title;
+                                    if (meta?.images?.[0]) imageUrl = ipfsToHttp(meta.images[0]);
+                                    if (typeof meta?.editionSize === 'number') editionSize = meta.editionSize;
+                                } catch (e) {
+                                    console.error('IPFS fetch failed for edition', tokenId.toString(), e);
+                                }
+                            }
+                            claimed = Math.max(0, editionSize - Number(balance));
+                        } catch (e) {
+                            console.error('Failed to fetch edition', tokenId.toString(), e);
+                        }
+                        return { tokenId, title, imageUrl, editionSize, claimed, disabled };
+                    })
+                );
+                if (cancelled) return;
+                setRecentEditions(recent);
+            } finally {
+                if (!cancelled) setIsLoadingData(false);
             }
-            setPhotoFiles(prev => [...prev, ...files]);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setPhotoPreviews(prev => [...prev, reader.result as string]);
-                };
-                reader.readAsDataURL(file);
-            });
-        }
-    };
+        };
 
-    const removePhoto = (index: number) => {
-        setPhotoFiles(prev => prev.filter((_, i) => i !== index));
-        setPhotoPreviews(prev => prev.filter((_, i) => i !== index));
-    };
+        load();
+        return () => { cancelled = true; };
+    }, [activeAddress, isRegistered, onChainArtist?.metadata, isLoadingArtist]);
 
-    const downloadArtistPageQRCode = async () => {
-        if (!address || !isRegistered) return;
-        setLoadingStates(prev => ({ ...prev, generatingQR: true }));
+    // -------- QR code download (preserved from old /artist page) --------
+    const downloadQRCode = async () => {
+        if (!activeAddress || !isRegistered) return;
+        setIsGeneratingQR(true);
         try {
-            const artistPageUrl = `${BASE_URL}/explore/artist/${address}`;
-            const qrCodeDataUrl = await QRCode.toDataURL(artistPageUrl, {
+            const url = `${BASE_URL}/explore/artist/${activeAddress}`;
+            const dataUrl = await QRCode.toDataURL(url, {
                 width: 1000,
                 margin: 4,
                 color: { dark: '#000000', light: '#FFFFFF' },
-                errorCorrectionLevel: 'H'
+                errorCorrectionLevel: 'H',
             });
-            const base64Data = qrCodeDataUrl.split(',')[1];
-            const blob = base64ToBlob(base64Data);
-            const url = URL.createObjectURL(blob);
-            downloadFile(url, `QR_Artist_${name.replace(/\s+/g, '_')}_${address.slice(0, 8)}.png`);
-            await showAlert('QR Code de votre page artiste téléchargé avec succès !');
-        } catch (error) {
-            console.error('Error generating artist page QR code:', error);
-            await showAlert('Erreur lors de la génération du QR code');
+            const blob = base64ToBlob(dataUrl.split(',')[1]);
+            const fileUrl = URL.createObjectURL(blob);
+            const safeName = (artistIPFSData?.name || 'artist').replace(/\s+/g, '_');
+            downloadFile(fileUrl, `QR_${safeName}_${activeAddress.slice(0, 8)}.png`);
+        } catch (e) {
+            console.error('QR generation failed:', e);
+            await showAlert(tArtist('qrGenerating'));
         } finally {
-            setLoadingStates(prev => ({ ...prev, generatingQR: false }));
+            setIsGeneratingQR(false);
         }
     };
 
-    const loadIPFSData = async (cid: string) => {
-        setLoadingStates(prev => ({ ...prev, loadingIPFS: true }));
-        try {
-            const ipfsData = await getFromIPFSGateway(cid);
-            if (ipfsData) {
-                if (ipfsData.name) setName(ipfsData.name);
-                if (ipfsData.location) setLocation(ipfsData.location);
+    // ============== EARLY-RETURN GUARDS ==============
 
-                setAdditionalData({
-                    website: ipfsData.website || '',
-                    bio: ipfsData.bio || '',
-                    exhibitions: ipfsData.exhibitions || [],
-                    socialMedia: {
-                        instagram: ipfsData.socialMedia?.instagram || '',
-                        twitter: ipfsData.socialMedia?.twitter || '',
-                        facebook: ipfsData.socialMedia?.facebook || ''
-                    }
-                });
-
-                if (ipfsData.logo) {
-                    const logoUrl = ipfsData.logo.startsWith('ipfs://')
-                        ? `https://ipfs.io/ipfs/${ipfsData.logo.replace('ipfs://', '')}`
-                        : ipfsData.logo;
-                    setLogoPreview(logoUrl);
-                }
-
-                // portfolio is the photos array
-                if (ipfsData.portfolio && ipfsData.portfolio.length > 0) {
-                    const existingPhotos = ipfsData.portfolio.map((photo: string) =>
-                        photo.startsWith('ipfs://')
-                            ? `https://ipfs.io/ipfs/${photo.replace('ipfs://', '')}`
-                            : photo
-                    );
-                    setPhotoPreviews(existingPhotos);
-                }
-            }
-        } catch (error) {
-            console.error('Error loading IPFS data:', error);
-        } finally {
-            setLoadingStates(prev => ({ ...prev, loadingIPFS: false }));
-        }
-    };
-
-    useEffect(() => {
-        if (artistData) {
-            const artist = artistData as any;
-            setIsAuthorized(artist.authorized);
-            setIsRegistered(artist.metadata && artist.metadata.length > 0);
-            setIsCheckingAuthorization(false);
-            if (artist.metadata) {
-                loadIPFSData(artist.metadata);
-            }
-        } else if (!isLoadingArtist && artistData !== undefined) {
-            setIsCheckingAuthorization(false);
-        }
-    }, [artistData, isLoadingArtist]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        // RGPD: require explicit acceptance of the privacy policy before
-        // creating an artist account. Once accepted server-side, the
-        // checkbox is hidden so existing artists aren't prompted again.
-        if (needsPrivacyAcceptance) {
-            if (!privacyAccepted) {
-                showAlert(t('form.privacyRequired'));
-                return;
-            }
-            const ok = await acceptPrivacy(getAccessToken);
-            if (!ok) {
-                showAlert(t('form.privacyError'));
-                return;
-            }
-            await refreshSubscription();
-        }
-
-        setLoadingStates(prev => ({ ...prev, uploading: true }));
-
-        let savedCid = '';
-        let transactionAttempted = false;
-        try {
-            // Upload logo if a new file was selected, otherwise keep existing IPFS URI
-            let logoUri: string | undefined = logoPreview.startsWith('https://ipfs.io/ipfs/')
-                ? gatewayUrlToIpfsUri(logoPreview)
-                : undefined;
-
-            if (logoFile) {
-                // Upload the file directly to IPFS and get its CID
-                const logoCid = await uploadFileToIPFS(logoFile);
-                logoUri = `ipfs://${logoCid}`;
-            }
-
-            // Upload newly added local photos to IPFS and collect their URIs
-            const newPhotoUris = await Promise.all(
-                photoFiles.map(async (file) => {
-                    const cid = await uploadFileToIPFS(file);
-                    return `ipfs://${cid}`;
-                })
-            );
-
-            // Preserve existing IPFS photos that weren't removed by the user
-            // They are stored in photoPreviews as resolved gateway URLs
-            const existingIpfsPhotos = photoPreviews
-                .filter(preview => preview.startsWith('https://ipfs.io/ipfs/'))
-                .map(preview => gatewayUrlToIpfsUri(preview));
-
-            const artistMetadata: {
-                name: string;
-                location: string;
-                website: string;
-                bio: string;
-                logo?: string;
-                portfolio: string[];
-                exhibitions: string[];
-                socialMedia: { instagram: string; twitter: string; facebook: string };
-            } = {
-                name,
-                location,
-                website: additionalData.website,
-                bio: additionalData.bio,
-                ...(logoUri ? { logo: logoUri } : {}),
-                portfolio: [...existingIpfsPhotos, ...newPhotoUris],
-                exhibitions: additionalData.exhibitions,
-                socialMedia: additionalData.socialMedia,
-            };
-
-            savedCid = await uploadToIPFS(artistMetadata);
-
-            const data = encodeFunctionData({
-                abi: ARTWORK_REGISTRY_ABI,
-                functionName: 'setArtistInfo',
-                args: [savedCid],
-            });
-
-            transactionAttempted = true;
-            const txResult = await sendTransaction(
-                { to: ARTWORK_REGISTRY_ADDRESS, data },
-                { sponsor: true }
-            );
-            await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
-
-            setIsRegistered(true);
-            setSaveSuccess(true);
-            setTimeout(() => setSaveSuccess(false), 6000);
-            refetchArtist();
-        } catch (error) {
-            console.error('Error saving artist:', error);
-            // Privy sometimes shows its own error notification even when the
-            // transaction succeeds. If we attempted the transaction, wait for
-            // a potential in-flight transaction to mine before concluding failure.
-            if (transactionAttempted && savedCid && activeAddress) {
-                await new Promise(r => setTimeout(r, 5000));
-                try {
-                    const current = await publicClient.readContract({
-                        address: ARTWORK_REGISTRY_ADDRESS,
-                        abi: ARTWORK_REGISTRY_ABI,
-                        functionName: 'getArtist',
-                        args: [activeAddress],
-                    }) as any;
-                    if (current.metadata === savedCid) {
-                        setIsRegistered(true);
-                        setSaveSuccess(true);
-                        setTimeout(() => setSaveSuccess(false), 6000);
-                        return;
-                    }
-                } catch {}
-            }
-            await showAlert('Erreur lors de l\'enregistrement');
-        } finally {
-            setLoadingStates(prev => ({ ...prev, uploading: false }));
-        }
-    };
-
-    if (isCheckingAuthorization || isLoadingArtist) {
+    if (!privyReady || isLoadingArtist) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
-                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
+            <DashboardShell>
+                <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
                     <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Vérification des permissions…</p>
+                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
                 </div>
-            </div>
+            </DashboardShell>
         );
     }
 
-    if (!address) {
+    if (!authenticated || !activeAddress) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
-                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">
-                        Veuillez connecter votre wallet
-                    </p>
+            <DashboardShell>
+                <div className="flex items-center justify-center min-h-[40vh]">
+                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notConnected')}</p>
                 </div>
-            </div>
+            </DashboardShell>
         );
     }
 
     if (!isAuthorized) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
-                <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
-                        Accès refusé : vous n'êtes pas autorisé comme artiste
-                    </p>
+            <DashboardShell>
+                <div className="flex items-center justify-center min-h-[40vh]">
+                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notAuthorized')}</p>
                 </div>
-            </div>
+            </DashboardShell>
         );
     }
 
+    // Authorized but no profile yet — block with a clear single CTA.
+    if (!isRegistered) {
+        return (
+            <DashboardShell>
+                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
+                    <h1 className="text-[clamp(24px,3vw,32px)] font-normal tracking-[-0.5px] text-[#1c1917] mb-3">
+                        {t('welcomeFirst')}
+                    </h1>
+                    <p className="text-[14px] font-light text-[#78716c] leading-[1.7] max-w-md mx-auto mb-8">
+                        {t('needsProfileBody')}
+                    </p>
+                    <Link
+                        href="/artist/profile"
+                        className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] no-underline hover:bg-[#292524] transition-all duration-200"
+                    >
+                        {t('needsProfileCta')}
+                    </Link>
+                </div>
+            </DashboardShell>
+        );
+    }
+
+    // ============== FULL DASHBOARD ==============
+
+    const displayName = artistIPFSData?.name?.trim() || t('anonymousName');
+    const logoUrl = artistIPFSData?.logo ? ipfsToHttp(artistIPFSData.logo) : null;
+
+    return (
+        <DashboardShell>
+            {/* ---------- Hero ---------- */}
+            <section className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                <div className="flex items-start gap-6 flex-wrap">
+                    {logoUrl && (
+                        <img
+                            src={logoUrl}
+                            alt=""
+                            className="w-20 h-20 object-contain border border-[#e7e3dc] bg-[#f5f3ef] flex-shrink-0"
+                        />
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="w-6 h-px bg-[#d6d0c8]" />
+                            <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                                Mona Editions
+                            </span>
+                        </div>
+                        <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
+                            {t('welcomeBack', { name: displayName })}
+                        </h1>
+                        {stats?.memberSinceYear && (
+                            <p className="text-[13px] font-light text-[#78716c]">
+                                {t('memberSince', { year: stats.memberSinceYear })}
+                            </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-3 mt-5">
+                            <Link
+                                href={`/explore/artist/${activeAddress}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#1c1917]
+                                    border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline uppercase
+                                    hover:border-[#1c1917] transition-all duration-200"
+                            >
+                                {t('viewPublicPage')} <span aria-hidden>↗</span>
+                            </Link>
+                            <Link
+                                href="/artist/profile"
+                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#78716c]
+                                    border border-[#d6d0c8] px-4 py-2 no-underline uppercase
+                                    hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                            >
+                                {t('editProfile')}
+                            </Link>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* ---------- Subscription card ---------- */}
+            <SubscriptionCard status={subscription?.status ?? 'none'} t={t} />
+
+            {/* ---------- Stats ---------- */}
+            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-6">
+                    {t('statsLabel')}
+                </p>
+
+                {isLoadingData || !stats ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                        {[0, 1, 2].map(i => (
+                            <div key={i} className="bg-[#fafaf8] p-6 min-h-[110px] flex items-center justify-center">
+                                <div className="w-6 h-6 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                            <StatCard label={t('statEditions')} value={stats.editionsCount} />
+                            <StatCard label={t('statClaims')} value={stats.totalClaims} />
+                            <StatCard label={t('statCollectors')} value={stats.uniqueCollectors} />
+                        </div>
+                        <p className="mt-6 text-[12px] font-light text-[#78716c] tracking-[0.02em]">
+                            <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mr-3">
+                                {t('activityTitle')}
+                            </span>
+                            {t('statClaimsThisMonth', { count: stats.claimsLast30Days })}
+                        </p>
+                    </>
+                )}
+            </section>
+
+            {/* ---------- Recent editions ---------- */}
+            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+                <div className="flex items-end justify-between mb-6">
+                    <h2 className="text-[22px] font-normal text-[#1c1917]">
+                        {t('recentEditionsTitle')}
+                    </h2>
+                    {stats && stats.editionsCount > 0 && (
+                        <Link
+                            href="/artist/editions"
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#78716c] no-underline hover:text-[#1c1917] transition-colors"
+                        >
+                            {t('viewAllEditions')} <span aria-hidden>→</span>
+                        </Link>
+                    )}
+                </div>
+
+                {isLoadingData ? (
+                    <div className="flex justify-center py-12">
+                        <div className="w-6 h-6 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                    </div>
+                ) : recentEditions.length === 0 ? (
+                    <div className="border border-dashed border-[#d6d0c8] bg-[#f5f3ef] p-10 text-center">
+                        <p className="italic text-[18px] text-[#1c1917] mb-2">{t('noEditionsTitle')}</p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7] max-w-md mx-auto">
+                            {t('noEditionsBody')}
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                        {recentEditions.map(ed => (
+                            <EditionCard key={ed.tokenId.toString()} edition={ed} t={t} />
+                        ))}
+                    </div>
+                )}
+            </section>
+
+            {/* ---------- Primary CTA ---------- */}
+            <section className="border border-[#d6d0c8] border-t-0 bg-[#ede9e3] p-8 mb-px">
+                <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <p className="text-[14px] font-light text-[#1c1917]">
+                        {stats && stats.editionsCount === 0
+                            ? t('ctaFirstEdition')
+                            : t('ctaCreateEdition')}
+                    </p>
+                    <Link
+                        href="/artist/editions/create"
+                        className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] no-underline uppercase hover:bg-[#292524] transition-all duration-200"
+                    >
+                        {stats && stats.editionsCount === 0
+                            ? t('ctaFirstEdition')
+                            : t('ctaCreateEdition')}
+                    </Link>
+                </div>
+            </section>
+
+            {/* ---------- QR code (preserved) ---------- */}
+            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[260px]">
+                        <p className="text-[14px] font-medium text-[#1c1917] mb-2">
+                            {tArtist('qrTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+                            {tArtist('qrDescription')}
+                        </p>
+                    </div>
+                    <button
+                        onClick={downloadQRCode}
+                        disabled={isGeneratingQR}
+                        className="bg-[#f5f3ef] text-[#1c1917] font-medium text-[11px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] disabled:opacity-50 hover:border-[#1c1917] transition-all duration-200 uppercase cursor-pointer"
+                    >
+                        {isGeneratingQR ? tArtist('qrGenerating') : tArtist('qrDownload')}
+                    </button>
+                </div>
+            </section>
+        </DashboardShell>
+    );
+}
+
+/* ================================================================== */
+/* Layout shell + small presentational components                     */
+/* ================================================================== */
+
+function DashboardShell({ children }: { children: React.ReactNode }) {
     return (
         <div className="min-h-screen bg-[#f5f3ef]">
-            <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
-                <div className="text-center mb-12">
-                    <img
-                        src="/logo-mona.svg"
-                        alt="Mona Editions Logo"
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
-                    />
-                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        {isRegistered ? (
-                            <>{t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em></>
-                        ) : (
-                            <>{t('createTitleStart')} <em className="italic text-[#78716c]">{t('createTitleAccent')}</em></>
-                        )}
-                    </h1>
-                </div>
-
-                {loadingStates.loadingIPFS && (
-                    <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6 text-center">
-                        {tCommon('ipfsLoading')}
-                    </p>
-                )}
-
-                {subscription?.status === 'past_due' && (
-                    <div className="border-2 border-[#dc2626] bg-[#fef2f2] p-5 mb-px">
-                        <p className="text-[14px] font-medium text-[#991b1b] mb-1">
-                            {t('pastDue.title')}
-                        </p>
-                        <p className="text-[13px] font-light text-[#991b1b] leading-[1.7]">
-                            {t('pastDue.description')}{' '}
-                            <a href="/artist/subscription" className="underline underline-offset-4 hover:no-underline">
-                                {t('pastDue.linkText')}
-                            </a>{' '}
-                            {t('pastDue.descriptionEnd')}
-                        </p>
-                    </div>
-                )}
-
-                {isRegistered && (
-                    <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917] mb-2">
-                            {t('qrTitle')}
-                        </p>
-                        <p className="text-[13px] font-light text-[#78716c] mb-4 leading-[1.7]">
-                            {t('qrDescription')}
-                        </p>
-                        <button
-                            onClick={downloadArtistPageQRCode}
-                            disabled={loadingStates.generatingQR}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
-                        >
-                            {loadingStates.generatingQR ? t('qrGenerating') : t('qrDownload')}
-                        </button>
-                    </div>
-                )}
-
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.nameLabel')}
-                            </label>
-                            <input
-                                type="text"
-                                value={name}
-                                onChange={(e) => setName(e.target.value)}
-                                placeholder={t('form.namePlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                maxLength={256}
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.locationLabel')}
-                            </label>
-                            <input
-                                type="text"
-                                value={location}
-                                onChange={(e) => setLocation(e.target.value)}
-                                placeholder={t('form.locationPlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                maxLength={256}
-                                required
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.bioLabel')}
-                            </label>
-                            <textarea
-                                value={additionalData.bio}
-                                onChange={(e) => setAdditionalData({...additionalData, bio: e.target.value})}
-                                placeholder={t('form.bioPlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[120px]"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.logoLabel')}
-                            </label>
-                            <input
-                                ref={logoInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={handleLogoChange}
-                                className="hidden"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => logoInputRef.current?.click()}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left"
-                            >
-                                {logoFile ? logoFile.name : t('form.logoButton')}
-                            </button>
-                            {logoPreview && (
-                                <div className="mt-3">
-                                    <img
-                                        src={logoPreview}
-                                        alt="Aperçu du logo"
-                                        className="w-24 h-24 object-contain border border-[#d6d0c8] bg-[#f5f3ef]"
-                                    />
-                                </div>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.photosLabel')}
-                            </label>
-                            <input
-                                ref={photosInputRef}
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handlePhotoChange}
-                                className="hidden"
-                            />
-                            <button
-                                type="button"
-                                onClick={() => photosInputRef.current?.click()}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left"
-                            >
-                                {photoFiles.length > 0
-                                    ? `${photoFiles.length} ${t('form.photosLabel')}`
-                                    : t('form.photosButton')}
-                            </button>
-                            {photoPreviews.length > 0 && (
-                                <div className="mt-3 grid grid-cols-3 gap-2">
-                                    {photoPreviews.map((preview, index) => (
-                                        <div key={index} className="relative">
-                                            <img
-                                                src={preview}
-                                                alt={`Photo ${index + 1}`}
-                                                className="w-full h-24 object-cover border border-[#d6d0c8] bg-[#e7e3dc]"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removePhoto(index)}
-                                                className="absolute top-1 right-1 bg-[#1c1917] text-[#fafaf8] w-5 h-5 flex items-center justify-center text-xs hover:bg-[#292524] transition-colors"
-                                            >
-                                                ×
-                                            </button>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.websiteLabel')}
-                            </label>
-                            <input
-                                type="url"
-                                value={additionalData.website}
-                                onChange={(e) => setAdditionalData({...additionalData, website: e.target.value})}
-                                placeholder="https://mon-atelier.fr"
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                            />
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.exhibitionsLabel')}
-                            </label>
-                            <textarea
-                                value={additionalData.exhibitions.join('\n')}
-                                onChange={(e) => setAdditionalData({
-                                    ...additionalData,
-                                    exhibitions: e.target.value.split('\n').filter(Boolean)
-                                })}
-                                placeholder={"2024 — Galerie Perrotin, Paris\n2023 — Art Basel, Bâle"}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
-                            />
-                            <p className="text-[11px] text-[#a8a29e] mt-1">{t('form.exhibitionsPlaceholder')}</p>
-                        </div>
-
-                        <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.instagramLabel')} / {t('form.twitterLabel')} / {t('form.facebookLabel')}
-                            </label>
-                            <div className="space-y-2">
-                                <input
-                                    type="text"
-                                    value={additionalData.socialMedia.instagram}
-                                    onChange={(e) => setAdditionalData({
-                                        ...additionalData,
-                                        socialMedia: { ...additionalData.socialMedia, instagram: e.target.value }
-                                    })}
-                                    placeholder="Instagram (@handle)"
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                />
-                                <input
-                                    type="text"
-                                    value={additionalData.socialMedia.twitter}
-                                    onChange={(e) => setAdditionalData({
-                                        ...additionalData,
-                                        socialMedia: { ...additionalData.socialMedia, twitter: e.target.value }
-                                    })}
-                                    placeholder="Twitter / X (@handle)"
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                />
-                                <input
-                                    type="text"
-                                    value={additionalData.socialMedia.facebook}
-                                    onChange={(e) => setAdditionalData({
-                                        ...additionalData,
-                                        socialMedia: { ...additionalData.socialMedia, facebook: e.target.value }
-                                    })}
-                                    placeholder="Facebook (URL ou @page)"
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                />
-                            </div>
-                        </div>
-
-                        {saveSuccess && (
-                            <div className="border border-[#d6d0c8] bg-[#f0fdf4] p-4">
-                                <p className="text-[13px] font-medium text-[#166534]">
-                                    {tCommon('saveSuccess')}
-                                </p>
-                            </div>
-                        )}
-
-                        {needsPrivacyAcceptance && (
-                            <div className="border border-[#d6d0c8] bg-[#ede9e3] p-5">
-                                <label className="flex items-start gap-3 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={privacyAccepted}
-                                        onChange={(e) => setPrivacyAccepted(e.target.checked)}
-                                        required
-                                        className="mt-1 w-4 h-4 accent-[#1c1917] cursor-pointer flex-shrink-0"
-                                    />
-                                    <span className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
-                                        {t('form.privacyLabel')}{' '}
-                                        <a
-                                            href="/legal/privacy"
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="underline underline-offset-2 hover:no-underline font-medium"
-                                        >
-                                            {t('form.privacyLink')}
-                                        </a>
-                                        {t('form.privacyEnd')}
-                                    </span>
-                                </label>
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={
-                                isRegistering ||
-                                loadingStates.uploading ||
-                                loadingStates.loadingIPFS ||
-                                (needsPrivacyAcceptance && !privacyAccepted)
-                            }
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
-                        >
-                            {loadingStates.uploading
-                                ? tCommon('uploadIPFS')
-                                : isRegistering
-                                    ? tCommon('saving')
-                                    : isRegistered
-                                        ? tCommon('update')
-                                        : tCommon('save')}
-                        </button>
-                    </form>
-                </div>
-
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
-                    </div>
-                </div>
+            <div className="max-w-5xl mx-auto px-6 pt-28 pb-20">
+                {children}
             </div>
         </div>
+    );
+}
+
+function StatCard({ label, value }: { label: string; value: number }) {
+    return (
+        <div className="bg-[#fafaf8] p-6">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">
+                {label}
+            </p>
+            <p className="text-[clamp(32px,5vw,44px)] font-normal text-[#1c1917] leading-none tracking-[-1px]">
+                {value}
+            </p>
+        </div>
+    );
+}
+
+function EditionCard({
+    edition,
+    t,
+}: {
+    edition: EditionSummary;
+    t: ReturnType<typeof useTranslations>;
+}) {
+    const total = edition.editionSize;
+    const claimed = edition.claimed;
+    const pct = total > 0 ? Math.min(100, Math.round((claimed / total) * 100)) : 0;
+
+    return (
+        <Link
+            href={`/explore/edition/${edition.tokenId}`}
+            className="bg-[#fafaf8] p-5 flex flex-col gap-3 no-underline group"
+        >
+            {edition.imageUrl ? (
+                <div className="w-full aspect-[4/3] overflow-hidden bg-[#e7e3dc]">
+                    <img
+                        src={edition.imageUrl}
+                        alt={edition.title}
+                        className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                    />
+                </div>
+            ) : (
+                <div className="w-full aspect-[4/3] bg-[#e7e3dc] flex items-center justify-center">
+                    <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-20" />
+                </div>
+            )}
+
+            <div className="flex items-start justify-between gap-2">
+                <h3 className="text-[15px] font-normal text-[#1c1917] leading-tight flex-1">
+                    {edition.title}
+                </h3>
+                {edition.disabled && (
+                    <span className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-1.5 py-0.5 flex-shrink-0 mt-0.5">
+                        {t('disabled')}
+                    </span>
+                )}
+            </div>
+
+            {total > 0 && (
+                <>
+                    <div className="w-full h-1.5 bg-[#e7e3dc] overflow-hidden">
+                        <div
+                            className="h-full bg-[#4a5240]"
+                            style={{ width: `${pct}%` }}
+                            aria-hidden="true"
+                        />
+                    </div>
+                    <p className="text-[11px] font-light text-[#78716c]">
+                        {t('claimRate', { claimed, total })}
+                    </p>
+                </>
+            )}
+        </Link>
+    );
+}
+
+function SubscriptionCard({
+    status,
+    t,
+}: {
+    status: 'none' | 'active' | 'canceled' | 'past_due' | 'incomplete';
+    t: ReturnType<typeof useTranslations>;
+}) {
+    // Three visual variants: success (active), urgent (past_due/incomplete),
+    // neutral (inactive). canceled with no current period still shows as
+    // inactive — the upstream API decides whether to keep status='active'
+    // until period end.
+    if (status === 'active') {
+        return (
+            <section className="border border-[#d6d0c8] border-t-0 bg-[#f0fdf4] p-6 mb-px">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[260px]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#166534] mb-2">
+                            ● {t('subActiveTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                            {t('subActiveBody')}
+                        </p>
+                    </div>
+                    <Link
+                        href="/artist/subscription"
+                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#fafaf8] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                    >
+                        {t('subManageCta')}
+                    </Link>
+                </div>
+            </section>
+        );
+    }
+
+    if (status === 'past_due' || status === 'incomplete') {
+        return (
+            <section className="border-2 border-[#dc2626] border-t-2 bg-[#fef2f2] p-6 mb-px">
+                <div className="flex items-start justify-between gap-4 flex-wrap">
+                    <div className="flex-1 min-w-[260px]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#991b1b] mb-2">
+                            ● {t('subPastDueTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#991b1b] leading-[1.7]">
+                            {t('subPastDueBody')}
+                        </p>
+                    </div>
+                    <Link
+                        href="/artist/subscription"
+                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#dc2626] px-4 py-2 no-underline hover:bg-[#b91c1c] transition-colors"
+                    >
+                        {t('subManageCta')}
+                    </Link>
+                </div>
+            </section>
+        );
+    }
+
+    // status === 'none' or 'canceled'
+    return (
+        <section className="border border-[#d6d0c8] border-t-0 bg-[#ede9e3] p-6 mb-px">
+            <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex-1 min-w-[260px]">
+                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#78716c] mb-2">
+                        {t('subInactiveTitle')}
+                    </p>
+                    <p className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                        {t('subInactiveBody')}
+                    </p>
+                </div>
+                <Link
+                    href="/artist/subscription"
+                    className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#1c1917] px-4 py-2 no-underline hover:bg-[#292524] transition-colors"
+                >
+                    {t('subActivateCta')}
+                </Link>
+            </div>
+        </section>
     );
 }
