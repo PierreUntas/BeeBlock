@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { getFromIPFSGateway } from '@/app/utils/ipfs';
@@ -10,6 +10,7 @@ import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { useTranslations } from 'next-intl';
+import ShareMenu from '@/components/shared/ShareMenu';
 
 interface ArtistInfo {
     name: string;
@@ -291,7 +292,7 @@ export default function ArtistPageClient() {
                             </div>
 
                             <div className="flex items-start gap-4 flex-shrink-0">
-                                <ShareMenu artistName={artist.name} />
+                                <ArtistShareButton artistName={artist.name} />
                                 {artistIPFSData?.logo && (
                                     <img
                                         src={ipfsToHttp(artistIPFSData.logo)}
@@ -581,18 +582,13 @@ function StatDot() {
 }
 
 /**
- * Share menu — popover with copy-link and pre-filled social shares.
- *
- * Uses `navigator.share` when available (mobile), falls back to a custom
- * popover with explicit share-intent URLs on desktop. Instagram has no
- * web share URL so we copy the link and tell the user to paste it into
- * their Instagram bio / story.
+ * Page-specific wrapper around the shared <ShareMenu/>. Fills in the
+ * collector-facing copy from the Explore.artist translation namespace and
+ * tracks the current URL client-side (window.location.href is the source
+ * of truth — locale prefix is already in the path).
  */
-function ShareMenu({ artistName }: { artistName: string }) {
+function ArtistShareButton({ artistName }: { artistName: string }) {
     const t = useTranslations('Explore.artist');
-    const [open, setOpen] = useState(false);
-    const [copied, setCopied] = useState(false);
-    const ref = useRef<HTMLDivElement>(null);
     const [pageUrl, setPageUrl] = useState('');
 
     useEffect(() => {
@@ -601,110 +597,22 @@ function ShareMenu({ artistName }: { artistName: string }) {
         }
     }, []);
 
-    // Close on outside click.
-    useEffect(() => {
-        if (!open) return;
-        const onClick = (e: MouseEvent) => {
-            if (ref.current && !ref.current.contains(e.target as Node)) {
-                setOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', onClick);
-        return () => document.removeEventListener('mousedown', onClick);
-    }, [open]);
-
-    const copyLink = async () => {
-        try {
-            await navigator.clipboard.writeText(pageUrl);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-        } catch (e) {
-            console.error('Clipboard write failed:', e);
-        }
-    };
-
-    const socialText = t('shareSocialText', { name: artistName, url: pageUrl });
-    const emailSubject = t('shareEmailSubject', { name: artistName });
-    const emailBody = t('shareEmailBody', { name: artistName, url: pageUrl });
-
-    const links = {
-        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(socialText)}`,
-        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`,
-        email: `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`,
-    };
-
     return (
-        <div className="relative" ref={ref}>
-            <button
-                type="button"
-                onClick={() => setOpen(o => !o)}
-                aria-label={t('share')}
-                aria-haspopup="true"
-                aria-expanded={open}
-                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#1c1917]
-                    border border-[#d6d0c8] bg-[#f5f3ef] px-3 py-2
-                    hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
-            >
-                <ShareIcon />
-                <span className="uppercase">{copied ? t('shareCopied') : t('share')}</span>
-            </button>
-
-            {open && (
-                <div
-                    role="menu"
-                    className="absolute right-0 top-full mt-2 z-50 min-w-[200px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm"
-                >
-                    <ShareMenuItem onClick={copyLink}>
-                        {copied ? `${t('shareCopied')} ✓` : t('shareCopyLink')}
-                    </ShareMenuItem>
-                    <ShareMenuLink href={links.twitter}>{t('shareTwitter')}</ShareMenuLink>
-                    <ShareMenuLink href={links.facebook}>{t('shareFacebook')}</ShareMenuLink>
-                    <ShareMenuLink href={links.email}>{t('shareEmail')}</ShareMenuLink>
-                </div>
-            )}
-        </div>
-    );
-}
-
-function ShareMenuItem({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
-    return (
-        <button
-            type="button"
-            onClick={onClick}
-            role="menuitem"
-            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917]
-                hover:bg-[#f5f3ef] transition-colors duration-150 cursor-pointer
-                border-b border-[#e7e3dc] last:border-b-0"
-        >
-            {children}
-        </button>
-    );
-}
-
-function ShareMenuLink({ children, href }: { children: React.ReactNode; href: string }) {
-    return (
-        <a
-            href={href}
-            target="_blank"
-            rel="noopener noreferrer"
-            role="menuitem"
-            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917] no-underline
-                hover:bg-[#f5f3ef] transition-colors duration-150
-                border-b border-[#e7e3dc] last:border-b-0"
-        >
-            {children}
-        </a>
-    );
-}
-
-function ShareIcon() {
-    return (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="18" cy="5" r="3" />
-            <circle cx="6" cy="12" r="3" />
-            <circle cx="18" cy="19" r="3" />
-            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
-        </svg>
+        <ShareMenu
+            data={{
+                pageUrl,
+                twitterText: t('shareSocialText', { name: artistName, url: pageUrl }),
+                emailSubject: t('shareEmailSubject', { name: artistName }),
+                emailBody: t('shareEmailBody', { name: artistName, url: pageUrl }),
+            }}
+            labels={{
+                share: t('share'),
+                shareCopied: t('shareCopied'),
+                shareCopyLink: t('shareCopyLink'),
+                shareTwitter: t('shareTwitter'),
+                shareFacebook: t('shareFacebook'),
+                shareEmail: t('shareEmail'),
+            }}
+        />
     );
 }
