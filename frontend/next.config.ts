@@ -64,11 +64,10 @@ export default withSentryConfig(config, {
     // Local builds without the token still work, just without symbolication.
     authToken: process.env.SENTRY_AUTH_TOKEN,
 
-    // Hide source maps from the public bundle (still uploaded to Sentry
-    // for symbolication, just not served to browsers).
-    hideSourceMaps: true,
-
-    // Disable Sentry's automatic instrumentation of Vercel cron jobs
-    // (we don't use any, and it adds noise).
-    automaticVercelMonitors: false,
+    // In v10+, source maps handling is configured via this nested object.
+    sourcemaps: {
+        // Delete uploaded source maps from the public bundle after upload
+        // (still kept on Sentry for symbolication, just not served to browsers).
+        deleteSourcemapsAfterUpload: true,
+    },
 });
