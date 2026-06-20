@@ -10,6 +10,7 @@ import { uploadToIPFS, uploadFileToIPFS, getFromIPFSGateway, getIPFSUrl } from '
 import { CATEGORIES_EN, CATEGORIES_FR } from '@/app/utils/categories';
 import { useModal } from '@/app/ModalProvider';
 import Link from 'next/link';
+import { useTranslations } from 'next-intl';
 
 interface EditionData {
     title: string;
@@ -23,6 +24,7 @@ interface EditionData {
 }
 
 export default function EditEditionPage() {
+    const t = useTranslations('Edit');
     const params = useParams();
     const editionId = BigInt(params.id as string);
 
@@ -179,7 +181,7 @@ export default function EditEditionPage() {
 
             setSaved(true);
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            await showAlert('Métadonnées mises à jour avec succès !');
+            await showAlert(t('updateSuccess'));
         } catch (error: any) {
             const rawMessage = error?.message || '';
             if (rawMessage.includes('MetadataLocked')) {
@@ -199,7 +201,7 @@ export default function EditEditionPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef] flex flex-col items-center justify-center gap-4">
                 <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement…</p>
+                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
             </div>
         );
     }
@@ -207,7 +209,7 @@ export default function EditEditionPage() {
     if (!activeAddress) {
         return (
             <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center">
-                <p className="italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
+                <p className="italic text-[22px] text-[#a8a29e]">{t('connectWallet')}</p>
             </div>
         );
     }
@@ -216,7 +218,7 @@ export default function EditEditionPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center">
                 <p className="italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
-                    Accès refusé : vous n'êtes pas autorisé comme artiste
+                    {t('notOwner')}
                 </p>
             </div>
         );
@@ -229,16 +231,16 @@ export default function EditEditionPage() {
                     <div className="text-center mb-12">
                         <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6" />
                         <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-4">
-                            Métadonnées <em className="italic text-[#78716c]">verrouillées</em>
+                            {t('lockedTitleStart')} <em className="italic text-[#78716c]">{t('lockedTitleAccent')}</em>
                         </h1>
                         <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8">
-                            Au moins un certificat de cette édition a quitté votre portefeuille — par réclamation, transfert ou vente. Les métadonnées sont désormais immuables afin de garantir l'authenticité aux détenteurs.
+                            {t('lockedExplanation')}
                         </p>
                         <Link
                             href="/artist/editions"
                             className="inline-block text-[12px] font-medium tracking-[0.06em] text-[#1c1917] border border-[#d6d0c8] px-8 py-3 hover:border-[#1c1917] transition-all duration-200"
                         >
-                            ← Retour à mes œuvres
+                            ← {t('back')}
                         </Link>
                     </div>
                 </div>
@@ -254,9 +256,9 @@ export default function EditEditionPage() {
 
                 {saved && (
                     <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917]">Métadonnées mises à jour avec succès !</p>
+                        <p className="text-[14px] font-medium text-[#1c1917]">{t('updateSuccess')}</p>
                         <p className="text-[13px] font-light text-[#78716c] mt-1">
-                            Les plateformes comme OpenSea et MetaMask rafraîchiront les données sous peu.
+                            {t('updateSuccessHint')}
                         </p>
                     </div>
                 )}
@@ -264,7 +266,7 @@ export default function EditEditionPage() {
                 <div className="text-center mb-12">
                     <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6" />
                     <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Modifier <em className="italic text-[#78716c]">l'œuvre #{params.id}</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent', { id: params.id as string })}</em>
                     </h1>
                 </div>
 

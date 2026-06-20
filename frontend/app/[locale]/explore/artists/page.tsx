@@ -7,6 +7,7 @@ import { ipfsToHttp } from '@/app/utils/file';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
+import { useTranslations } from 'next-intl';
 
 // New artist IPFS structure
 interface ArtistIPFSData {
@@ -34,6 +35,7 @@ interface ArtistInfo {
 }
 
 export default function ArtistsPage() {
+    const t = useTranslations('Explore.artists');
     const [artists, setArtists] = useState<ArtistInfo[]>([]);
     
     // Grouped loading states
@@ -125,21 +127,17 @@ export default function ArtistsPage() {
                 <div className="mb-16">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-px bg-[#d6d0c8]" />
-                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">Explorer</span>
+                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">{t('title')}</span>
                     </div>
                     <div className="flex items-end justify-between border-b border-[#d6d0c8] pb-8">
                         <div>
                             <h1 className=" text-[clamp(40px,6vw,64px)] font-normal leading-[1.05] tracking-[-1.5px] text-[#1c1917] mb-3">
-                                Les <em className="italic text-[#78716c]">artistes</em>
+                                {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                             </h1>
-                            <p className="text-[14px] font-light text-[#78716c] leading-relaxed max-w-md">
-                                Découvrez les artistes qui certifient leurs œuvres sur la blockchain.
-                                Chaque profil est une identité vérifiée et permanente.
-                            </p>
                         </div>
                         <div className="text-right hidden md:block">
                             <span className=" italic text-[48px] text-[#e7e3dc] leading-none">{artists.length}</span>
-                            <span className="block text-[11px] font-light tracking-[0.08em] text-[#a8a29e] mt-1">artistes certifiés</span>
+                            <span className="block text-[11px] font-light tracking-[0.08em] text-[#a8a29e] mt-1">{t('certifiedSuffix')}</span>
                         </div>
                     </div>
                 </div>
@@ -147,7 +145,7 @@ export default function ArtistsPage() {
                 {/* Filters */}
                 <div className="flex gap-2 flex-wrap mb-10">
                     <FilterBtn active={filterArtist === 'all'} onClick={() => setFilterArtist('all')}>
-                        Tous ({artists.length})
+                        {t('filterAll')} ({artists.length})
                     </FilterBtn>
                     {artists.map(p => (
                         <FilterBtn key={p.address} active={filterArtist === p.name} onClick={() => setFilterArtist(p.name)}>
@@ -158,18 +156,19 @@ export default function ArtistsPage() {
 
                 {loadingStates.loadingIPFS && (
                     <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6">
-                        Chargement des données IPFS…
+                        {/* Reuse Common.ipfsLoading via per-page key for clarity */}
+                        {t('loading')}
                     </p>
                 )}
 
                 {loadingStates.fetchingArtists ? (
                     <div className="flex flex-col items-center justify-center py-32 gap-4">
                         <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement des artistes…</p>
+                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-                        <p className=" italic text-[22px] text-[#a8a29e]">Aucun artiste trouvé</p>
+                        <p className=" italic text-[22px] text-[#a8a29e]">{t('empty')}</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">

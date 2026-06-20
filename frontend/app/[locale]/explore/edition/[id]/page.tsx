@@ -8,6 +8,7 @@ import { ipfsToHttp } from '@/app/utils/file';
 import { getCategoryLabel } from '@/app/utils/categories';
 import Link from 'next/link';
 import { publicClient } from '@/lib/client';
+import { useTranslations } from 'next-intl';
 
 interface EditionDetails {
     tokenId: bigint;
@@ -64,6 +65,7 @@ interface CommentIPFSData {
 }
 
 export default function EditionDetailsPage() {
+    const t = useTranslations('Explore.edition');
     const params = useParams();
     const editionId = params.id as string;
 
@@ -195,7 +197,7 @@ export default function EditionDetailsPage() {
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                 <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement des détails de l'œuvre…</p>
+                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
             </div>
         </div>
     );
@@ -203,7 +205,7 @@ export default function EditionDetailsPage() {
     if (!edition || !artist) return (
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                <p className=" italic text-[22px] text-[#a8a29e]">Œuvre introuvable</p>
+                <p className=" italic text-[22px] text-[#a8a29e]">{t('notFound')}</p>
             </div>
         </div>
     );
@@ -220,12 +222,12 @@ export default function EditionDetailsPage() {
                         border border-[#d6d0c8] px-4 py-2 mb-12 no-underline
                         hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
                 >
-                    ← Retour à l'exploration
+                    {t('back')}
                 </Link>
 
                 {loadingStates.loadingIPFS && (
                     <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6 text-center">
-                        Chargement des données IPFS…
+                        {t('ipfsLoading')}
                     </p>
                 )}
 
@@ -241,10 +243,10 @@ export default function EditionDetailsPage() {
                             <h1 className=" text-[clamp(32px,5vw,42px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-1">
                                 {edition.title}
                             </h1>
-                            <p className="text-[14px] text-[#78716c]">Œuvre #{edition.tokenId.toString()}</p>
+                            <p className="text-[14px] text-[#78716c]">{t('editionLabel', { id: edition.tokenId.toString() })}</p>
                         </div>
                         <div className="text-right flex-shrink-0 ml-6">
-                            <p className="mb-1 text-[12px] text-[#a8a29e]">Exemplaires</p>
+                            <p className="mb-1 text-[12px] text-[#a8a29e]">{t('copies')}</p>
                             <p className=" text-4xl font-normal text-[#1c1917]">
                                 {edition.remainingTokens.toString()}
                             </p>
@@ -257,7 +259,7 @@ export default function EditionDetailsPage() {
                         <div className="flex items-center gap-2 pt-3 border-t border-[#e7e3dc]">
                             <span className=" text-2xl font-normal text-[#1c1917]">{calculateAverageRating()}</span>
                             <span className="text-[#1c1917]">★★★★★</span>
-                            <span className="text-[14px] text-[#78716c]">({comments.length} avis)</span>
+                            <span className="text-[14px] text-[#78716c]">({t('reviewsCount', { n: comments.length })})</span>
                         </div>
                     )}
                 </div>
@@ -266,7 +268,7 @@ export default function EditionDetailsPage() {
                 {images.length > 0 && (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px p-8">
                         <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                            Images de l'<em className="italic text-[#78716c]">œuvre</em>
+                            {t('imagesTitleStart')}<em className="italic text-[#78716c]">{t('imagesTitleAccent')}</em>
                         </h2>
                         {/* Main image */}
                         <div className="w-full aspect-[4/3] overflow-hidden bg-[#e7e3dc] border border-[#d6d0c8] mb-3">
@@ -301,35 +303,35 @@ export default function EditionDetailsPage() {
                 {/* Artwork details */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px p-8">
                     <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Informations de l'<em className="italic text-[#78716c]">œuvre</em>
+                        {t('infoTitleStart')}<em className="italic text-[#78716c]">{t('infoTitleAccent')}</em>
                     </h2>
                     <div className="space-y-4">
                         {editionIPFSData?.description && (
-                            <InfoBlock label="Description">
+                            <InfoBlock label={t('description')}>
                                 <p className="text-[15px] text-[#1c1917] leading-[1.75]">{editionIPFSData.description}</p>
                             </InfoBlock>
                         )}
                         {editionIPFSData?.year && (
-                            <InfoBlock label="Année">
+                            <InfoBlock label={t('year')}>
                                 <p className="text-[15px] text-[#1c1917]">{editionIPFSData.year}</p>
                             </InfoBlock>
                         )}
                         {editionIPFSData?.technique && (
-                            <InfoBlock label="Technique">
+                            <InfoBlock label={t('technique')}>
                                 <p className="text-[15px] text-[#1c1917]">{editionIPFSData.technique}</p>
                             </InfoBlock>
                         )}
                         {editionIPFSData?.dimensions && (
-                            <InfoBlock label="Dimensions">
+                            <InfoBlock label={t('dimensions')}>
                                 <p className="text-[15px] text-[#1c1917]">{editionIPFSData.dimensions}</p>
                             </InfoBlock>
                         )}
                         {editionIPFSData?.editionSize && (
-                            <InfoBlock label="Taille de l'édition">
-                                <p className="text-[15px] text-[#1c1917]">{editionIPFSData.editionSize} exemplaires</p>
+                            <InfoBlock label={t('editionSize')}>
+                                <p className="text-[15px] text-[#1c1917]">{t('editionSizeValue', { n: editionIPFSData.editionSize })}</p>
                             </InfoBlock>
                         )}
-                        <InfoBlock label="Lien metadata" noBorder>
+                        <InfoBlock label={t('metadataLink')} noBorder>
                             <a
                                 href={`https://ipfs.io/ipfs/${edition.metadata}`}
                                 target="_blank"
@@ -346,7 +348,7 @@ export default function EditionDetailsPage() {
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px p-8">
                     <div className="flex items-start gap-6 mb-6 pb-6 border-b border-[#e7e3dc]">
                         <h2 className=" text-[22px] font-normal text-[#1c1917] flex-1">
-                            L'<em className="italic text-[#78716c]">artiste</em>
+                            {t('artistTitleStart')}<em className="italic text-[#78716c]">{t('artistTitleAccent')}</em>
                         </h2>
                         {artistIPFSData?.logo && (
                             <img
@@ -358,19 +360,19 @@ export default function EditionDetailsPage() {
                     </div>
 
                     <div className="space-y-4">
-                        <InfoBlock label="Nom">
+                        <InfoBlock label={t('name')}>
                             <p className="text-[15px] text-[#1c1917]">{artist.name}</p>
                         </InfoBlock>
-                        <InfoBlock label="Localisation">
+                        <InfoBlock label={t('location')}>
                             <p className="text-[15px] text-[#1c1917]">{artist.location}</p>
                         </InfoBlock>
                         {artistIPFSData?.bio && (
-                            <InfoBlock label="Biographie">
+                            <InfoBlock label={t('bio')}>
                                 <p className="text-[15px] text-[#1c1917] leading-[1.75]">{artistIPFSData.bio}</p>
                             </InfoBlock>
                         )}
                         {artistIPFSData?.website && (
-                            <InfoBlock label="Site web">
+                            <InfoBlock label={t('website')}>
                                 <a
                                     href={artistIPFSData.website}
                                     target="_blank"
@@ -382,7 +384,7 @@ export default function EditionDetailsPage() {
                             </InfoBlock>
                         )}
                         {artistIPFSData?.socialMedia && (artistIPFSData.socialMedia.instagram || artistIPFSData.socialMedia.twitter || artistIPFSData.socialMedia.facebook) && (
-                            <InfoBlock label="Réseaux sociaux">
+                            <InfoBlock label={t('socialMedia')}>
                                 <div className="flex flex-col gap-1">
                                     {artistIPFSData.socialMedia.instagram && (
                                         <a href={`https://instagram.com/${artistIPFSData.socialMedia.instagram.replace('@', '')}`} target="_blank" rel="noopener noreferrer" className="text-[14px] text-[#4a5240] hover:opacity-70 transition-opacity">
@@ -403,7 +405,7 @@ export default function EditionDetailsPage() {
                             </InfoBlock>
                         )}
                         <div>
-                            <p className="mb-1 text-[12px] text-[#a8a29e] uppercase tracking-[0.12em]">Adresse Ethereum</p>
+                            <p className="mb-1 text-[12px] text-[#a8a29e] uppercase tracking-[0.12em]">{t('ethAddress')}</p>
                             <p className="text-[11px] font-mono break-all text-[#a8a29e]">{edition.artist}</p>
                         </div>
                     </div>
@@ -412,7 +414,7 @@ export default function EditionDetailsPage() {
                         href={`/explore/artist/${edition.artist}`}
                         className="text-right block mt-6 text-[13px] text-[#4a5240] hover:text-[#1c1917] underline underline-offset-2 transition-colors"
                     >
-                        Voir toutes ses œuvres →
+                        {t('viewAllWorks')}
                     </Link>
                 </div>
 
@@ -420,7 +422,7 @@ export default function EditionDetailsPage() {
                 {comments.length > 0 && (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px p-8">
                         <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                            Avis des <em className="italic text-[#78716c]">collectionneurs</em>
+                            {t('reviewsTitleStart')} <em className="italic text-[#78716c]">{t('reviewsTitleAccent')}</em>
                         </h2>
                         <div className="space-y-4">
                             {comments.map((comment, index) => (

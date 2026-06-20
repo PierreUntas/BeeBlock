@@ -9,6 +9,7 @@ import { getCategoryLabel } from '@/app/utils/categories';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
+import { useTranslations } from 'next-intl';
 
 interface ArtistInfo {
     name: string;
@@ -54,6 +55,7 @@ interface EditionInfo {
 }
 
 export default function ArtistDetailsPage() {
+    const t = useTranslations('Explore.artist');
     const params = useParams();
     const artistAddress = params.address as string;
 
@@ -165,7 +167,7 @@ export default function ArtistDetailsPage() {
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                 <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement du profil…</p>
+                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
             </div>
         </div>
     );
@@ -173,7 +175,7 @@ export default function ArtistDetailsPage() {
     if (!artist) return (
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                <p className=" italic text-[22px] text-[#a8a29e]">Artiste introuvable</p>
+                <p className=" italic text-[22px] text-[#a8a29e]">{t('notFound')}</p>
             </div>
         </div>
     );
@@ -192,12 +194,12 @@ export default function ArtistDetailsPage() {
                         border border-[#d6d0c8] px-4 py-2 mb-12 no-underline
                         hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
                 >
-                    ← Retour aux artistes
+                    {t('back')}
                 </Link>
 
                 {loadingStates.loadingIPFS && (
                     <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6">
-                        Chargement des données IPFS…
+                        {t('ipfsLoading')}
                     </p>
                 )}
 
@@ -222,7 +224,7 @@ export default function ArtistDetailsPage() {
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-6 h-px bg-[#d6d0c8]" />
                                     <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
-                                        Artiste certifié
+                                        {t('certifiedArtist')}
                                     </span>
                                 </div>
                                 <h1 className=" text-[clamp(32px,5vw,52px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
@@ -245,7 +247,7 @@ export default function ArtistDetailsPage() {
                             <div className="flex flex-col gap-6">
                                 {artistIPFSData?.bio && (
                                     <div>
-                                        <Label>À propos</Label>
+                                        <Label>{t('about')}</Label>
                                         <p className="text-[14px] font-light text-[#1c1917] leading-[1.8]">
                                             {artistIPFSData.bio}
                                         </p>
@@ -253,7 +255,7 @@ export default function ArtistDetailsPage() {
                                 )}
                                 {exhibitions && exhibitions.length > 0 && (
                                     <div>
-                                        <Label>Expositions</Label>
+                                        <Label>{t('exhibitions')}</Label>
                                         <ul className="flex flex-col gap-1.5">
                                             {exhibitions.map((ex, i) => (
                                                 <li key={i} className="text-[13px] font-light text-[#1c1917] leading-[1.7] border-l-2 border-[#d6d0c8] pl-3">
@@ -267,11 +269,11 @@ export default function ArtistDetailsPage() {
 
                             {/* Right — contact & links */}
                             <div className="flex flex-col gap-4">
-                                <InfoRow label="Localisation" value={artist.location} />
+                                <InfoRow label={t('location')} value={artist.location} />
 
                                 {artistIPFSData?.website && (
                                     <div className="flex flex-col gap-1 pb-4 border-b border-[#f0ede8]">
-                                        <Label>Site web</Label>
+                                        <Label>{t('website')}</Label>
                                         <a
                                             href={artistIPFSData.website}
                                             target="_blank"
@@ -285,7 +287,7 @@ export default function ArtistDetailsPage() {
 
                                 {hasSocialMedia && (
                                     <div className="flex flex-col gap-1 pb-4 border-b border-[#f0ede8]">
-                                        <Label>Réseaux sociaux</Label>
+                                        <Label>{t('socialMedia')}</Label>
                                         <div className="flex flex-col gap-1.5">
                                             {socialMedia.instagram && (
                                                 <a
@@ -322,7 +324,7 @@ export default function ArtistDetailsPage() {
                                 )}
 
                                 <div>
-                                    <Label>Adresse Ethereum</Label>
+                                    <Label>{t('ethAddress')}</Label>
                                     <p className="text-[11px] font-mono text-[#a8a29e] break-all">{artistAddress}</p>
                                 </div>
                             </div>
@@ -334,7 +336,7 @@ export default function ArtistDetailsPage() {
                 {portfolio && portfolio.length > 1 && (
                     <div className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
                         <h2 className=" text-[22px] font-normal text-[#1c1917] mb-6">
-                            Portfolio <em className="italic text-[#78716c]">photos</em>
+                            {t('portfolioTitleStart')} <em className="italic text-[#78716c]">{t('portfolioTitleAccent')}</em>
                         </h2>
                         <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
                             {portfolio.slice(1).map((photo, i) => (
@@ -354,7 +356,7 @@ export default function ArtistDetailsPage() {
                 <div className="mt-16 mb-8">
                     <div className="flex items-end justify-between border-b border-[#d6d0c8] pb-6 mb-0">
                         <h2 className=" text-[clamp(24px,3vw,36px)] font-normal tracking-[-0.5px] text-[#1c1917]">
-                            Œuvres <em className="italic text-[#78716c]">certifiées</em>
+                            {t('worksTitleStart')} <em className="italic text-[#78716c]">{t('worksTitleAccent')}</em>
                         </h2>
                         <span className=" italic text-[36px] text-[#e7e3dc] leading-none">
                             {editions.length}
@@ -365,7 +367,7 @@ export default function ArtistDetailsPage() {
                 {editions.length === 0 ? (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
                         <p className=" italic text-[18px] text-[#a8a29e]">
-                            Cet artiste n'a pas encore certifié d'œuvre.
+                            {t('noWorks')}
                         </p>
                     </div>
                 ) : (
@@ -402,7 +404,7 @@ export default function ArtistDetailsPage() {
                                         </h3>
                                     </div>
                                     <span className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#4a5240] border border-[#4a5240] px-1.5 py-0.5 flex-shrink-0 mt-1">
-                                        Certifié
+                                        {t('certifiedBadge')}
                                     </span>
                                 </div>
 
