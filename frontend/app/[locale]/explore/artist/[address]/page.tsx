@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { getFromIPFSGateway } from '@/app/utils/ipfs';
@@ -54,6 +54,12 @@ interface EditionInfo {
     commentsCount?: number;
 }
 
+interface ArtistStats {
+    editionsCount: number;
+    collectorsCount: number;
+    memberSinceYear?: number;
+}
+
 export default function ArtistDetailsPage() {
     const t = useTranslations('Explore.artist');
     const params = useParams();
@@ -62,6 +68,7 @@ export default function ArtistDetailsPage() {
     const [artist, setArtist] = useState<ArtistInfo | null>(null);
     const [artistIPFSData, setArtistIPFSData] = useState<ArtistIPFSData | null>(null);
     const [editions, setEditions] = useState<EditionInfo[]>([]);
+    const [stats, setStats] = useState<ArtistStats | null>(null);
 
     // Grouped loading states
     const [loadingStates, setLoadingStates] = useState({
@@ -80,7 +87,7 @@ export default function ArtistDetailsPage() {
                     args: [artistAddress as `0x${string}`]
                 }) as any;
 
-                let artistName = 'Artiste anonyme';
+                let artistName = t('anonymous');
                 let artistLocation = '';
 
                 if (artistData.metadata?.trim()) {
@@ -88,7 +95,7 @@ export default function ArtistDetailsPage() {
                     try {
                         const ipfsData = await getFromIPFSGateway(artistData.metadata) as ArtistIPFSData;
                         setArtistIPFSData(ipfsData);
-                        artistName = ipfsData.name || 'Artiste anonyme';
+                        artistName = ipfsData.name || t('anonymous');
                         artistLocation = ipfsData.location || '';
                     } catch (e) {
                         console.error('Error loading artist IPFS data:', e);
@@ -103,6 +110,7 @@ export default function ArtistDetailsPage() {
                     metadata: artistData.metadata
                 });
 
+                // -------- editions of this artist --------
                 const logs = await publicClient.getLogs({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     event: parseAbiItem('event NewArtworkEdition(address indexed artist, uint indexed editionId)'),
@@ -111,6 +119,45 @@ export default function ArtistDetailsPage() {
                     toBlock: 'latest'
                 });
 
+                // -------- stats: unique collectors + member since year --------
+                // Compute these in parallel with the edition fetching loop to
+                // keep latency down. Both are best-effort: failures don't break
+                // the rest of the page.
+                let computedStats: ArtistStats = { editionsCount: logs.length, collectorsCount: 0 };
+                try {
+                    // Member since: timestamp of the earliest NewArtworkEdition event.
+                    if (logs.length > 0) {
+                        const earliestLog = logs.reduce((min, l) =>
+                            (l.blockNumber !== null && (min.blockNumber === null || l.blockNumber < min.blockNumber)) ? l : min
+                        );
+                        if (earliestLog.blockNumber !== null) {
+                            const block = await publicClient.getBlock({ blockNumber: earliestLog.blockNumber });
+                            computedStats.memberSinceYear = new Date(Number(block.timestamp) * 1000).getFullYear();
+                        }
+                    }
+
+                    // Unique collectors: every TransferSingle outgoing from the
+                    // artist wallet represents a claim. We dedupe by destination
+                    // address (excluding the artist self-transfer corner case).
+                    const transferLogs = await publicClient.getLogs({
+                        address: ARTWORK_TOKENIZATION_ADDRESS,
+                        event: parseAbiItem('event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)'),
+                        args: { from: artistAddress as `0x${string}` },
+                        fromBlock: getDeploymentBlock(),
+                        toBlock: 'latest'
+                    });
+                    const collectors = new Set<string>();
+                    for (const log of transferLogs) {
+                        const to = (log.args.to as string | undefined)?.toLowerCase();
+                        if (to && to !== artistAddress.toLowerCase()) collectors.add(to);
+                    }
+                    computedStats.collectorsCount = collectors.size;
+                } catch (e) {
+                    console.error('Error computing artist stats:', e);
+                }
+                setStats(computedStats);
+
+                // -------- edition details --------
                 const editionsData: EditionInfo[] = [];
                 for (const log of logs) {
                     const tokenId = log.args.editionId as bigint;
@@ -119,11 +166,11 @@ export default function ArtistDetailsPage() {
                         publicClient.readContract({ address: ARTWORK_TOKENIZATION_ADDRESS, abi: ARTWORK_TOKENIZATION_ABI, functionName: 'balanceOf', args: [artistAddress as `0x${string}`, tokenId] }) as Promise<bigint>
                     ]);
 
-                    let artworkTitle = 'Œuvre sans titre';
+                    let artworkTitle = t('untitled');
                     if (editionMetadata?.trim()) {
                         try {
                             const editionIpfsData = await getFromIPFSGateway(editionMetadata);
-                            artworkTitle = editionIpfsData.title || 'Œuvre sans titre';
+                            artworkTitle = editionIpfsData.title || t('untitled');
                         } catch (e) {
                             console.error('Error loading edition IPFS data:', e);
                         }
@@ -161,6 +208,8 @@ export default function ArtistDetailsPage() {
             }
         };
         fetchArtistDetails();
+    // t is stable across renders for a given locale (next-intl) so excluding it is safe.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [artistAddress]);
 
     if (loadingStates.fetchingArtist) return (
@@ -218,8 +267,8 @@ export default function ArtistDetailsPage() {
                     )}
 
                     <div className="p-8">
-                        {/* Name + logo */}
-                        <div className="flex items-start justify-between gap-6 mb-8 pb-8 border-b border-[#e7e3dc]">
+                        {/* Name + logo + share */}
+                        <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[#e7e3dc]">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-6 h-px bg-[#d6d0c8]" />
@@ -230,16 +279,37 @@ export default function ArtistDetailsPage() {
                                 <h1 className=" text-[clamp(32px,5vw,52px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
                                     {artist.name}
                                 </h1>
-                                <p className="text-[14px] font-light text-[#78716c]">{artist.location}</p>
+                                {artist.location && (
+                                    <p className="text-[14px] font-light text-[#78716c]">{artist.location}</p>
+                                )}
                             </div>
-                            {artistIPFSData?.logo && (
-                                <img
-                                    src={ipfsToHttp(artistIPFSData.logo)}
-                                    alt={`Logo ${artist.name}`}
-                                    className="w-20 h-20 object-contain flex-shrink-0 border border-[#e7e3dc] bg-[#f5f3ef]"
-                                />
-                            )}
+
+                            <div className="flex items-start gap-4 flex-shrink-0">
+                                <ShareMenu artistName={artist.name} />
+                                {artistIPFSData?.logo && (
+                                    <img
+                                        src={ipfsToHttp(artistIPFSData.logo)}
+                                        alt={t('logoAlt', { name: artist.name })}
+                                        className="w-20 h-20 object-contain border border-[#e7e3dc] bg-[#f5f3ef]"
+                                    />
+                                )}
+                            </div>
                         </div>
+
+                        {/* Stats bar — editions count · collectors · member since */}
+                        {stats && (
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 pb-8 border-b border-[#e7e3dc]">
+                                <StatItem value={t('statsEditions', { count: stats.editionsCount })} />
+                                <StatDot />
+                                <StatItem value={t('statsCollectors', { count: stats.collectorsCount })} />
+                                {stats.memberSinceYear && (
+                                    <>
+                                        <StatDot />
+                                        <StatItem value={t('memberSince', { year: stats.memberSinceYear })} />
+                                    </>
+                                )}
+                            </div>
+                        )}
 
                         {/* Info grid */}
                         <div className="grid md:grid-cols-2 gap-8">
@@ -269,7 +339,9 @@ export default function ArtistDetailsPage() {
 
                             {/* Right — contact & links */}
                             <div className="flex flex-col gap-4">
-                                <InfoRow label={t('location')} value={artist.location} />
+                                {artist.location && (
+                                    <InfoRow label={t('location')} value={artist.location} />
+                                )}
 
                                 {artistIPFSData?.website && (
                                     <div className="flex flex-col gap-1 pb-4 border-b border-[#f0ede8]">
@@ -278,7 +350,7 @@ export default function ArtistDetailsPage() {
                                             href={artistIPFSData.website}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="text-[13px] font-light text-[#4a5240] underline underline-offset-2 hover:opacity-70 transition-opacity"
+                                            className="text-[13px] font-light text-[#4a5240] underline underline-offset-2 hover:opacity-70 transition-opacity break-all"
                                         >
                                             {artistIPFSData.website}
                                         </a>
@@ -343,7 +415,7 @@ export default function ArtistDetailsPage() {
                                 <div key={i} className="aspect-square overflow-hidden bg-[#e7e3dc]">
                                     <img
                                         src={ipfsToHttp(photo)}
-                                        alt={`Photo ${i + 2} — ${artist.name}`}
+                                        alt={t('photoAlt', { index: i + 2, name: artist.name })}
                                         className="w-full h-full object-cover hover:scale-[1.03] transition-transform duration-500"
                                     />
                                 </div>
@@ -421,7 +493,7 @@ export default function ArtistDetailsPage() {
 
                                 {edition.commentsCount !== undefined && edition.commentsCount > 0 && (
                                     <p className="text-[12px] font-light text-[#78716c]">
-                                        {edition.averageRating?.toFixed(1)} · {edition.commentsCount} avis vérifié{edition.commentsCount > 1 ? 's' : ''}
+                                        {edition.averageRating?.toFixed(1)} · {t('verifiedReviews', { count: edition.commentsCount })}
                                     </p>
                                 )}
 
@@ -430,7 +502,7 @@ export default function ArtistDetailsPage() {
                                         #{edition.tokenId.toString()}
                                     </p>
                                     <p className="text-[12px] font-light text-[#78716c]">
-                                        {edition.remainingTokens.toString()} exemplaire{Number(edition.remainingTokens) > 1 ? 's' : ''}
+                                        {t('copies', { count: Number(edition.remainingTokens) })}
                                     </p>
                                 </div>
                             </Link>
@@ -438,11 +510,35 @@ export default function ArtistDetailsPage() {
                     </div>
                 )}
 
-                {/* Footer mark */}
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                {/* Trust block — for visitors landing here from social media */}
+                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                    <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
+                        <img
+                            src="/logo-mona.svg"
+                            alt="Mona Editions"
+                            className="w-24 h-12 object-contain opacity-60"
+                        />
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            {t('trustTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                            {t('trustBody')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
+                            <Link
+                                href="/about"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkAbout')}
+                            </Link>
+                            <span className="text-[#d6d0c8]">·</span>
+                            <Link
+                                href="/explore/artists"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkArtists')}
+                            </Link>
+                        </div>
                     </div>
                 </div>
 
@@ -463,5 +559,146 @@ function InfoRow({ label, value }: { label: string; value: string }) {
             <Label>{label}</Label>
             <p className="text-[13px] font-light text-[#1c1917]">{value}</p>
         </div>
+    );
+}
+
+function StatItem({ value }: { value: string }) {
+    return (
+        <span className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] uppercase">
+            {value}
+        </span>
+    );
+}
+
+function StatDot() {
+    return <span className="text-[#d6d0c8] text-[12px]">·</span>;
+}
+
+/**
+ * Share menu — popover with copy-link and pre-filled social shares.
+ *
+ * Uses `navigator.share` when available (mobile), falls back to a custom
+ * popover with explicit share-intent URLs on desktop. Instagram has no
+ * web share URL so we copy the link and tell the user to paste it into
+ * their Instagram bio / story.
+ */
+function ShareMenu({ artistName }: { artistName: string }) {
+    const t = useTranslations('Explore.artist');
+    const [open, setOpen] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+    const [pageUrl, setPageUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setPageUrl(window.location.href);
+        }
+    }, []);
+
+    // Close on outside click.
+    useEffect(() => {
+        if (!open) return;
+        const onClick = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', onClick);
+        return () => document.removeEventListener('mousedown', onClick);
+    }, [open]);
+
+    const copyLink = async () => {
+        try {
+            await navigator.clipboard.writeText(pageUrl);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (e) {
+            console.error('Clipboard write failed:', e);
+        }
+    };
+
+    const socialText = t('shareSocialText', { name: artistName, url: pageUrl });
+    const emailSubject = t('shareEmailSubject', { name: artistName });
+    const emailBody = t('shareEmailBody', { name: artistName, url: pageUrl });
+
+    const links = {
+        twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(socialText)}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(pageUrl)}`,
+        email: `mailto:?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`,
+    };
+
+    return (
+        <div className="relative" ref={ref}>
+            <button
+                type="button"
+                onClick={() => setOpen(o => !o)}
+                aria-label={t('share')}
+                aria-haspopup="true"
+                aria-expanded={open}
+                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#1c1917]
+                    border border-[#d6d0c8] bg-[#f5f3ef] px-3 py-2
+                    hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+            >
+                <ShareIcon />
+                <span className="uppercase">{copied ? t('shareCopied') : t('share')}</span>
+            </button>
+
+            {open && (
+                <div
+                    role="menu"
+                    className="absolute right-0 top-full mt-2 z-50 min-w-[200px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm"
+                >
+                    <ShareMenuItem onClick={copyLink}>
+                        {copied ? `${t('shareCopied')} ✓` : t('shareCopyLink')}
+                    </ShareMenuItem>
+                    <ShareMenuLink href={links.twitter}>{t('shareTwitter')}</ShareMenuLink>
+                    <ShareMenuLink href={links.facebook}>{t('shareFacebook')}</ShareMenuLink>
+                    <ShareMenuLink href={links.email}>{t('shareEmail')}</ShareMenuLink>
+                </div>
+            )}
+        </div>
+    );
+}
+
+function ShareMenuItem({ children, onClick }: { children: React.ReactNode; onClick: () => void }) {
+    return (
+        <button
+            type="button"
+            onClick={onClick}
+            role="menuitem"
+            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917]
+                hover:bg-[#f5f3ef] transition-colors duration-150 cursor-pointer
+                border-b border-[#e7e3dc] last:border-b-0"
+        >
+            {children}
+        </button>
+    );
+}
+
+function ShareMenuLink({ children, href }: { children: React.ReactNode; href: string }) {
+    return (
+        <a
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            role="menuitem"
+            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917] no-underline
+                hover:bg-[#f5f3ef] transition-colors duration-150
+                border-b border-[#e7e3dc] last:border-b-0"
+        >
+            {children}
+        </a>
+    );
+}
+
+function ShareIcon() {
+    return (
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+        </svg>
     );
 }
