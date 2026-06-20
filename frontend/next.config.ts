@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from 'next-intl/plugin';
+import { withSentryConfig } from '@sentry/nextjs';
 
 // Points the plugin to our i18n/request.ts config file
 const withNextIntl = createNextIntlPlugin('./i18n/request.ts');
@@ -44,4 +45,30 @@ const nextConfig: NextConfig = {
     transpilePackages: ['@metamask/sdk'],
 };
 
-export default withNextIntl(nextConfig);
+// Compose the plugins: next-intl first, then Sentry wraps the whole thing.
+// Sentry's wrapper adds source map upload and edge-runtime instrumentation.
+// All Sentry-specific behavior is gated on SENTRY_AUTH_TOKEN being set, so
+// builds without Sentry credentials still pass cleanly.
+const config = withNextIntl(nextConfig);
+
+export default withSentryConfig(config, {
+    // Sentry organization and project slugs (filled when SENTRY_AUTH_TOKEN is set,
+    // otherwise these are ignored and source maps simply aren't uploaded).
+    org: process.env.SENTRY_ORG,
+    project: process.env.SENTRY_PROJECT,
+
+    // Silence build output noise; only show Sentry errors.
+    silent: true,
+
+    // Upload source maps only when an auth token is available (in CI/prod).
+    // Local builds without the token still work, just without symbolication.
+    authToken: process.env.SENTRY_AUTH_TOKEN,
+
+    // Hide source maps from the public bundle (still uploaded to Sentry
+    // for symbolication, just not served to browsers).
+    hideSourceMaps: true,
+
+    // Disable Sentry's automatic instrumentation of Vercel cron jobs
+    // (we don't use any, and it adds noise).
+    automaticVercelMonitors: false,
+});
