@@ -15,6 +15,7 @@ import { useSubscription, incrementEdition } from '@/app/hooks/useSubscription';
 import SubscriptionGate, { QuotaBadge } from '@/components/shared/SubscriptionGate';
 import QRCode from 'qrcode';
 import * as XLSX from 'xlsx';
+import { useTranslations } from 'next-intl';
 
 // Utility function
 
@@ -26,6 +27,7 @@ const getMerkleProofForKey = (key: string, merkleTree: MerkleTree): string => {
 };
 
 export default function CreateEditionPage() {
+    const t = useTranslations('Create');
     const { address } = useAccount();
     const { user, getAccessToken } = usePrivy();
     const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
@@ -533,7 +535,7 @@ export default function CreateEditionPage() {
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Créer une nouvelle <em className="italic text-[#78716c]">œuvre</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                 </div>
 
@@ -552,14 +554,14 @@ export default function CreateEditionPage() {
                         {/* Title */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Titre de l'œuvre *
+                                {t('form.titleLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.title}
                                 onChange={(e) => setEditionData({ ...editionData, title: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex: Sakura Dreams"
+                                placeholder={t('form.titlePlaceholder')}
                                 required
                             />
                         </div>
@@ -567,7 +569,7 @@ export default function CreateEditionPage() {
                         {/* Year */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Année de création *
+                                {t('form.yearLabel')}
                             </label>
                             <input
                                 type="number"
@@ -583,14 +585,14 @@ export default function CreateEditionPage() {
                         {/* Category */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Catégorie
+                                {t('form.categoryLabel')}
                             </label>
                             <select
                                 value={editionData.category}
                                 onChange={(e) => setEditionData({ ...editionData, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
                             >
-                                <option value="">Sélectionner une catégorie</option>
+                                <option value="">{t('form.categoryPlaceholder')}</option>
                                 {CATEGORIES_EN.map(cat => (
                                     <option key={cat} value={cat}>{CATEGORIES_FR[cat]}</option>
                                 ))}
@@ -600,28 +602,28 @@ export default function CreateEditionPage() {
                         {/* Technique */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Technique
+                                {t('form.techniqueLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.technique}
                                 onChange={(e) => setEditionData({ ...editionData, technique: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex : Huile sur toile, Aquarelle, Bronze..."
+                                placeholder={t('form.techniquePlaceholder')}
                             />
                         </div>
 
                         {/* Dimensions */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Dimensions
+                                {t('form.dimensionsLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.dimensions}
                                 onChange={(e) => setEditionData({ ...editionData, dimensions: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex: 100x150 cm"
+                                placeholder={t('form.dimensionsPlaceholder')}
                                 autoComplete="new-password"
                             />
                         </div>
@@ -629,20 +631,20 @@ export default function CreateEditionPage() {
                         {/* Description */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Description
+                                {t('form.descriptionLabel')}
                             </label>
                             <textarea
                                 value={editionData.description}
                                 onChange={(e) => setEditionData({ ...editionData, description: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[120px]"
-                                placeholder="Décrivez votre œuvre, la technique utilisée, les matériaux, l'inspiration..."
+                                placeholder={t('form.descriptionPlaceholder')}
                             />
                         </div>
 
                         {/* Images */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Images de l'œuvre *
+                                {t('form.imagesLabel')}
                             </label>
                             <input
                                 type="file"
@@ -658,7 +660,7 @@ export default function CreateEditionPage() {
                                 disabled={loadingStates.uploadingImage}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors disabled:opacity-50 text-left"
                             >
-                                {loadingStates.uploadingImage ? 'Upload en cours…' : 'Ajouter des images (upload IPFS)'}
+                                {loadingStates.uploadingImage ? t('form.uploadingImage') : t('form.imagesButton')}
                             </button>
                             {editionData.images.length > 0 && (
                                 <ul className="mt-3 space-y-1">
@@ -681,26 +683,26 @@ export default function CreateEditionPage() {
                         {/* Number of copies */}
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Taille de l'édition (nombre d'exemplaires) *
+                                {t('form.editionSizeLabel')}
                             </label>
                             <input
                                 type="number"
                                 value={amount}
                                 onChange={(e) => handleAmountChange(e.target.value)}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex: 50"
                                 min="1"
                                 max="100"
                                 required
                             />
+                            <p className="text-[11px] text-[#a8a29e] mt-1 font-light">{t('form.editionSizeHint')}</p>
                         </div>
 
                         {merkleRoot && (
                             <div className="border border-[#d6d0c8] bg-[#ede9e3] p-4">
-                                <p className="text-[13px] font-medium text-[#1c1917] mb-2">Merkle Root généré</p>
+                                <p className="text-[13px] font-medium text-[#1c1917] mb-2">{t('form.merkleRootLabel')}</p>
                                 <p className="text-[11px] font-mono text-[#78716c] break-all">{merkleRoot}</p>
                                 <p className="text-[12px] font-light text-[#78716c] mt-2">
-                                    {secretKeys.length} clé{secretKeys.length > 1 ? 's' : ''} secrète{secretKeys.length > 1 ? 's' : ''} générée{secretKeys.length > 1 ? 's' : ''}
+                                    {t('form.secretKeysLabel', { n: secretKeys.length })}
                                 </p>
                             </div>
                         )}
@@ -711,14 +713,14 @@ export default function CreateEditionPage() {
                             className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                         >
                             {loadingStates.uploadingImage
-                                ? 'Upload image en cours…'
+                                ? t('form.uploadingImage')
                                 : loadingStates.uploading
-                                    ? 'Upload IPFS…'
+                                    ? t('form.uploading')
                                     : loadingStates.creating
-                                        ? 'Création en cours…'
+                                        ? t('form.creating')
                                         : editionData.images.length === 0
-                                            ? 'Ajoutez au moins une image'
-                                            : 'Créer l\'œuvre'}
+                                            ? t('form.noImageWarning')
+                                            : t('form.submit')}
                         </button>
                     </form>
                 </div>

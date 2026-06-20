@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { usePrivy } from '@privy-io/react-auth';
-import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import {
     openCheckout,
     openPortal,
@@ -11,12 +12,8 @@ import {
     useSubscription,
 } from '@/app/hooks/useSubscription';
 
-/**
- * Next.js requires components using useSearchParams() to be wrapped in a
- * <Suspense> boundary so the page can be partially prerendered at build time.
- * We split the inner content into its own component for that reason.
- */
 export default function ArtistSubscriptionPage() {
+    const t = useTranslations('Subscription');
     return (
         <Suspense
             fallback={
@@ -24,7 +21,7 @@ export default function ArtistSubscriptionPage() {
                     <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                         <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
                         <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
-                            Chargement de votre abonnement…
+                            {t('loading')}
                         </p>
                     </div>
                 </div>
@@ -36,6 +33,9 @@ export default function ArtistSubscriptionPage() {
 }
 
 function ArtistSubscriptionPageInner() {
+    const t = useTranslations('Subscription');
+    const tCommon = useTranslations('Common');
+    const locale = useLocale();
     const { authenticated, getAccessToken, ready } = usePrivy();
     const { snapshot, loading, error, refresh } = useSubscription();
     const params = useSearchParams();
@@ -45,11 +45,10 @@ function ArtistSubscriptionPageInner() {
     const justRenewed = params.get('renewed') === 'true';
     const justCanceled = params.get('canceled') === 'true';
 
-    // Refresh once after returning from Stripe so the UI reflects new state
     useEffect(() => {
         if (justSubscribed || justRenewed) {
-            const t = setTimeout(() => refresh(), 1500);
-            return () => clearTimeout(t);
+            const tid = setTimeout(() => refresh(), 1500);
+            return () => clearTimeout(tid);
         }
     }, [justSubscribed, justRenewed, refresh]);
 
@@ -59,7 +58,7 @@ function ArtistSubscriptionPageInner() {
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                     <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
                     <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
-                        Chargement de votre abonnement…
+                        {t('loading')}
                     </p>
                 </div>
             </div>
@@ -71,7 +70,7 @@ function ArtistSubscriptionPageInner() {
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
                     <p className="italic text-[22px] text-[#a8a29e]">
-                        Veuillez vous connecter
+                        {tCommon('connect')}
                     </p>
                 </div>
             </div>
@@ -81,7 +80,7 @@ function ArtistSubscriptionPageInner() {
     const isAtelier = snapshot?.plan === 'atelier' && snapshot.status === 'active';
     const isPastDue = snapshot?.status === 'past_due';
     const periodEnd = snapshot?.currentPeriodEnd
-        ? new Date(snapshot.currentPeriodEnd).toLocaleDateString('fr-FR', {
+        ? new Date(snapshot.currentPeriodEnd).toLocaleDateString(locale === 'de' ? 'de-DE' : 'fr-FR', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
@@ -90,29 +89,20 @@ function ArtistSubscriptionPageInner() {
 
     async function handleSubscribe() {
         setBusy(true);
-        try {
-            await openCheckout(getAccessToken);
-        } catch {
-            setBusy(false);
-        }
+        try { await openCheckout(getAccessToken); }
+        catch { setBusy(false); }
     }
 
     async function handlePortal() {
         setBusy(true);
-        try {
-            await openPortal(getAccessToken);
-        } catch {
-            setBusy(false);
-        }
+        try { await openPortal(getAccessToken); }
+        catch { setBusy(false); }
     }
 
     async function handleRenew() {
         setBusy(true);
-        try {
-            await openRenew(getAccessToken);
-        } catch {
-            setBusy(false);
-        }
+        try { await openRenew(getAccessToken); }
+        catch { setBusy(false); }
     }
 
     return (
@@ -125,70 +115,52 @@ function ArtistSubscriptionPageInner() {
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Mon <em className="italic text-[#78716c]">abonnement</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                 </div>
 
-                {/* Inline status banners after Stripe redirects */}
                 {justSubscribed && (
                     <div className="border border-[#d6d0c8] bg-[#ede9e3] p-5 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917]">
-                            Souscription confirmée. Bienvenue dans l'Atelier.
-                        </p>
-                        <p className="text-[13px] font-light text-[#78716c] mt-1">
-                            Si votre quota ne s'est pas encore mis à jour, attendez quelques
-                            secondes et rechargez la page.
-                        </p>
+                        <p className="text-[14px] font-medium text-[#1c1917]">{t('banners.subscribed')}</p>
+                        <p className="text-[13px] font-light text-[#78716c] mt-1">{t('banners.subscribedHint')}</p>
                     </div>
                 )}
                 {justRenewed && (
                     <div className="border border-[#d6d0c8] bg-[#ede9e3] p-5 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917]">
-                            Nouvelle période ouverte. Votre quota est remis à zéro pour 30 jours.
-                        </p>
+                        <p className="text-[14px] font-medium text-[#1c1917]">{t('banners.renewed')}</p>
                     </div>
                 )}
                 {justCanceled && (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-5 mb-px">
-                        <p className="text-[13px] font-light text-[#78716c]">
-                            Opération annulée, aucun changement n'a été effectué.
-                        </p>
+                        <p className="text-[13px] font-light text-[#78716c]">{t('banners.canceled')}</p>
                     </div>
                 )}
                 {isPastDue && (
                     <div className="border-2 border-[#dc2626] bg-[#fef2f2] p-5 mb-px">
-                        <p className="text-[14px] font-medium text-[#991b1b]">
-                            Échec de paiement détecté
-                        </p>
-                        <p className="text-[13px] font-light text-[#991b1b] mt-1">
-                            Mettez à jour votre moyen de paiement depuis l'espace Stripe pour
-                            réactiver votre Atelier.
-                        </p>
+                        <p className="text-[14px] font-medium text-[#991b1b]">{t('banners.pastDue')}</p>
+                        <p className="text-[13px] font-light text-[#991b1b] mt-1">{t('banners.pastDueHint')}</p>
                     </div>
                 )}
                 {error && (
                     <div className="border border-[#d6d0c8] bg-[#fef2f2] p-5 mb-px">
-                        <p className="text-[13px] font-light text-[#991b1b]">
-                            Impossible de charger votre abonnement : {error}.
-                        </p>
+                        <p className="text-[13px] font-light text-[#991b1b]">{t('banners.loadError', { error })}</p>
                     </div>
                 )}
 
-                {/* Current state */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-3">
-                        Palier actuel
+                        {t('current.eyebrow')}
                     </p>
                     <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-[#1c1917] leading-tight mb-6">
                         {isAtelier ? (
                             <>
-                                <em className="italic text-[#78716c]">Atelier</em>
+                                <em className="italic text-[#78716c]">{t('current.ateliersLabel')}</em>
                                 <span className="text-[16px] font-light text-[#78716c] ml-3">
-                                    14,90 €/mois
+                                    {t('current.ateliersPrice')}
                                 </span>
                             </>
                         ) : (
-                            <em className="italic text-[#78716c]">Découverte</em>
+                            <em className="italic text-[#78716c]">{t('current.discoveryLabel')}</em>
                         )}
                     </h2>
 
@@ -198,34 +170,29 @@ function ArtistSubscriptionPageInner() {
                                 <strong className="font-medium text-[#1c1917]">
                                     {snapshot.remainingQuota} / {snapshot.quotaLimit}
                                 </strong>{' '}
-                                œuvres pouvant encore être certifiées{' '}
-                                {isAtelier ? 'cette période' : 'avec le palier Découverte (à vie)'}.
+                                {isAtelier ? t('current.remainingSuffixAtelier') : t('current.remainingSuffixFree')}
                             </p>
                             {isAtelier && periodEnd && (
                                 <p className="text-[13px] font-light text-[#78716c]">
-                                    Période en cours jusqu'au{' '}
-                                    <strong className="font-medium text-[#1c1917]">
-                                        {periodEnd}
-                                    </strong>
-                                    .
+                                    {t('current.periodEnding')}{' '}
+                                    <strong className="font-medium text-[#1c1917]">{periodEnd}</strong>.
                                 </p>
                             )}
                             {snapshot.cancelAtPeriodEnd && (
                                 <p className="text-[13px] font-light text-[#dc2626]">
-                                    Votre abonnement s'arrêtera à la fin de la période en cours.
+                                    {t('current.cancelNotice')}
                                 </p>
                             )}
                         </div>
                     )}
 
-                    {/* Actions */}
                     {!isAtelier && (
                         <button
                             onClick={handleSubscribe}
                             disabled={busy}
                             className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                         >
-                            {busy ? 'Redirection vers Stripe…' : "Passer à l'Atelier — 14,90 €/mois"}
+                            {busy ? t('actions.subscribeLoading') : t('actions.subscribe')}
                         </button>
                     )}
                     {isAtelier && (
@@ -235,43 +202,31 @@ function ArtistSubscriptionPageInner() {
                                 disabled={busy}
                                 className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                             >
-                                {busy ? 'Redirection…' : 'Gérer mon abonnement (Stripe)'}
+                                {busy ? t('actions.manageLoading') : t('actions.manage')}
                             </button>
                             <button
                                 onClick={handleRenew}
                                 disabled={busy}
                                 className="w-full bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#d6d0c8] disabled:opacity-50 hover:border-[#1c1917] transition-all duration-200"
                             >
-                                Renouveler maintenant (nouvelle période)
+                                {t('actions.renew')}
                             </button>
                         </div>
                     )}
                 </div>
 
-                {/* Plan comparison */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-4">
-                        Les deux paliers
+                        {t('plans.title')}
                     </p>
                     <div className="space-y-6">
                         <div>
-                            <p className="text-[16px] font-medium text-[#1c1917] mb-1">
-                                Découverte — gratuit
-                            </p>
-                            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
-                                5 œuvres certifiées à vie. Idéal pour démarrer, tester la plateforme
-                                ou faire ses premières ventes.
-                            </p>
+                            <p className="text-[16px] font-medium text-[#1c1917] mb-1">{t('plans.discoveryName')}</p>
+                            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">{t('plans.discoveryDescription')}</p>
                         </div>
                         <div>
-                            <p className="text-[16px] font-medium text-[#1c1917] mb-1">
-                                Atelier — 14,90 € / mois
-                            </p>
-                            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
-                                50 œuvres certifiées par fenêtre de 30 jours. Renouvelable à tout
-                                moment pour repartir avec 50 supplémentaires. Annulable depuis
-                                votre espace Stripe.
-                            </p>
+                            <p className="text-[16px] font-medium text-[#1c1917] mb-1">{t('plans.atelierName')}</p>
+                            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">{t('plans.atelierDescription')}</p>
                         </div>
                     </div>
                 </div>
@@ -281,7 +236,7 @@ function ArtistSubscriptionPageInner() {
                         href="/artist"
                         className="text-[12px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] underline underline-offset-4 transition-colors"
                     >
-                        ← Retour à mon profil
+                        {t('backToProfile')}
                     </Link>
                 </div>
             </div>

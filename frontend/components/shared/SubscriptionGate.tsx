@@ -13,7 +13,8 @@
 
 import { useState } from 'react';
 import { usePrivy } from '@privy-io/react-auth';
-import Link from 'next/link';
+import { useTranslations, useLocale } from 'next-intl';
+import { Link } from '@/i18n/navigation';
 import { openCheckout, openRenew, SubscriptionSnapshot } from '@/app/hooks/useSubscription';
 
 interface Props {
@@ -21,6 +22,8 @@ interface Props {
 }
 
 export default function SubscriptionGate({ snapshot }: Props) {
+    const t = useTranslations('SubscriptionGate');
+    const locale = useLocale();
     const { getAccessToken } = usePrivy();
     const [busy, setBusy] = useState(false);
 
@@ -29,7 +32,7 @@ export default function SubscriptionGate({ snapshot }: Props) {
     const isAtelierExhausted = isAtelier && snapshot.remainingQuota === 0;
 
     const periodEnd = snapshot.currentPeriodEnd
-        ? new Date(snapshot.currentPeriodEnd).toLocaleDateString('fr-FR', {
+        ? new Date(snapshot.currentPeriodEnd).toLocaleDateString(locale === 'de' ? 'de-DE' : 'fr-FR', {
               day: '2-digit',
               month: 'long',
               year: 'numeric',
@@ -60,26 +63,26 @@ export default function SubscriptionGate({ snapshot }: Props) {
         return (
             <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
                 <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-3">
-                    Quota Découverte atteint
+                    {t('freeExhausted.eyebrow')}
                 </p>
                 <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[#1c1917] leading-tight mb-4">
-                    Vous avez certifié <em className="italic text-[#78716c]">vos 5 œuvres</em>{' '}
-                    en palier Découverte
+                    {t('freeExhausted.titleStart')} <em className="italic text-[#78716c]">{t('freeExhausted.titleAccent')}</em>{' '}
+                    {t('freeExhausted.titleEnd')}
                 </h2>
                 <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8 leading-[1.7]">
-                    Pour continuer à certifier librement, passez à l'Atelier :{' '}
-                    <strong className="font-medium text-[#1c1917]">14,90 €/mois</strong>,{' '}
-                    50 œuvres par fenêtre de 30 jours, annulable à tout moment.
+                    {t('freeExhausted.description')}{' '}
+                    <strong className="font-medium text-[#1c1917]">{t('freeExhausted.priceHighlight')}</strong>
+                    {t('freeExhausted.descriptionEnd')}
                 </p>
                 <button
                     onClick={handleSubscribe}
                     disabled={busy}
                     className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                 >
-                    {busy ? 'Redirection vers Stripe…' : "Passer à l'Atelier — 14,90 €/mois"}
+                    {busy ? t('freeExhausted.ctaLoading') : t('freeExhausted.cta')}
                 </button>
                 <p className="text-[11px] text-[#a8a29e] mt-4">
-                    Paiement sécurisé par Stripe. Annulable depuis votre espace.
+                    {t('freeExhausted.secured')}
                 </p>
             </div>
         );
@@ -89,34 +92,35 @@ export default function SubscriptionGate({ snapshot }: Props) {
         return (
             <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
                 <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-3">
-                    Quota du mois atteint
+                    {t('atelierExhausted.eyebrow')}
                 </p>
                 <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[#1c1917] leading-tight mb-4">
-                    Vous avez certifié <em className="italic text-[#78716c]">50 œuvres</em>{' '}
-                    cette période
+                    {t('atelierExhausted.titleStart')} <em className="italic text-[#78716c]">{t('atelierExhausted.titleAccent')}</em>{' '}
+                    {t('atelierExhausted.titleEnd')}
                 </h2>
                 <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8 leading-[1.7]">
-                    Votre prochaine fenêtre de 30 jours s'ouvre automatiquement{' '}
+                    {t('atelierExhausted.description')}{' '}
                     {periodEnd && (
                         <>
-                            le <strong className="font-medium text-[#1c1917]">{periodEnd}</strong>.{' '}
+                            <strong className="font-medium text-[#1c1917]">
+                                {t('atelierExhausted.descriptionDate', { date: periodEnd })}
+                            </strong>
                         </>
                     )}
-                    Vous pouvez aussi renouveler dès maintenant pour repartir avec 50 nouvelles
-                    certifications.
+                    {t('atelierExhausted.descriptionEnd')}
                 </p>
                 <button
                     onClick={handleRenew}
                     disabled={busy}
                     className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                 >
-                    {busy ? 'Redirection vers Stripe…' : 'Renouveler maintenant — 14,90 €'}
+                    {busy ? t('atelierExhausted.ctaLoading') : t('atelierExhausted.cta')}
                 </button>
                 <Link
                     href="/artist/subscription"
                     className="block text-[12px] text-[#a8a29e] hover:text-[#1c1917] underline underline-offset-4 mt-4 transition-colors"
                 >
-                    Gérer mon abonnement
+                    {t('atelierExhausted.manageLink')}
                 </Link>
             </div>
         );
@@ -126,7 +130,7 @@ export default function SubscriptionGate({ snapshot }: Props) {
     return (
         <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 text-center">
             <p className="text-[13px] font-light text-[#78716c]">
-                Votre abonnement actuel ne permet pas de créer une nouvelle œuvre pour le moment.
+                {t('default.text')}
             </p>
         </div>
     );
@@ -136,33 +140,34 @@ export default function SubscriptionGate({ snapshot }: Props) {
  * Compact quota indicator to display somewhere visible (e.g. atop the form).
  */
 export function QuotaBadge({ snapshot }: { snapshot: SubscriptionSnapshot }) {
+    const t = useTranslations('SubscriptionGate.badge');
     const isAtelier = snapshot.plan === 'atelier' && snapshot.status === 'active';
-    const label = isAtelier ? 'Atelier' : 'Découverte';
+    const label = isAtelier ? t('atelierLabel') : t('freeLabel');
     const used = isAtelier ? snapshot.periodEditionsUsed : snapshot.freeQuotaUsed;
     const limit = snapshot.quotaLimit;
     const cancelNotice =
-        isAtelier && snapshot.cancelAtPeriodEnd ? ' — annulation en fin de période' : '';
+        isAtelier && snapshot.cancelAtPeriodEnd ? t('cancelNotice') : '';
 
     return (
         <div className="border border-[#d6d0c8] bg-[#ede9e3] px-4 py-3 flex items-center justify-between gap-4">
             <div>
                 <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#a8a29e]">
-                    Palier {label}
+                    {label}
                     {cancelNotice}
                 </p>
                 <p className="text-[13px] text-[#1c1917] mt-0.5">
                     <strong className="font-medium">
                         {used} / {limit}
                     </strong>{' '}
-                    œuvres certifiées{' '}
-                    {isAtelier ? '(fenêtre 30 jours)' : '(palier gratuit, à vie)'}
+                    {t('certified')}{' '}
+                    {isAtelier ? t('windowText') : t('lifetimeText')}
                 </p>
             </div>
             <Link
                 href="/artist/subscription"
                 className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] underline underline-offset-4 transition-colors flex-shrink-0"
             >
-                Gérer
+                {t('manage')}
             </Link>
         </div>
     );

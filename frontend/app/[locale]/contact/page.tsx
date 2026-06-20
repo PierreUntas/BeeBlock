@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { isProduction } from '@/config/constants';
 
 export default function ContactPage() {
+    const t = useTranslations('Contact');
     const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' });
     const [sent, setSent] = useState(false);
     const [error, setError] = useState('');
@@ -50,17 +52,17 @@ export default function ContactPage() {
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Nous <em className="italic text-[#78716c]">contacter</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                     <p className="text-[14px] font-light text-[#78716c] mt-4 leading-[1.8] max-w-md mx-auto">
-                        Une question, un projet, une demande d'accès artiste ? Nous vous répondons dans les meilleurs délais.
+                        {t('subtitle')}
                     </p>
                 </div>
 
                 {sent ? (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
-                        <p className=" text-[22px] text-[#1c1917] mb-2">Message envoyé</p>
-                        <p className="text-[14px] font-light text-[#78716c]">Nous vous répondrons à <strong>{form.email}</strong> dans les meilleurs délais.</p>
+                        <p className=" text-[22px] text-[#1c1917] mb-2">{t('success')}</p>
+                        <p className="text-[14px] font-light text-[#78716c]">{form.email}</p>
                     </div>
                 ) : (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8">
@@ -69,53 +71,45 @@ export default function ContactPage() {
                                 <p className="text-[13px] text-red-700">{error}</p>
                             </div>
                         )}
-                        
+
                         <form onSubmit={handleSubmit} className="space-y-5">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                 <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">Nom *</label>
+                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">{t('nameLabel')}</label>
                                     <input
                                         type="text"
                                         value={form.name}
                                         onChange={e => setForm({ ...form, name: e.target.value })}
-                                        placeholder="Claire Dubois"
                                         required
                                         className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">Email *</label>
+                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">{t('emailLabel')}</label>
                                     <input
                                         type="email"
                                         value={form.email}
                                         onChange={e => setForm({ ...form, email: e.target.value })}
-                                        placeholder="contact@atelier.fr"
                                         required
                                         className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">Sujet *</label>
-                                <select
+                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">{t('subjectLabel')}</label>
+                                <input
+                                    type="text"
                                     value={form.subject}
                                     onChange={e => setForm({ ...form, subject: e.target.value })}
                                     required
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                >
-                                    <option value="">Sélectionner un sujet</option>
-                                    <option value="acces-artiste">Demande d'accès artiste</option>
-                                    <option value="support">Support technique</option>
-                                    <option value="partenariat">Partenariat</option>
-                                    <option value="autre">Autre</option>
-                                </select>
+                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                />
                             </div>
                             <div>
-                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">Message *</label>
+                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">{t('messageLabel')}</label>
                                 <textarea
                                     value={form.message}
                                     onChange={e => setForm({ ...form, message: e.target.value })}
-                                    placeholder="Votre message…"
                                     required
                                     rows={5}
                                     className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[140px]"
@@ -126,7 +120,7 @@ export default function ContactPage() {
                                 disabled={loadingStates.sending}
                                 className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                {loadingStates.sending ? 'Envoi en cours…' : 'Envoyer le message'}
+                                {loadingStates.sending ? t('submitLoading') : t('submit')}
                             </button>
                         </form>
                     </div>

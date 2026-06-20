@@ -9,6 +9,7 @@ import { parseAbiItem, encodeFunctionData, isAddress } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { useSendTransaction } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
+import { useTranslations } from 'next-intl';
 
 interface OwnedToken {
     tokenId: bigint;
@@ -20,6 +21,8 @@ interface OwnedToken {
 }
 
 export default function CollectorPage() {
+    const t = useTranslations('Collector');
+    const tCommon = useTranslations('Common');
     const { address } = useAccount();
     const [ownedTokens, setOwnedTokens] = useState<OwnedToken[]>([]);
     
@@ -252,19 +255,19 @@ export default function CollectorPage() {
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Mes <em className="italic text-[#78716c]">Certificats</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                 </div>
 
                 {loadingStates.fetchingTokens || !address ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                         <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement de vos certificats…</p>
+                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
                     </div>
                 ) : ownedTokens.length === 0 ? (
                     <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
                         <p className=" italic text-[18px] text-[#78716c]">
-                            Vous ne possédez pas encore de certificat
+                            {t('empty')}
                         </p>
                     </div>
                 ) : (

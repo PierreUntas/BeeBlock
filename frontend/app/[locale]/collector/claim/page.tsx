@@ -15,8 +15,10 @@ import { useModal } from '@/app/ModalProvider';
 import { encodeFunctionData } from 'viem';
 import { publicClient } from '@/lib/client';
 import { getFromIPFSGateway } from '@/app/utils/ipfs';
+import { useTranslations } from 'next-intl';
 
 function ClaimTokenForm() {
+    const t = useTranslations('Claim');
     const { address } = useAccount();
     const searchParams = useSearchParams();
 
@@ -123,12 +125,12 @@ function ClaimTokenForm() {
         setSuccess(false);
 
         if (!address) {
-            setError('Veuillez connecter votre wallet');
+            setError(t('connectWallet'));
             return;
         }
 
         if (!editionId || !secretKey) {
-            setError('Veuillez remplir tous les champs');
+            setError(t('fillAllFields'));
             return;
         }
 
@@ -142,7 +144,7 @@ function ClaimTokenForm() {
                 args: [BigInt(editionId)],
             }) as any;
             if (editionData[2] === true) {
-                setError('Cette édition a été désactivée et n\'accepte plus de nouvelles réclamations.');
+                setError(t('disabledEdition'));
                 return;
             }
 
@@ -180,12 +182,12 @@ function ClaimTokenForm() {
                 setSuccess(true);
                 // Best-effort confirmation email — runs in background, doesn't block UX
                 void sendClaimNotification(editionId, txResult.hash);
-                await showAlert('Token réclamé avec succès !');
+                await showAlert(t('successAlert'));
                 setEditionId('');
                 setSecretKey('');
                 setMerkleProofInput('');
             } else {
-                setError('La transaction a échoué sur la blockchain.');
+                setError(t('txFailed'));
             }
         } catch (err: any) {
             console.error('Error claiming token:', err);
@@ -203,13 +205,13 @@ function ClaimTokenForm() {
                         // No tx hash available in this fallback path — pass empty
                         // string so the API skips Basescan link gracefully.
                         void sendClaimNotification(editionId, '');
-                        await showAlert('Token réclamé avec succès !');
+                        await showAlert(t('successAlert'));
                         setEditionId(''); setSecretKey(''); setMerkleProofInput('');
                         return;
                     }
                 } catch {}
             }
-            setError(`Erreur: ${err.message || 'Clé invalide ou déjà utilisée'}`);
+            setError(t('genericError', { message: err.message || '—' }));
         } finally {
             setLoadingStates(prev => ({ ...prev, claiming: false }));
         }
@@ -219,7 +221,7 @@ function ClaimTokenForm() {
         return (
             <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
                 <p className=" italic text-[22px] text-[#a8a29e]">
-                    Veuillez connecter votre wallet
+                    {t('connectWallet')}
                 </p>
             </div>
         );
@@ -234,13 +236,13 @@ function ClaimTokenForm() {
                     className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                 />
                 <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                    Réclamer un <em className="italic text-[#78716c]">Certificat</em>
+                    {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                 </h1>
             </div>
 
             <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
                 <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
-                    Scannez le QR code de l'œuvre afin que les champs se remplissent automatiquement. Ce certificat vous permettra d'émettre un avis sur l'œuvre.
+                    {t('instructions')}
                 </p>
             </div>
 
@@ -254,7 +256,7 @@ function ClaimTokenForm() {
                             onClick={() => setShowAdvanced(!showAdvanced)}
                             className="text-[12px] font-normal tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] transition-colors underline"
                         >
-                            {showAdvanced ? '− Masquer les détails techniques' : '+ Afficher les détails techniques'}
+                            {showAdvanced ? t('hideAdvanced') : t('showAdvanced')}
                         </button>
                     </div>
 
@@ -262,7 +264,7 @@ function ClaimTokenForm() {
                         <div className="space-y-6 pb-6 border-b border-[#d6d0c8]">
                             <div>
                                 <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                    Numéro de l'œuvre *
+                                    {t('editionIdLabel')}
                                 </label>
                                 <input
                                     type="number"
@@ -276,7 +278,7 @@ function ClaimTokenForm() {
 
                             <div>
                                 <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                    Clé secrète *
+                                    {t('secretKeyLabel')}
                                 </label>
                                 <input
                                     type="text"
@@ -290,7 +292,7 @@ function ClaimTokenForm() {
 
                             <div>
                                 <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                    Preuve Merkle (séparée par des virgules) *
+                                    {t('merkleProofLabel')}
                                 </label>
                                 <textarea
                                     value={merkleProofInput}
@@ -299,7 +301,7 @@ function ClaimTokenForm() {
                                     placeholder="Ex: 0x123...,0xabc...,0xdef..."
                                 />
                                 <p className="text-[11px] text-[#a8a29e] mt-2 font-light">
-                                    Format : hash1,hash2,hash3 (avec 0x devant chaque hash)
+                                    {t('merkleProofHint')}
                                 </p>
                             </div>
                         </div>
@@ -313,7 +315,7 @@ function ClaimTokenForm() {
 
                     {success && (
                         <div className="border border-[#d6d0c8] bg-[#ede9e3] p-4">
-                            <p className="text-[13px] font-light text-[#1c1917]">Certificat réclamé avec succès !</p>
+                            <p className="text-[13px] font-light text-[#1c1917]">{t('success')}</p>
                         </div>
                     )}
 
@@ -322,7 +324,7 @@ function ClaimTokenForm() {
                         disabled={loadingStates.claiming}
                         className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                     >
-                        {loadingStates.claiming ? 'Transaction en cours…' : 'Réclamer mon certificat'}
+                        {loadingStates.claiming ? t('submitLoading') : t('submit')}
                     </button>
                 </form>
             </div>

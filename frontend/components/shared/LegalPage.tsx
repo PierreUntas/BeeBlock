@@ -10,6 +10,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { marked } from 'marked';
+import { getLocale, getTranslations } from 'next-intl/server';
 
 interface Props {
     /** Filename inside frontend/content/legal/, e.g. 'mentions.md' */
@@ -28,6 +29,9 @@ export default async function LegalPage({ file, title, accent }: Props) {
     // overloaded async signature without await.
     const html = marked.parse(md, { async: false }) as string;
 
+    const locale = await getLocale();
+    const tLegal = await getTranslations('Legal');
+
     return (
         <div className="min-h-screen bg-[#f5f3ef]">
             <div className="max-w-3xl mx-auto px-6 pt-28 pb-20">
@@ -41,6 +45,17 @@ export default async function LegalPage({ file, title, accent }: Props) {
                         {title} <em className="italic text-[#78716c]">{accent}</em>
                     </h1>
                 </div>
+
+                {locale === 'de' && (
+                    <div className="border-2 border-[#d97706] bg-[#fef3c7] p-5 mb-px">
+                        <p className="text-[13px] font-medium text-[#92400e] mb-1">
+                            {tLegal('deDisclaimer.title')}
+                        </p>
+                        <p className="text-[12px] font-light text-[#92400e] leading-[1.7]">
+                            {tLegal('deDisclaimer.body')}
+                        </p>
+                    </div>
+                )}
 
                 <article
                     className="border border-[#d6d0c8] bg-[#fafaf8] p-8 md:p-12 legal-prose"

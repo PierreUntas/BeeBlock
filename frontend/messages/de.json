@@ -61,6 +61,383 @@
     "frShort": "FR",
     "deShort": "DE"
   },
+  "Common": {
+    "loading": "Wird geladen…",
+    "save": "Speichern",
+    "saving": "Wird gespeichert…",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "back": "Zurück",
+    "close": "Schließen",
+    "connect": "Bitte melden Sie sich an",
+    "ipfsLoading": "IPFS-Daten werden geladen…",
+    "uploadIPFS": "IPFS-Upload läuft…",
+    "saveSuccess": "Informationen erfolgreich gespeichert. Die Transaktion wird auf der Blockchain bestätigt.",
+    "transactionPending": "Transaktion läuft…"
+  },
+  "Artist": {
+    "title": "Meine",
+    "titleAccent": "Informationen ändern",
+    "createTitleStart": "Künstler-",
+    "createTitleAccent": "Registrierung",
+    "qrTitle": "QR-Code Ihrer Künstlerseite",
+    "qrDescription": "Laden Sie Ihren QR-Code herunter, um ihn mit Ihren Sammlern zu teilen. Er verweist auf Ihre Künstlerseite.",
+    "qrGenerating": "Wird erstellt…",
+    "qrDownload": "Meinen QR-Code herunterladen",
+    "pastDue": {
+      "title": "Fehlgeschlagene Zahlung Ihres Abonnements",
+      "description": "Aktualisieren Sie Ihre Zahlungsmethode unter",
+      "linkText": "Ihrem Abonnementbereich",
+      "descriptionEnd": ", um Ihre Werke weiter zertifizieren zu können."
+    },
+    "form": {
+      "nameLabel": "Name des Künstlers / Ateliers *",
+      "namePlaceholder": "Atelier Claire Dubois",
+      "locationLabel": "Standort *",
+      "locationPlaceholder": "Berlin, Deutschland",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "https://...",
+      "bioLabel": "Biografie",
+      "bioPlaceholder": "Stellen Sie Ihren künstlerischen Ansatz vor...",
+      "exhibitionsLabel": "Wichtige Ausstellungen",
+      "exhibitionsPlaceholder": "Eine Ausstellung pro Zeile",
+      "logoLabel": "Logo / Porträt *",
+      "logoButton": "Logo wählen",
+      "logoReplace": "Logo ersetzen",
+      "photosLabel": "Fotos (bis zu 6)",
+      "photosButton": "Fotos hinzufügen",
+      "instagramLabel": "Instagram",
+      "twitterLabel": "Twitter / X",
+      "facebookLabel": "Facebook",
+      "privacyLabel": "Ich habe die",
+      "privacyLink": "Datenschutzerklärung",
+      "privacyEnd": "gelesen und akzeptiere sie, insbesondere die Bestimmungen über die auf der Blockchain und auf IPFS gespeicherten Daten, die dauerhaften Charakter haben.",
+      "privacyRequired": "Bitte akzeptieren Sie die Datenschutzerklärung, bevor Sie fortfahren.",
+      "privacyError": "Ihre Zustimmung konnte nicht gespeichert werden. Bitte versuchen Sie es erneut.",
+      "maxFileSizeError": "Die Datei überschreitet das 20-MB-Limit",
+      "maxPhotosError": "Sie können bis zu 6 Fotos hinzufügen"
+    },
+    "editions": {
+      "title": "Meine",
+      "titleAccent": "Werke",
+      "createButton": "+ Werk erstellen",
+      "loading": "Ihre Werke werden geladen…",
+      "empty": "Sie haben noch kein Werk erstellt.",
+      "edition": "Auflage",
+      "remaining": "{n, plural, =0 {Kein Exemplar verfügbar} =1 {1 Exemplar verfügbar} other {# Exemplare verfügbar}}",
+      "disabled": "Deaktiviert",
+      "view": "Ansehen",
+      "edit": "Bearbeiten"
+    }
+  },
+  "SubscriptionGate": {
+    "freeExhausted": {
+      "eyebrow": "Entdeckungs-Kontingent erreicht",
+      "titleStart": "Sie haben",
+      "titleAccent": "Ihre 5 Werke",
+      "titleEnd": "im Entdeckungs-Tarif zertifiziert",
+      "description": "Um weiter frei zertifizieren zu können, wechseln Sie zum Atelier:",
+      "priceHighlight": "14,90 €/Monat",
+      "descriptionEnd": ", 50 Werke pro 30-Tage-Fenster, jederzeit kündbar.",
+      "cta": "Zum Atelier wechseln — 14,90 €/Monat",
+      "ctaLoading": "Weiterleitung zu Stripe…",
+      "secured": "Sichere Zahlung über Stripe. Jederzeit aus Ihrem Bereich kündbar."
+    },
+    "atelierExhausted": {
+      "eyebrow": "Monatskontingent erreicht",
+      "titleStart": "Sie haben",
+      "titleAccent": "50 Werke",
+      "titleEnd": "in diesem Zeitraum zertifiziert",
+      "description": "Ihr nächstes 30-Tage-Fenster öffnet sich automatisch",
+      "descriptionDate": "am {date}",
+      "descriptionEnd": ". Sie können auch jetzt sofort erneuern, um mit 50 neuen Zertifizierungen zu starten.",
+      "cta": "Jetzt erneuern — 14,90 €",
+      "ctaLoading": "Weiterleitung zu Stripe…",
+      "manageLink": "Mein Abonnement verwalten"
+    },
+    "default": {
+      "text": "Ihr aktuelles Abonnement erlaubt derzeit keine Erstellung eines neuen Werks."
+    },
+    "badge": {
+      "atelierLabel": "Atelier",
+      "freeLabel": "Entdecken",
+      "cancelNotice": " — Kündigung am Ende des Zeitraums",
+      "windowText": "(30-Tage-Fenster)",
+      "lifetimeText": "(kostenloser Tarif, lebenslang)",
+      "manage": "Verwalten",
+      "certified": "zertifizierte Werke"
+    }
+  },
+  "Subscription": {
+    "title": "Mein",
+    "titleAccent": "Abonnement",
+    "loading": "Ihr Abonnement wird geladen…",
+    "banners": {
+      "subscribed": "Abonnement bestätigt. Willkommen im Atelier.",
+      "subscribedHint": "Falls Ihr Kontingent noch nicht aktualisiert wurde, warten Sie einige Sekunden und laden Sie die Seite neu.",
+      "renewed": "Neuer Zeitraum eröffnet. Ihr Kontingent ist für 30 Tage zurückgesetzt.",
+      "canceled": "Vorgang abgebrochen, keine Änderungen wurden vorgenommen.",
+      "pastDue": "Zahlung fehlgeschlagen",
+      "pastDueHint": "Aktualisieren Sie Ihre Zahlungsmethode im Stripe-Bereich, um Ihr Atelier wieder zu aktivieren.",
+      "loadError": "Ihr Abonnement konnte nicht geladen werden: {error}."
+    },
+    "current": {
+      "eyebrow": "Aktueller Tarif",
+      "ateliersLabel": "Atelier",
+      "ateliersPrice": "14,90 €/Monat",
+      "discoveryLabel": "Entdecken",
+      "remainingPattern": "{remaining} / {limit}",
+      "remainingSuffixAtelier": "Werke können in diesem Zeitraum noch zertifiziert werden.",
+      "remainingSuffixFree": "Werke können im Entdeckungs-Tarif (lebenslang) noch zertifiziert werden.",
+      "periodEnding": "Aktueller Zeitraum bis",
+      "cancelNotice": "Ihr Abonnement endet am Ende des aktuellen Zeitraums."
+    },
+    "actions": {
+      "subscribe": "Zum Atelier wechseln — 14,90 €/Monat",
+      "subscribeLoading": "Weiterleitung zu Stripe…",
+      "manage": "Mein Abonnement verwalten (Stripe)",
+      "manageLoading": "Weiterleitung…",
+      "renew": "Jetzt erneuern (neuer Zeitraum)"
+    },
+    "plans": {
+      "title": "Die beiden Tarife",
+      "discoveryName": "Entdecken — kostenlos",
+      "discoveryDescription": "5 lebenslang zertifizierte Werke. Ideal zum Starten, zum Testen der Plattform oder für die ersten Verkäufe.",
+      "atelierName": "Atelier — 14,90 € / Monat",
+      "atelierDescription": "50 zertifizierte Werke pro 30-Tage-Fenster. Jederzeit erneuerbar, um mit 50 weiteren neu zu starten. Aus Ihrem Stripe-Bereich kündbar."
+    },
+    "backToProfile": "← Zurück zu meinem Profil"
+  },
+  "Create": {
+    "title": "Neues",
+    "titleAccent": "Werk erstellen",
+    "approveTitle": "Initiale Genehmigung erforderlich",
+    "approveDescription": "Sie müssen zuerst den Vertrag ArtworkRegistry autorisieren, Zertifikate in Ihrem Namen zu prägen (einmalig, gesponserte Transaktion).",
+    "approveButton": "ArtworkRegistry autorisieren",
+    "approving": "Autorisierung läuft…",
+    "approveSuccess": "Genehmigung erfasst. Sie können jetzt Werke erstellen.",
+    "form": {
+      "titleLabel": "Titel des Werks *",
+      "titlePlaceholder": "Ohne Titel, Nr. 1",
+      "yearLabel": "Jahr *",
+      "yearPlaceholder": "2026",
+      "categoryLabel": "Kategorie *",
+      "categoryPlaceholder": "Kategorie auswählen",
+      "techniqueLabel": "Technik *",
+      "techniquePlaceholder": "Öl auf Leinwand, Silbergelatineabzug...",
+      "dimensionsLabel": "Abmessungen *",
+      "dimensionsPlaceholder": "60 × 80 cm",
+      "descriptionLabel": "Beschreibung *",
+      "descriptionPlaceholder": "Entstehungskontext, Ansatz, Serie...",
+      "editionSizeLabel": "Auflagengröße *",
+      "editionSizeHint": "Wie viele physische Exemplare dieses Werks?",
+      "imagesLabel": "Bilder des Werks *",
+      "imagesHint": "Das 1. Bild wird als Titelbild angezeigt. Bis zu 5 Bilder.",
+      "imagesButton": "Bilder hinzufügen",
+      "merkleRootLabel": "Erzeugte Merkle Root",
+      "secretKeysLabel": "{n, plural, =1 {1 geheimer Schlüssel erzeugt} other {# geheime Schlüssel erzeugt}}",
+      "submit": "Werk erstellen",
+      "uploading": "IPFS-Upload…",
+      "creating": "Wird erstellt…",
+      "uploadingImage": "Bild-Upload läuft…",
+      "noImageWarning": "Fügen Sie mindestens ein Bild hinzu"
+    },
+    "postCreation": {
+      "urgentTitle": "HANDLUNG ERFORDERLICH - PFLICHT-DOWNLOAD",
+      "urgentBody1": "Sie MÜSSEN die geheimen Schlüssel jetzt herunterladen. Sie können nach diesem Schritt nicht wiederhergestellt werden.",
+      "urgentBody2": "Die Schlüssel ermöglichen Ihren Sammlern, ihr Zertifikat einzulösen.",
+      "downloadKeys": "Schlüssel herunterladen (CSV)",
+      "downloadQR": "QR-Codes herunterladen (ZIP)",
+      "keysDownloaded": "Schlüssel heruntergeladen",
+      "qrDownloaded": "QR-Codes heruntergeladen"
+    }
+  },
+  "Collector": {
+    "title": "Meine",
+    "titleAccent": "Zertifikate",
+    "loading": "Ihre Zertifikate werden geladen…",
+    "empty": "Sie besitzen noch kein Zertifikat. Um eines zu erhalten, scannen Sie den QR-Code, der mit dem Werk übergeben wurde.",
+    "edition": "Auflage Nr. {id}",
+    "viewArtist": "Künstler ansehen",
+    "viewArtwork": "Werk ansehen"
+  },
+  "Claim": {
+    "title": "Zertifikat",
+    "titleAccent": "einlösen",
+    "instructions": "Scannen Sie den QR-Code des Werks, damit die Felder automatisch ausgefüllt werden. Dieses Zertifikat ermöglicht es Ihnen, eine Bewertung zum Werk abzugeben.",
+    "showAdvanced": "+ Technische Details anzeigen",
+    "hideAdvanced": "− Technische Details ausblenden",
+    "editionIdLabel": "Werknummer *",
+    "secretKeyLabel": "Geheimer Schlüssel *",
+    "merkleProofLabel": "Merkle-Beweis (durch Kommas getrennt) *",
+    "merkleProofHint": "Format: hash1,hash2,hash3 (jeder hash mit 0x am Anfang)",
+    "submit": "Mein Zertifikat einlösen",
+    "submitLoading": "Transaktion läuft…",
+    "success": "Zertifikat erfolgreich eingelöst!",
+    "successAlert": "Token erfolgreich eingelöst!",
+    "connectWallet": "Bitte verbinden Sie Ihre Wallet",
+    "fillAllFields": "Bitte füllen Sie alle Felder aus",
+    "disabledEdition": "Diese Auflage wurde deaktiviert und nimmt keine neuen Einlösungen mehr an.",
+    "txFailed": "Die Transaktion ist auf der Blockchain fehlgeschlagen.",
+    "genericError": "Fehler: {message}"
+  },
+  "Explore": {
+    "editions": {
+      "title": "Die",
+      "titleAccent": "Galerie",
+      "loading": "Werke werden geladen…",
+      "empty": "Kein Werk gefunden",
+      "ipfsLoading": "IPFS-Daten werden geladen…",
+      "filterAll": "Alle",
+      "certifiedSuffix": "zertifizierte Werke",
+      "by": "von"
+    },
+    "artists": {
+      "title": "Unsere",
+      "titleAccent": "Künstler",
+      "loading": "Künstler werden geladen…",
+      "empty": "Derzeit kein autorisierter Künstler.",
+      "viewProfile": "Profil ansehen →"
+    },
+    "edition": {
+      "loading": "Werk wird geladen…",
+      "notFound": "Werk nicht gefunden.",
+      "by": "von",
+      "year": "Jahr",
+      "technique": "Technik",
+      "dimensions": "Abmessungen",
+      "editionSize": "Auflagengröße",
+      "description": "Beschreibung",
+      "remaining": "{n} verfügbare(s) Exemplar(e)",
+      "viewArtist": "Künstlerprofil ansehen",
+      "viewOnChain": "Auf der Blockchain ansehen"
+    },
+    "artist": {
+      "loading": "Profil wird geladen…",
+      "notFound": "Künstler nicht gefunden.",
+      "website": "Website",
+      "exhibitions": "Wichtige Ausstellungen",
+      "noWorks": "Dieser Künstler hat noch kein Werk zertifiziert.",
+      "works": "Zertifizierte Werke",
+      "follow": "Folgen"
+    }
+  },
+  "About": {
+    "eyebrow": "Über uns",
+    "heroTitleStart": "Das Eigentum übertragen",
+    "heroTitleAccent": "Ihrer Werke.",
+    "heroSubtitle": "Mona Editions ist eine Plattform, die es Künstlern ermöglicht, ihre Werke zu zertifizieren, auszustellen und das Eigentum sicher und transparent durch die Blockchain zu übertragen.",
+    "mainTitleAccent": "Die Blockchain ",
+    "mainTitle": "im Dienste der Kunst und des Eigentums.",
+    "mainBody1": "Die Anwendung basiert auf Smart Contracts, bei denen der Eigentümer Administratoren hinzufügen kann. Diese haben dann die Befugnis, neue Künstler zur Nutzung der Plattform zu autorisieren, was es ermöglicht, das Ökosystem zu strukturieren und zu kontrollieren.",
+    "mainBody2": "Ein Künstler kann seine professionellen Daten auf der Blockchain speichern und Zertifikate für seine Kunstwerke erstellen.",
+    "mainBody3": "Ein Besucher kann die verschiedenen Künstler und zertifizierten Werke einsehen.",
+    "mainBody4": "Ein Sammler kann ein Zertifikat einlösen und die Werke einsehen, die er besitzt.",
+    "mainBody5": "Der Schwerpunkt wurde auf die einfache Nutzung gelegt: reibungslose Anmeldung und Verbindung, intuitiver Zertifikatstransfer, eine Benutzeroberfläche, die für Künstler und Kunstliebhaber konzipiert wurde.",
+    "mainBody6": "Die Smart Contracts wurden auf einem Layer 2 bereitgestellt, um eine kostengünstige Nutzung zu gewährleisten und gleichzeitig ein hohes Sicherheitsniveau zu wahren. Das Design der Anwendung ist darauf ausgerichtet, sich mit der Identität des Projekts zu vereinen, indem es minimal bleibt und auf das Werk fokussiert ist.",
+    "manifestoEyebrow": "Mona Editions",
+    "manifestoBodyStart": "Künstlern ermöglichen, ihre Werke zu",
+    "manifestoBodyAccent": "zertifizieren",
+    "manifestoBodyEnd": ", auszustellen und das Eigentum auf einfache, sichere und kostengünstige Weise dank der Blockchain zu übertragen.",
+    "sectorsTitle": "Abgedeckte Disziplinen",
+    "techTitle": "Technologie",
+    "techSubtitle": "Mona Editions basiert auf offenen Standards und bewährten Technologien.",
+    "backToHome": "← Zurück zur Startseite",
+    "sectors": {
+      "painting": "Malerei",
+      "drawing": "Zeichnung",
+      "sculpture": "Skulptur",
+      "photography": "Fotografie",
+      "digitalArt": "Digitale Kunst",
+      "engraving": "Druckgrafik",
+      "textile": "Textil",
+      "ceramics": "Keramik",
+      "mixedMedia": "Mischtechniken",
+      "installation": "Installation",
+      "video": "Video",
+      "other": "Sonstiges"
+    }
+  },
+  "Faq": {
+    "title": "Häufig gestellte",
+    "titleAccent": "Fragen",
+    "subtitle": "Alles, was Sie über Mona Editions und die Werkzertifizierung wissen müssen.",
+    "noResultsPrompt": "Haben Sie nicht die Antwort auf Ihre Frage gefunden?",
+    "contactButton": "Kontaktieren Sie uns",
+    "sections": [
+      {
+        "category": "Die Plattform",
+        "items": [
+          {
+            "q": "Was ist Mona Editions?",
+            "a": "Mona Editions ist eine Plattform zur Zertifizierung von Kunstwerken auf der Ethereum-Blockchain. Jedes zertifizierte Werk erhält ein dauerhaftes, fälschungssicheres und für alle überprüfbares digitales Zertifikat."
+          },
+          {
+            "q": "Wie funktioniert die Zertifizierung?",
+            "a": "Der Künstler erstellt eine digitale Auflage seines Werks (Titel, Jahr, Technik, Bilder…), die Daten werden auf IPFS gespeichert und ein Ethereum-Smart-Contract registriert die Zertifizierung. Jedes Zertifikat ist ein einzigartiges ERC-1155-Token."
+          },
+          {
+            "q": "Ist die verwendete Blockchain zuverlässig?",
+            "a": "Ja. Mona Editions nutzt das Base-Netzwerk, eine Ethereum-Layer-2-Blockchain, die für ihre Zuverlässigkeit und niedrigen Transaktionsgebühren bekannt ist. Die auf der Blockchain gespeicherten Daten sind unveränderlich und dauerhaft: sie können nicht geändert oder gelöscht werden."
+          }
+        ]
+      },
+      {
+        "category": "Für Künstler",
+        "items": [
+          {
+            "q": "Wie wird man auf Mona Editions zertifizierter Künstler?",
+            "a": "Der Künstlerzugang unterliegt einer manuellen Validierung. Kontaktieren Sie uns über das Kontaktformular und beschreiben Sie Ihren künstlerischen Ansatz. Unser Team prüft Ihre Anfrage."
+          },
+          {
+            "q": "Wie viele Exemplare kann ich für ein Werk zertifizieren?",
+            "a": "Sie wählen die Auflagengröße bei der Erstellung frei (von 1 bis 100 000 Exemplaren). Jedes Exemplar ist mit einem einzigartigen QR-Code verknüpft, mit dem der Sammler sein Zertifikat einlösen kann."
+          },
+          {
+            "q": "Werden meine Daten sicher gespeichert?",
+            "a": "Die Metadaten Ihrer Werke (Titel, Bilder, Beschreibung…) werden auf IPFS gespeichert, einem dezentralen Netzwerk. Nur die CID (eindeutige Kennung) wird auf der Blockchain registriert."
+          }
+        ]
+      },
+      {
+        "category": "Für Sammler",
+        "items": [
+          {
+            "q": "Wie löse ich mein Zertifikat ein?",
+            "a": "Scannen Sie den vom Künstler bereitgestellten QR-Code mit Ihrem Telefon. Sie werden zur Einlöseseite weitergeleitet. Verbinden oder erstellen Sie ein Konto und lösen Sie Ihr Zertifikat mit einem Klick ein."
+          },
+          {
+            "q": "Benötige ich ein Krypto-Wallet?",
+            "a": "Nein. Mona Editions verwendet Privy, das es Ihnen ermöglicht, automatisch über Ihre E-Mail ein Wallet zu erstellen. Es sind keine technischen Kenntnisse erforderlich."
+          },
+          {
+            "q": "Was beweist mein Zertifikat?",
+            "a": "Ihr Zertifikat bestätigt, dass Sie Eigentümer eines authentischen Exemplars des Werks sind, wie vom Künstler zertifiziert. Es ist jederzeit öffentlich auf der Blockchain überprüfbar."
+          }
+        ]
+      }
+    ]
+  },
+  "Contact": {
+    "title": "Kontaktieren",
+    "titleAccent": "Sie uns",
+    "subtitle": "Eine Frage, ein Vorschlag, ein Problem? Schreiben Sie uns direkt.",
+    "nameLabel": "Name *",
+    "emailLabel": "E-Mail *",
+    "subjectLabel": "Betreff *",
+    "messageLabel": "Nachricht *",
+    "submit": "Nachricht senden",
+    "submitLoading": "Wird gesendet…",
+    "success": "Nachricht gesendet. Wir antworten innerhalb von 48 Stunden.",
+    "error": "Fehler beim Senden. Bitte versuchen Sie es erneut oder schreiben Sie direkt an pierre.untas@gmail.com."
+  },
+  "Legal": {
+    "deDisclaimer": {
+      "title": "Wichtige Information",
+      "body": "Dieses Dokument wurde auf Französisch verfasst. Es gilt französisches Recht. Eine deutsche Übersetzung kann auf Anfrage zu rein informativen Zwecken bereitgestellt werden — nur die französische Fassung ist im Streitfall verbindlich."
+    },
+    "frDisclaimer": ""
+  },
   "NotFound": {
     "code": "404",
     "title": "Seite nicht gefunden",

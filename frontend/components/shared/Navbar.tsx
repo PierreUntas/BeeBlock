@@ -9,7 +9,6 @@ import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contrac
 
 export default function Navbar() {
     const t = useTranslations('Navbar');
-    const tLang = useTranslations('LanguageSwitcher');
     const locale = useLocale();
     const router = useRouter();
     const pathname = usePathname();
@@ -139,6 +138,34 @@ export default function Navbar() {
 
                 {/* Right */}
                 <div className="flex items-center gap-2.5">
+                    {/* Inline language switcher (always visible) */}
+                    <div className="flex items-center border border-[#d6d0c8] bg-[#fafaf8] h-8">
+                        <button
+                            type="button"
+                            onClick={() => switchLocale('fr')}
+                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
+                                locale === 'fr'
+                                    ? 'bg-[#1c1917] text-[#fafaf8]'
+                                    : 'text-[#78716c] hover:text-[#1c1917]'
+                            }`}
+                            aria-label="Français"
+                        >
+                            FR
+                        </button>
+                        <span className="w-px h-3 bg-[#d6d0c8]" />
+                        <button
+                            type="button"
+                            onClick={() => switchLocale('de')}
+                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
+                                locale === 'de'
+                                    ? 'bg-[#1c1917] text-[#fafaf8]'
+                                    : 'text-[#78716c] hover:text-[#1c1917]'
+                            }`}
+                            aria-label="Deutsch"
+                        >
+                            DE
+                        </button>
+                    </div>
                     {authenticated ? (
                         <div
                             onClick={() => setIsOpen(!isOpen)}
@@ -283,32 +310,6 @@ export default function Navbar() {
                             </>
                         )}
 
-                        {/* Language switcher */}
-                        <PanelDivider>{tLang('label')}</PanelDivider>
-                        <div className="flex gap-1.5 px-3 pt-1">
-                            <button
-                                type="button"
-                                onClick={() => { switchLocale('fr'); setIsOpen(false); }}
-                                className={`text-[11px] font-medium tracking-[0.08em] py-1.5 px-3 border transition-all ${
-                                    locale === 'fr'
-                                        ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
-                                        : 'bg-transparent text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
-                                }`}
-                            >
-                                {tLang('frShort')}
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => { switchLocale('de'); setIsOpen(false); }}
-                                className={`text-[11px] font-medium tracking-[0.08em] py-1.5 px-3 border transition-all ${
-                                    locale === 'de'
-                                        ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
-                                        : 'bg-transparent text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
-                                }`}
-                            >
-                                {tLang('deShort')}
-                            </button>
-                        </div>
                     </div>
 
                     {/* Panel footer */}

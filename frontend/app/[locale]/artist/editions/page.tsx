@@ -9,6 +9,7 @@ import { getCategoryLabel } from '@/app/utils/categories';
 import Link from 'next/link';
 import { parseAbiItem } from 'viem';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
+import { useTranslations } from 'next-intl';
 
 interface EditionIPFSData {
     title: string;
@@ -32,6 +33,7 @@ interface EditionInfo {
 }
 
 export default function ArtistEditionsPage() {
+    const t = useTranslations('Artist.editions');
     const { address } = useAccount();
     const { user } = usePrivy();
     const walletAddress = (user?.wallet || (user?.linkedAccounts as any[])?.find((a: any) => a.type === 'wallet'))?.address;
@@ -192,30 +194,30 @@ export default function ArtistEditionsPage() {
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-8">
-                        Mes <em className="italic text-[#78716c]">Œuvres</em>
+                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                     <Link
                         href="/artist/editions/create"
                         className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
                     >
-                        + Créer une œuvre
+                        {t('createButton')}
                     </Link>
                 </div>
 
                 {loadingStates.fetchingEditions ? (
                     <div className="flex flex-col items-center justify-center py-12 gap-4">
                         <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Chargement de vos œuvres…</p>
+                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
                     </div>
                 ) : editions.length === 0 ? (
                     <div className="text-center  italic text-[18px] text-[#a8a29e] py-12">
-                        Vous n'avez pas encore créé d'œuvre.
+                        {t('empty')}
                     </div>
                 ) : (
                     <>
                         {loadingStates.loadingIPFS && (
                             <div className="text-center text-[13px] font-light text-[#a8a29e] mb-4 tracking-[0.06em]">
-                                Chargement des données IPFS…
+                                {t('loading')}
                             </div>
                         )}
                         <div className="space-y-px">
