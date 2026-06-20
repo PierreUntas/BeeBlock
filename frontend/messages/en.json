@@ -358,7 +358,8 @@
       "by": "by",
       "remaining": "{n} copy(ies) remaining",
       "viewArtist": "View artist profile",
-      "viewOnChain": "View on the blockchain"
+      "viewOnChain": "View on the blockchain",
+      "ogDescription": "A work by {artist}, certified on Mona Editions. {size, plural, =0 {Limited edition authenticated on the Base blockchain.} =1 {1 copy authenticated on the Base blockchain.} other {Limited edition of # copies on the Base blockchain.}}"
     },
     "artist": {
       "loading": "Loading profile…",
@@ -402,7 +403,8 @@
       "trustTitle": "A page certified by Mona Editions",
       "trustBody": "All works shown here are recorded on the Base blockchain. The authenticity and provenance of each edition are publicly verifiable.",
       "trustLinkAbout": "Understand the certification",
-      "trustLinkArtists": "Discover more artists"
+      "trustLinkArtists": "Discover more artists",
+      "ogDescription": "Discover the work of {name}, a certified artist on Mona Editions. {editionsCount, plural, =0 {No certified edition yet.} =1 {1 edition authenticated on the Base blockchain.} other {# editions authenticated on the Base blockchain.}}"
     }
   },
   "About": {
