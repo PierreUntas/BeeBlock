@@ -10,7 +10,7 @@ import { sql } from '@vercel/postgres';
 // ---- Domain types ----------------------------------------------------------
 
 export type Plan = 'free' | 'atelier';
-export type Locale = 'fr' | 'de';
+export type Locale = 'fr' | 'de' | 'en';
 export type SubStatus =
     | 'none'         // never had a subscription
     | 'active'       // Atelier paid and current

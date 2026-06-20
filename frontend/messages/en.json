@@ -1,0 +1,580 @@
+{
+  "Navbar": {
+    "gallery": "Gallery",
+    "artists": "Artists",
+    "about": "About",
+    "menu": "Menu",
+    "connect": "Sign in",
+    "connected": "Connected",
+    "exportPrivateKey": "Export private key →",
+    "logout": "Sign out",
+    "signIn": "Sign in",
+    "panel": {
+      "home": "Home",
+      "explore": "Explore",
+      "galleryWorks": "Artwork gallery",
+      "artistsList": "Artists",
+      "info": "Information",
+      "aboutLink": "About",
+      "admin": "Administration",
+      "owner": "Owner",
+      "adminLink": "Administrator",
+      "collector": "Collector",
+      "myWorks": "My artworks",
+      "artist": "Artist",
+      "myProfile": "My profile",
+      "myArtworks": "My artworks",
+      "certifyWork": "Certify an artwork",
+      "mySubscription": "My subscription"
+    },
+    "roles": {
+      "owner": "Owner",
+      "admin": "Administrator",
+      "artist": "Artist"
+    },
+    "networkNotConnected": "Not connected"
+  },
+  "Footer": {
+    "tagline": "Certify, exhibit and transfer the ownership of an artwork in a simple, secure and economical way.",
+    "exploreTitle": "Explore",
+    "galleryWorks": "Artwork gallery",
+    "artistsList": "Artists",
+    "aboutLink": "About",
+    "collectorTitle": "Collector",
+    "myCertificates": "My certificates",
+    "claimCertificate": "Claim a certificate",
+    "artistTitle": "Artist area",
+    "dashboard": "Dashboard",
+    "myArtworks": "My artworks",
+    "certifyWork": "Certify an artwork",
+    "contactUs": "Contact us",
+    "faq": "FAQ",
+    "legalNotice": "Legal notice",
+    "termsOfService": "Subscription terms",
+    "privacyPolicy": "Privacy",
+    "copyright": "All rights reserved"
+  },
+  "LanguageSwitcher": {
+    "label": "Language",
+    "fr": "French",
+    "de": "German",
+    "en": "English",
+    "frShort": "FR",
+    "deShort": "DE",
+    "enShort": "EN"
+  },
+  "NotFound": {
+    "code": "404",
+    "title": "Page not found",
+    "subtitle": "This page no longer exists or never existed. It may have been moved to another address.",
+    "homeButton": "Back to home",
+    "galleryButton": "Explore the gallery"
+  },
+  "Common": {
+    "loading": "Loading…",
+    "save": "Save",
+    "saving": "Saving…",
+    "update": "Update",
+    "cancel": "Cancel",
+    "back": "Back",
+    "close": "Close",
+    "connect": "Please sign in",
+    "ipfsLoading": "Loading IPFS data…",
+    "uploadIPFS": "IPFS upload in progress…",
+    "saveSuccess": "Information saved successfully. The transaction is being confirmed on the blockchain.",
+    "transactionPending": "Transaction in progress…"
+  },
+  "Artist": {
+    "title": "Edit my",
+    "titleAccent": "information",
+    "createTitleStart": "Artist",
+    "createTitleAccent": "registration",
+    "qrTitle": "QR Code for your artist page",
+    "qrDescription": "Download your QR code to share it with your collectors. It points to your artist page.",
+    "qrGenerating": "Generating…",
+    "qrDownload": "Download my QR Code",
+    "pastDue": {
+      "title": "Payment failure on your subscription",
+      "description": "Update your payment method from",
+      "linkText": "your subscription area",
+      "descriptionEnd": "to continue certifying your artworks."
+    },
+    "form": {
+      "nameLabel": "Artist / studio name *",
+      "namePlaceholder": "Atelier Claire Dubois",
+      "locationLabel": "Location *",
+      "locationPlaceholder": "Bordeaux, France",
+      "websiteLabel": "Website",
+      "websitePlaceholder": "https://...",
+      "bioLabel": "Biography",
+      "bioPlaceholder": "Introduce your artistic approach…",
+      "exhibitionsLabel": "Notable exhibitions",
+      "exhibitionsPlaceholder": "One exhibition per line",
+      "logoLabel": "Logo / portrait *",
+      "logoButton": "Choose a logo",
+      "logoReplace": "Replace the logo",
+      "photosLabel": "Photos (up to 6)",
+      "photosButton": "Add photos",
+      "instagramLabel": "Instagram",
+      "twitterLabel": "Twitter / X",
+      "facebookLabel": "Facebook",
+      "privacyLabel": "I have read and accept the",
+      "privacyLink": "privacy policy",
+      "privacyEnd": ", including its provisions on data recorded on the blockchain and IPFS storage which are permanent.",
+      "privacyRequired": "Please accept the privacy policy before continuing.",
+      "privacyError": "Unable to record your acceptance. Try again in a moment.",
+      "maxFileSizeError": "The file exceeds the 20 MB limit",
+      "maxPhotosError": "You can add up to 6 photos"
+    },
+    "editions": {
+      "title": "My",
+      "titleAccent": "Artworks",
+      "createButton": "+ Create an artwork",
+      "loading": "Loading your artworks…",
+      "empty": "You haven't created any artwork yet.",
+      "edition": "Edition",
+      "remaining": "{n, plural, =0 {No copies remaining} =1 {1 copy remaining} other {# copies remaining}}",
+      "disabled": "Disabled",
+      "view": "View",
+      "edit": "Edit"
+    }
+  },
+  "SubscriptionGate": {
+    "freeExhausted": {
+      "eyebrow": "Discovery quota reached",
+      "titleStart": "You have certified",
+      "titleAccent": "your 5 artworks",
+      "titleEnd": "on the Discovery tier",
+      "description": "To keep certifying freely, switch to Atelier:",
+      "priceHighlight": "€14.90/month",
+      "descriptionEnd": ", 50 artworks per 30-day window, cancellable any time.",
+      "cta": "Switch to Atelier — €14.90/month",
+      "ctaLoading": "Redirecting to Stripe…",
+      "secured": "Secure payment by Stripe. Cancellable from your area."
+    },
+    "atelierExhausted": {
+      "eyebrow": "Monthly quota reached",
+      "titleStart": "You have certified",
+      "titleAccent": "50 artworks",
+      "titleEnd": "this period",
+      "description": "Your next 30-day window opens automatically",
+      "descriptionDate": "on {date}",
+      "descriptionEnd": ". You can also renew right now to restart with 50 new certifications.",
+      "cta": "Renew now — €14.90",
+      "ctaLoading": "Redirecting to Stripe…",
+      "manageLink": "Manage my subscription"
+    },
+    "default": {
+      "text": "Your current subscription does not allow creating a new artwork at the moment."
+    },
+    "badge": {
+      "atelierLabel": "Atelier",
+      "freeLabel": "Discovery",
+      "cancelNotice": " — cancellation at end of period",
+      "windowText": "(30-day window)",
+      "lifetimeText": "(free tier, lifetime)",
+      "manage": "Manage",
+      "certified": "artworks certified"
+    }
+  },
+  "Subscription": {
+    "title": "My",
+    "titleAccent": "subscription",
+    "loading": "Loading your subscription…",
+    "banners": {
+      "subscribed": "Subscription confirmed. Welcome to Atelier.",
+      "subscribedHint": "If your quota hasn't updated yet, wait a few seconds and reload the page.",
+      "renewed": "New period open. Your quota is reset for 30 days.",
+      "canceled": "Operation cancelled, no changes were made.",
+      "pastDue": "Payment failure detected",
+      "pastDueHint": "Update your payment method in the Stripe area to reactivate your Atelier.",
+      "loadError": "Unable to load your subscription: {error}."
+    },
+    "current": {
+      "eyebrow": "Current tier",
+      "ateliersLabel": "Atelier",
+      "ateliersPrice": "€14.90/month",
+      "discoveryLabel": "Discovery",
+      "remainingPattern": "{remaining} / {limit}",
+      "remainingSuffixAtelier": "artworks can still be certified this period.",
+      "remainingSuffixFree": "artworks can still be certified on the Discovery tier (lifetime).",
+      "periodEnding": "Current period until",
+      "cancelNotice": "Your subscription will end at the end of the current period."
+    },
+    "actions": {
+      "subscribe": "Switch to Atelier — €14.90/month",
+      "subscribeLoading": "Redirecting to Stripe…",
+      "manage": "Manage my subscription (Stripe)",
+      "manageLoading": "Redirecting…",
+      "renew": "Renew now (new period)"
+    },
+    "plans": {
+      "title": "The two tiers",
+      "discoveryName": "Discovery — free",
+      "discoveryDescription": "5 artworks certified for lifetime. Ideal to get started, test the platform or make first sales.",
+      "atelierName": "Atelier — €14.90 / month",
+      "atelierDescription": "50 artworks certified per 30-day window. Renewable anytime for 50 additional. Cancellable from your Stripe area."
+    },
+    "backToProfile": "← Back to my profile"
+  },
+  "Edit": {
+    "loading": "Loading…",
+    "connectWallet": "Please connect your wallet",
+    "notOwner": "Access denied: you are not authorized as an artist",
+    "lockedTitleStart": "Metadata",
+    "lockedTitleAccent": "locked",
+    "lockedExplanation": "At least one certificate from this edition has left your wallet — through claim, transfer or sale. Metadata is now immutable to guarantee authenticity to holders.",
+    "back": "Back to my artworks",
+    "title": "Edit",
+    "titleAccent": "artwork #{id}",
+    "updateSuccess": "Metadata updated successfully!",
+    "updateSuccessHint": "Platforms like OpenSea and MetaMask will refresh the data shortly.",
+    "submit": "Update metadata",
+    "submitLoading": "Updating…"
+  },
+  "Create": {
+    "title": "Create a new",
+    "titleAccent": "artwork",
+    "approveTitle": "Initial approval required",
+    "approveDescription": "You must first authorize the ArtworkRegistry contract to mint certificates on your behalf (one-time, sponsored transaction).",
+    "approveButton": "Authorize ArtworkRegistry",
+    "approving": "Authorizing…",
+    "approveSuccess": "Approval recorded. You can now create artworks.",
+    "form": {
+      "titleLabel": "Artwork title *",
+      "titlePlaceholder": "Untitled, no. 1",
+      "yearLabel": "Year *",
+      "yearPlaceholder": "2026",
+      "categoryLabel": "Category *",
+      "categoryPlaceholder": "Select a category",
+      "techniqueLabel": "Technique *",
+      "techniquePlaceholder": "Oil on canvas, silver gelatin print…",
+      "dimensionsLabel": "Dimensions *",
+      "dimensionsPlaceholder": "60 × 80 cm",
+      "descriptionLabel": "Description *",
+      "descriptionPlaceholder": "Creation context, approach, series…",
+      "editionSizeLabel": "Edition size *",
+      "editionSizeHint": "How many physical copies of this artwork?",
+      "imagesLabel": "Artwork images *",
+      "imagesHint": "1st image displayed as cover. Up to 5 images.",
+      "imagesButton": "Add images",
+      "merkleRootLabel": "Generated Merkle Root",
+      "secretKeysLabel": "{n, plural, =1 {1 secret key generated} other {# secret keys generated}}",
+      "submit": "Create artwork",
+      "uploading": "IPFS upload…",
+      "creating": "Creating…",
+      "uploadingImage": "Uploading image…",
+      "noImageWarning": "Add at least one image"
+    },
+    "postCreation": {
+      "urgentTitle": "ACTION REQUIRED - MANDATORY DOWNLOAD",
+      "urgentBody1": "You MUST download the secret keys now. They cannot be recovered after this step.",
+      "urgentBody2": "The keys allow your collectors to claim their certificate.",
+      "downloadKeys": "Download keys (CSV)",
+      "downloadQR": "Download QR codes (ZIP)",
+      "keysDownloaded": "Keys downloaded",
+      "qrDownloaded": "QR codes downloaded"
+    }
+  },
+  "Collector": {
+    "title": "My",
+    "titleAccent": "certificates",
+    "loading": "Loading your certificates…",
+    "empty": "You don't own any certificate yet. To get one, scan the QR code provided with the artwork.",
+    "edition": "Edition no. {id}",
+    "viewArtist": "View artist",
+    "viewArtwork": "View artwork"
+  },
+  "Claim": {
+    "title": "Claim a",
+    "titleAccent": "Certificate",
+    "instructions": "Scan the QR code on the artwork so the fields auto-fill. This certificate will allow you to leave a review on the artwork.",
+    "showAdvanced": "+ Show technical details",
+    "hideAdvanced": "− Hide technical details",
+    "editionIdLabel": "Artwork number *",
+    "secretKeyLabel": "Secret key *",
+    "merkleProofLabel": "Merkle proof (comma-separated) *",
+    "merkleProofHint": "Format: hash1,hash2,hash3 (each hash starting with 0x)",
+    "submit": "Claim my certificate",
+    "submitLoading": "Transaction in progress…",
+    "success": "Certificate claimed successfully!",
+    "successAlert": "Token claimed successfully!",
+    "connectWallet": "Please connect your wallet",
+    "fillAllFields": "Please fill in all fields",
+    "disabledEdition": "This edition has been disabled and no longer accepts new claims.",
+    "txFailed": "The transaction failed on the blockchain.",
+    "genericError": "Error: {message}"
+  },
+  "Explore": {
+    "editions": {
+      "title": "The",
+      "titleAccent": "gallery",
+      "loading": "Loading artworks…",
+      "empty": "No artwork found",
+      "ipfsLoading": "Loading IPFS data…",
+      "filterAll": "All",
+      "certifiedSuffix": "certified artworks",
+      "by": "by"
+    },
+    "artists": {
+      "title": "The",
+      "titleAccent": "artists",
+      "loading": "Loading artists…",
+      "empty": "No artist found",
+      "filterAll": "All",
+      "certifiedSuffix": "certified artists",
+      "viewProfile": "View profile →"
+    },
+    "edition": {
+      "loading": "Loading artwork details…",
+      "notFound": "Artwork not found",
+      "back": "← Back to gallery",
+      "ipfsLoading": "Loading IPFS data…",
+      "editionLabel": "Artwork #{id}",
+      "copies": "Copies",
+      "reviewsCount": "{n, plural, =1 {1 review} other {# reviews}}",
+      "imagesTitleStart": "Artwork ",
+      "imagesTitleAccent": "images",
+      "infoTitleStart": "Artwork ",
+      "infoTitleAccent": "information",
+      "description": "Description",
+      "year": "Year",
+      "technique": "Technique",
+      "dimensions": "Dimensions",
+      "editionSize": "Edition size",
+      "editionSizeValue": "{n} copies",
+      "metadataLink": "Metadata link",
+      "artistTitleStart": "The ",
+      "artistTitleAccent": "artist",
+      "name": "Name",
+      "location": "Location",
+      "bio": "Biography",
+      "website": "Website",
+      "socialMedia": "Social media",
+      "ethAddress": "Ethereum address",
+      "viewAllWorks": "View all artworks →",
+      "reviewsTitleStart": "Collectors'",
+      "reviewsTitleAccent": "reviews",
+      "by": "by",
+      "remaining": "{n} copy(ies) remaining",
+      "viewArtist": "View artist profile",
+      "viewOnChain": "View on the blockchain"
+    },
+    "artist": {
+      "loading": "Loading profile…",
+      "notFound": "Artist not found",
+      "back": "← Back to artists",
+      "ipfsLoading": "Loading IPFS data…",
+      "certifiedArtist": "Certified artist",
+      "about": "About",
+      "exhibitions": "Exhibitions",
+      "location": "Location",
+      "website": "Website",
+      "socialMedia": "Social media",
+      "ethAddress": "Ethereum address",
+      "portfolioTitleStart": "Portfolio",
+      "portfolioTitleAccent": "photos",
+      "worksTitleStart": "Certified",
+      "worksTitleAccent": "artworks",
+      "certifiedBadge": "Certified",
+      "noWorks": "This artist hasn't certified any artwork yet.",
+      "works": "Certified artworks",
+      "follow": "Follow"
+    }
+  },
+  "About": {
+    "eyebrow": "About",
+    "heroTitleStart": "Transfer ownership",
+    "heroTitleAccent": "of Your Artworks.",
+    "heroSubtitle": "Mona Editions is a platform that allows artists to certify their artworks, exhibit them and transfer ownership in a secure and transparent way, thanks to the blockchain.",
+    "mainTitleAccent": "The Blockchain ",
+    "mainTitle": "serving art and ownership.",
+    "mainBody1": "The application is built on smart contracts whose owner can add administrators. These then have the power to authorize new artists to use the platform, which allows for a structured and controlled ecosystem.",
+    "mainBody2": "An artist can register their professional data on the blockchain and create certificates for their artworks.",
+    "mainBody3": "A visitor can browse the various artists and certified artworks.",
+    "mainBody4": "A collector can claim a certificate and view the artworks they own.",
+    "mainBody5": "The focus has been on ease of use: smooth registration and connection, intuitive certificate transfer, an interface designed for artists and art lovers.",
+    "mainBody6": "The smart contracts have been deployed on a Layer 2 to ensure economical use, while maintaining a rigorous level of security. The design of the application is intended to align with the project's identity, remaining minimal and centered on the artwork.",
+    "manifestoEyebrow": "Mona Editions",
+    "manifestoBodyStart": "Allow artists to",
+    "manifestoBodyAccent": "certify their artworks",
+    "manifestoBodyEnd": ", exhibit them and transfer ownership in a simple, secure and economical way thanks to the blockchain.",
+    "sectorsTitle": "Disciplines covered",
+    "techTitle": "Technology",
+    "techSubtitle": "Mona Editions is built on open standards and proven technologies.",
+    "backToHome": "← Back to home",
+    "sectors": {
+      "painting": "Painting",
+      "drawing": "Drawing",
+      "sculpture": "Sculpture",
+      "photography": "Photography",
+      "digitalArt": "Digital Art",
+      "engraving": "Print",
+      "textile": "Textile",
+      "ceramics": "Ceramics",
+      "mixedMedia": "Mixed Media",
+      "installation": "Installation",
+      "video": "Video",
+      "other": "Other"
+    }
+  },
+  "Faq": {
+    "title": "Frequently asked",
+    "titleAccent": "questions",
+    "subtitle": "Everything you need to know about Mona Editions and artwork certification.",
+    "noResultsPrompt": "Haven't found the answer to your question?",
+    "contactButton": "Contact us",
+    "sections": [
+      {
+        "category": "The platform",
+        "items": [
+          {
+            "q": "What is Mona Editions?",
+            "a": "Mona Editions is a platform for certifying artworks on the Ethereum blockchain. Each certified artwork receives a permanent digital certificate that is tamper-proof and verifiable by everyone."
+          },
+          {
+            "q": "How does certification work?",
+            "a": "The artist creates a digital edition of their artwork (title, year, technique, images…), the data is stored on IPFS and an Ethereum smart contract records the certification. Each certificate is a unique ERC-1155 token."
+          },
+          {
+            "q": "Is the blockchain used reliable?",
+            "a": "Yes. Mona Editions uses the Base network, an Ethereum Layer 2 blockchain known for its reliability and low transaction fees. The data recorded on the blockchain is immutable and permanent: it cannot be modified or deleted."
+          }
+        ]
+      },
+      {
+        "category": "For artists",
+        "items": [
+          {
+            "q": "How to become a certified artist on Mona Editions?",
+            "a": "Artist access is subject to manual validation. Contact us through the contact form specifying your artistic approach. Our team will review your request."
+          },
+          {
+            "q": "How many copies can I certify for an artwork?",
+            "a": "You freely choose the edition size at creation (from 1 to 100,000 copies). Each copy is associated with a unique QR code allowing the collector to claim their certificate."
+          },
+          {
+            "q": "Is my data stored securely?",
+            "a": "The metadata of your artworks (title, images, description…) is stored on IPFS, a decentralized network. Only the CID (unique identifier) is recorded on the blockchain."
+          }
+        ]
+      },
+      {
+        "category": "For collectors",
+        "items": [
+          {
+            "q": "How do I claim my certificate?",
+            "a": "Scan the QR code provided by the artist with your phone. You will be redirected to the claim page. Sign in or create an account, then claim your certificate in one click."
+          },
+          {
+            "q": "Do I need a crypto wallet?",
+            "a": "No. Mona Editions uses Privy, which lets you create a wallet automatically via your email. No technical knowledge required."
+          },
+          {
+            "q": "What does my certificate prove?",
+            "a": "Your certificate attests that you own an authentic copy of the artwork, as certified by the artist. It is publicly verifiable on the blockchain at any time."
+          }
+        ]
+      }
+    ]
+  },
+  "Contact": {
+    "title": "Contact",
+    "titleAccent": "us",
+    "subtitle": "A question, a suggestion, an issue? Write to us directly.",
+    "nameLabel": "Name *",
+    "emailLabel": "Email *",
+    "subjectLabel": "Subject *",
+    "messageLabel": "Message *",
+    "submit": "Send message",
+    "submitLoading": "Sending…",
+    "success": "Message sent. We'll reply within 48 hours.",
+    "error": "Send failed. Try again or write directly to pierre.untas@gmail.com."
+  },
+  "Legal": {
+    "deDisclaimer": {
+      "title": "Important notice",
+      "body": "This document is written in French. French law applies. An English translation may be provided on request for informational purposes only — only the French version prevails in case of dispute."
+    },
+    "frDisclaimer": ""
+  },
+  "Home": {
+    "hero": {
+      "eyebrow": "Art certification platform",
+      "titleStart": "Certify",
+      "titleAccent": "your artworks",
+      "titleEnd": "on the blockchain",
+      "subtitle": "Mona Editions allows artists to certify their physical artworks with a digital token, and their collectors to receive a permanent certificate that stays with them forever."
+    },
+    "personas": {
+      "artist": {
+        "eyebrow": "You are an artist",
+        "title": "Certify my artworks",
+        "description": "Set up your profile and issue certificates that you hand to your collectors.",
+        "cta": "My artist profile"
+      },
+      "collector": {
+        "eyebrow": "You are a collector",
+        "title": "My certificates",
+        "description": "See the list of artworks you own and access the certificates attached to each.",
+        "cta": "View my certificates"
+      },
+      "visitor": {
+        "eyebrow": "Visitor",
+        "title": "Explore artworks",
+        "description": "Browse the gallery of certified artworks and discover the work of the registered artists.",
+        "cta": "View the gallery"
+      }
+    },
+    "howItWorks": {
+      "eyebrow": "How it works",
+      "title": "Three",
+      "titleAccent": "simple steps",
+      "step1": {
+        "title": "The artist signs up",
+        "description": "They create their profile (name, bio, photos) and submit their authorization request. Once approved by Mona Editions, they can start certifying."
+      },
+      "step2": {
+        "title": "They certify an artwork",
+        "description": "They describe their artwork, choose the edition size, and receive an Excel file with as many QR codes as copies to distribute."
+      },
+      "step3": {
+        "title": "The collector claims",
+        "description": "The QR code provided with the physical artwork leads to a page where the collector signs the transaction for free. The certificate is theirs forever."
+      }
+    },
+    "gallery": {
+      "eyebrow": "Recently certified artworks",
+      "titleStart": "The living",
+      "titleAccent": "catalog",
+      "viewAll": "Full gallery",
+      "featured": "FEATURED",
+      "noImage": "No image"
+    },
+    "trust": {
+      "eyebrow": "Permanence and security",
+      "titleStart": "For",
+      "titleAccent": "ever",
+      "blockchain": {
+        "title": "Base public blockchain",
+        "description": "Certificates are issued on Base, an Ethereum Layer 2 network operated by Coinbase. They exist independently of Mona Editions."
+      },
+      "contracts": {
+        "title": "Verified smart contracts",
+        "description": "Our source code is public and auditable on Basescan. No hidden modifications are possible."
+      },
+      "ipfs": {
+        "title": "Redundant IPFS storage",
+        "description": "Images and descriptions are stored on IPFS, a distributed file network that spreads content across multiple nodes."
+      }
+    },
+    "cta": {
+      "eyebrow": "Ready to start",
+      "titleStart": "Sign in in",
+      "titleAccent": "a few seconds",
+      "subtitle": "With just an email address. No download required, no technical knowledge needed.",
+      "button": "Sign in"
+    },
+    "aboutLink": "Learn more about Mona Editions →"
+  }
+}

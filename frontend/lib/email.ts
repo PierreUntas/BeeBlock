@@ -27,6 +27,12 @@ function getResend(): Resend | null {
 
 // ---- Shared template wrapper ----------------------------------------------
 
+/** Build a locale-aware URL : /fr stays at root, /de and /en get prefixed. */
+function localizedUrl(path: string, locale: Locale): string {
+    const base = 'https://www.monaeditions.com';
+    return locale === 'fr' ? `${base}${path}` : `${base}/${locale}${path}`;
+}
+
 function shell(title: string, bodyHtml: string, locale: Locale): string {
     const footerLabels = {
         fr: {
@@ -37,12 +43,13 @@ function shell(title: string, bodyHtml: string, locale: Locale): string {
             tagline: 'Mona Editions — Zertifizierung von Kunstwerken',
             manage: 'Mein Abonnement verwalten',
         },
+        en: {
+            tagline: 'Mona Editions — art certification',
+            manage: 'Manage my subscription',
+        },
     }[locale];
 
-    const subscriptionUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/artist/subscription'
-            : 'https://www.monaeditions.com/de/artist/subscription';
+    const subscriptionUrl = localizedUrl('/artist/subscription', locale);
 
     return `<!DOCTYPE html>
 <html lang="${locale}">
@@ -154,22 +161,48 @@ Pierre`,
         <p style="margin:24px 0 0 0;font-size:13px;color:#78716c;">Bei Fragen können Sie auf diese E-Mail antworten — ich werde sie persönlich lesen.</p>
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Bis bald,<br>Pierre</p>`,
     },
+    en: {
+        subject: "Welcome to Atelier — Mona Editions",
+        text: (createUrl: string) => `Hi,
+
+Your Atelier subscription on Mona Editions is now active.
+
+You can now certify up to 50 artworks per 30-day rolling window.
+
+Create an artwork: ${createUrl}
+
+If you have any questions, just reply to this email — I'll read it personally.
+
+See you soon,
+Pierre`,
+        body: (createUrl: string) => `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;">Welcome to the <em style="color:#78716c;">Atelier</em>.</p>
+        <p style="margin:0 0 16px 0;">Your subscription is now active. You can certify up to <strong>50 artworks per 30-day rolling window</strong>.</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="${createUrl}" style="display:inline-block;background:#1c1917;color:#fafaf8;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #1c1917;">CERTIFY AN ARTWORK</a>
+        </p>
+        <p style="margin:24px 0 0 0;font-size:13px;color:#78716c;">If you have any questions, just reply to this email — I'll read it personally.</p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">See you soon,<br>Pierre</p>`,
+    },
 };
 
 export async function sendWelcomeAtelier(to: string, locale: Locale = 'fr'): Promise<void> {
     const tpl = welcomeAtelier[locale];
-    const createUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/artist/editions/create'
-            : 'https://www.monaeditions.com/de/artist/editions/create';
+    const createUrl = localizedUrl('/artist/editions/create', locale);
     await send(to, tpl.subject, shell(tpl.subject, tpl.body(createUrl), locale), tpl.text(createUrl));
 }
 
 // ---- Email templates: Subscription canceled --------------------------------
 
 function formatDate(periodEnd: Date | null, locale: Locale): string {
-    if (!periodEnd) return locale === 'fr' ? 'la fin de votre période en cours' : 'das Ende Ihres aktuellen Zeitraums';
-    return periodEnd.toLocaleDateString(locale === 'de' ? 'de-DE' : 'fr-FR', {
+    if (!periodEnd) {
+        if (locale === 'fr') return 'la fin de votre période en cours';
+        if (locale === 'de') return 'das Ende Ihres aktuellen Zeitraums';
+        return 'the end of your current period';
+    }
+    const dateLocale =
+        locale === 'de' ? 'de-DE' : locale === 'en' ? 'en-GB' : 'fr-FR';
+    return periodEnd.toLocaleDateString(dateLocale, {
         day: '2-digit',
         month: 'long',
         year: 'numeric',
@@ -225,6 +258,30 @@ Pierre`,
         </p>
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Bis bald,<br>Pierre</p>`,
     },
+    en: {
+        subject: "Cancellation confirmation — Mona Editions",
+        text: (endDate: string, manageUrl: string) => `Hi,
+
+Your cancellation request has been processed.
+
+You retain access to Atelier until ${endDate}. After that, you will automatically switch to the Discovery tier.
+
+The artworks you have already certified remain your property and continue to exist permanently on the blockchain, regardless of your subscription status.
+
+You can reactivate Atelier at any time:
+${manageUrl}
+
+See you soon,
+Pierre`,
+        body: (endDate: string, manageUrl: string) => `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;">Your cancellation is confirmed.</p>
+        <p style="margin:0 0 16px 0;">You retain access to Atelier until <strong>${endDate}</strong>, then you will switch to the Discovery tier.</p>
+        <p style="margin:0 0 16px 0;font-size:13px;color:#78716c;">Already-certified artworks remain your property and continue to exist permanently on the blockchain, regardless of your subscription.</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="${manageUrl}" style="display:inline-block;background:#f5f3ef;color:#1c1917;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #d6d0c8;">MY SUBSCRIPTION</a>
+        </p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">See you soon,<br>Pierre</p>`,
+    },
 };
 
 export async function sendSubscriptionCanceled(
@@ -234,10 +291,7 @@ export async function sendSubscriptionCanceled(
 ): Promise<void> {
     const tpl = canceled[locale];
     const endDate = formatDate(periodEnd, locale);
-    const manageUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/artist/subscription'
-            : 'https://www.monaeditions.com/de/artist/subscription';
+    const manageUrl = localizedUrl('/artist/subscription', locale);
     await send(to, tpl.subject, shell(tpl.subject, tpl.body(endDate, manageUrl), locale), tpl.text(endDate, manageUrl));
 }
 
@@ -292,14 +346,35 @@ Pierre`,
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Ihre bereits zertifizierten Werke bleiben selbstverständlich auf der Blockchain unverändert, unabhängig vom Ergebnis.</p>
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Bis bald,<br>Pierre</p>`,
     },
+    en: {
+        subject: "Payment failure — Mona Editions",
+        text: (manageUrl: string) => `Hi,
+
+The payment for your Atelier subscription has failed.
+
+Stripe will automatically retry the charge several times over the next 21 days. To avoid your subscription being suspended, update your payment method now:
+
+${manageUrl}
+
+If nothing is done within 21 days, your subscription will be automatically cancelled and you will switch to the Discovery tier. Your already-certified artworks will of course remain intact on the blockchain.
+
+See you soon,
+Pierre`,
+        body: (manageUrl: string) => `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;color:#991b1b;">Payment failure.</p>
+        <p style="margin:0 0 16px 0;">The charge for your Atelier subscription could not be completed. Stripe will automatically retry several times over the next 21 days.</p>
+        <p style="margin:0 0 16px 0;font-size:13px;color:#78716c;">To avoid your subscription being suspended, update your payment method now.</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="${manageUrl}" style="display:inline-block;background:#1c1917;color:#fafaf8;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #1c1917;">UPDATE MY CARD</a>
+        </p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Your already-certified artworks will of course remain intact on the blockchain, regardless of the outcome.</p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">See you soon,<br>Pierre</p>`,
+    },
 };
 
 export async function sendPaymentFailed(to: string, locale: Locale = 'fr'): Promise<void> {
     const tpl = paymentFailed[locale];
-    const manageUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/artist/subscription'
-            : 'https://www.monaeditions.com/de/artist/subscription';
+    const manageUrl = localizedUrl('/artist/subscription', locale);
     await send(to, tpl.subject, shell(tpl.subject, tpl.body(manageUrl), locale), tpl.text(manageUrl));
 }
 
@@ -342,6 +417,24 @@ Pierre`,
         </p>
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Bis bald,<br>Pierre</p>`,
     },
+    en: {
+        subject: "New period opened — Mona Editions",
+        text: (endDate: string | null, createUrl: string) => `Hi,
+
+Your new Atelier subscription period is open. Your quota is reset: 50 new artworks ready to be certified.${endDate ? `\n\nCurrent period until ${endDate}.` : ''}
+
+Create an artwork: ${createUrl}
+
+See you soon,
+Pierre`,
+        body: (endDate: string | null, createUrl: string) => `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;">New period opened.</p>
+        <p style="margin:0 0 16px 0;">Your Atelier quota is reset: <strong>50 new artworks ready to be certified</strong>.${endDate ? ` Current period until <strong>${endDate}</strong>.` : ''}</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="${createUrl}" style="display:inline-block;background:#1c1917;color:#fafaf8;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #1c1917;">CERTIFY AN ARTWORK</a>
+        </p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">See you soon,<br>Pierre</p>`,
+    },
 };
 
 export async function sendRenewalConfirmation(
@@ -350,17 +443,8 @@ export async function sendRenewalConfirmation(
     locale: Locale = 'fr',
 ): Promise<void> {
     const tpl = renewal[locale];
-    const endDate = periodEnd
-        ? periodEnd.toLocaleDateString(locale === 'de' ? 'de-DE' : 'fr-FR', {
-              day: '2-digit',
-              month: 'long',
-              year: 'numeric',
-          })
-        : null;
-    const createUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/artist/editions/create'
-            : 'https://www.monaeditions.com/de/artist/editions/create';
+    const endDate = periodEnd ? formatDate(periodEnd, locale) : null;
+    const createUrl = localizedUrl('/artist/editions/create', locale);
     await send(to, tpl.subject, shell(tpl.subject, tpl.body(endDate, createUrl), locale), tpl.text(endDate, createUrl));
 }
 
@@ -429,6 +513,37 @@ Pierre — Mona Editions`,
         <p style="margin:24px 0 0 0;font-size:13px;color:#78716c;">Das Zertifikat ist dauerhaft mit Ihrer Wallet verknüpft. Wenn Sie das physische Werk eines Tages übertragen, können Sie auch das Zertifikat an den neuen Eigentümer übertragen.</p>
         <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">Bis bald,<br>Pierre — Mona Editions</p>`,
     },
+    en: {
+        subject: (title: string) => `Your certificate "${title}" is confirmed — Mona Editions`,
+        text: (title: string, artist: string, editionUrl: string, explorerUrl: string | null) => `Hi,
+
+Your certificate for the artwork "${title}" by ${artist} has been successfully recorded on the Base blockchain.
+
+You can view your certificate at any time from your area:
+https://www.monaeditions.com/en/collector
+
+Public page of the artwork:
+${editionUrl}
+${explorerUrl ? `\nBlockchain transaction (proof of registration):\n${explorerUrl}\n` : ''}
+The certificate is now permanently linked to your wallet. If you transfer the physical artwork one day to another collector, you can also transfer the digital certificate.
+
+See you soon,
+Pierre — Mona Editions`,
+        body: (title: string, artist: string, editionUrl: string, explorerUrl: string | null, collectionUrl: string) => `
+        <p style="margin:0 0 16px 0;font-size:18px;font-weight:normal;">Certificate confirmed.</p>
+        <p style="margin:0 0 16px 0;">The artwork <strong>"${title}"</strong> by <strong>${artist}</strong> is now linked to your wallet on the Base blockchain.</p>
+        <p style="margin:24px 0;text-align:center;">
+            <a href="${collectionUrl}" style="display:inline-block;background:#1c1917;color:#fafaf8;text-decoration:none;padding:14px 28px;font-size:12px;letter-spacing:0.06em;border:1px solid #1c1917;">VIEW MY COLLECTION</a>
+        </p>
+        <p style="margin:24px 0 8px 0;font-size:12px;color:#78716c;letter-spacing:0.06em;text-transform:uppercase;font-weight:500;">Useful links</p>
+        <p style="margin:0 0 6px 0;font-size:13px;color:#78716c;">
+            Artwork page:
+            <a href="${editionUrl}" style="color:#1c1917;text-decoration:underline;">${editionUrl}</a>
+        </p>
+        ${explorerUrl ? `<p style="margin:0 0 16px 0;font-size:13px;color:#78716c;">Blockchain proof: <a href="${explorerUrl}" style="color:#1c1917;text-decoration:underline;">view on Basescan</a></p>` : ''}
+        <p style="margin:24px 0 0 0;font-size:13px;color:#78716c;">The certificate is permanently linked to your wallet. If you transfer the physical artwork one day, you can also transfer the certificate to its new owner.</p>
+        <p style="margin:16px 0 0 0;font-size:13px;color:#78716c;">See you soon,<br>Pierre — Mona Editions</p>`,
+    },
 };
 
 export async function sendClaimReceipt(
@@ -443,14 +558,8 @@ export async function sendClaimReceipt(
 ): Promise<void> {
     const { artworkTitle, artistName, editionId, txHash } = params;
     const tpl = claimReceipt[locale];
-    const editionUrl =
-        locale === 'fr'
-            ? `https://www.monaeditions.com/explore/edition/${editionId}`
-            : `https://www.monaeditions.com/de/explore/edition/${editionId}`;
-    const collectionUrl =
-        locale === 'fr'
-            ? 'https://www.monaeditions.com/collector'
-            : 'https://www.monaeditions.com/de/collector';
+    const editionUrl = localizedUrl(`/explore/edition/${editionId}`, locale);
+    const collectionUrl = localizedUrl('/collector', locale);
     const hasTxHash = typeof txHash === 'string' && txHash.length > 0;
     const explorerUrl = hasTxHash ? `https://basescan.org/tx/${txHash}` : null;
 

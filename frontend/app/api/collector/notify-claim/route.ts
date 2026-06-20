@@ -23,6 +23,7 @@ export const dynamic = 'force-dynamic';
 function detectLocale(req: NextRequest): Locale {
     const referer = req.headers.get('referer') || '';
     if (/\/de(\/|$)/.test(referer)) return 'de';
+    if (/\/en(\/|$)/.test(referer)) return 'en';
     return 'fr';
 }
 

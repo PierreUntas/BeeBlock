@@ -46,7 +46,7 @@ export default async function LegalPage({ file, title, accent }: Props) {
                     </h1>
                 </div>
 
-                {locale === 'de' && (
+                {(locale === 'de' || locale === 'en') && (
                     <div className="border-2 border-[#d97706] bg-[#fef3c7] p-5 mb-px">
                         <p className="text-[13px] font-medium text-[#92400e] mb-1">
                             {tLegal('deDisclaimer.title')}

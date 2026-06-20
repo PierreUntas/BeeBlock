@@ -19,7 +19,7 @@ export default function Navbar() {
     const { login, logout, authenticated, user, exportWallet } = usePrivy();
     const { address, chain } = useAccount();
 
-    const switchLocale = (newLocale: 'fr' | 'de') => {
+    const switchLocale = (newLocale: 'fr' | 'de' | 'en') => {
         router.replace(pathname, { locale: newLocale });
     };
 
@@ -164,6 +164,19 @@ export default function Navbar() {
                             aria-label="Deutsch"
                         >
                             DE
+                        </button>
+                        <span className="w-px h-3 bg-[#d6d0c8]" />
+                        <button
+                            type="button"
+                            onClick={() => switchLocale('en')}
+                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
+                                locale === 'en'
+                                    ? 'bg-[#1c1917] text-[#fafaf8]'
+                                    : 'text-[#78716c] hover:text-[#1c1917]'
+                            }`}
+                            aria-label="English"
+                        >
+                            EN
                         </button>
                     </div>
                     {authenticated ? (
@@ -340,6 +353,7 @@ function PanelLink({
     // Prepend the locale prefix only when it's a non-default locale.
     // Default locale ('fr') stays at the root for backward compatibility
     // with existing URLs (e.g. QR codes already deployed in the wild).
+    // Non-default locales (de, en, ...) get prefixed.
     const localizedHref =
         !locale || locale === 'fr' ? href : `/${locale}${href === '/' ? '' : href}`;
     return (
