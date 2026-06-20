@@ -15,8 +15,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
 import { sendClaimReceipt } from '@/lib/email';
+import type { Locale } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
+
+/** Reads the locale from the Referer URL (e.g. /de/collector/claim → 'de'). */
+function detectLocale(req: NextRequest): Locale {
+    const referer = req.headers.get('referer') || '';
+    if (/\/de(\/|$)/.test(referer)) return 'de';
+    return 'fr';
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -29,33 +37,29 @@ export async function POST(req: NextRequest) {
         const body = await req.json().catch(() => ({}));
         const editionId = Number(body?.editionId);
         const txHash = typeof body?.txHash === 'string' ? body.txHash : '';
+        const locale = detectLocale(req);
         const artworkTitle =
             typeof body?.artworkTitle === 'string' && body.artworkTitle.trim()
                 ? body.artworkTitle.trim()
-                : 'votre œuvre';
+                : (locale === 'de' ? 'Ihr Werk' : 'votre œuvre');
         const artistName =
             typeof body?.artistName === 'string' && body.artistName.trim()
                 ? body.artistName.trim()
-                : "l'artiste";
+                : (locale === 'de' ? 'dem Künstler' : "l'artiste");
 
         if (!Number.isFinite(editionId) || editionId < 0) {
             return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });
         }
-        // txHash may be empty in fallback path where the user's tx succeeded
-        // on-chain but the wallet provider didn't surface the hash. The email
-        // template degrades gracefully when it's absent.
 
-        await sendClaimReceipt(auth.email, {
-            artworkTitle,
-            artistName,
-            editionId,
-            txHash,
-        });
+        await sendClaimReceipt(
+            auth.email,
+            { artworkTitle, artistName, editionId, txHash },
+            locale,
+        );
 
         return NextResponse.json({ ok: true });
     } catch (err: any) {
         console.error('[notify-claim] failed:', err?.message);
-        // Don't surface as error to the user — claim already succeeded on-chain
         return NextResponse.json({ ok: false, error: err?.message }, { status: 200 });
     }
 }

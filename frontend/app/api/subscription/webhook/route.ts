@@ -100,19 +100,23 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session) {
     const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
     if (!wallet || !customerId) return;
 
-    await updateSubscription(normalizeWallet(wallet), {
+    const normalizedWallet = normalizeWallet(wallet);
+    await updateSubscription(normalizedWallet, {
         stripeCustomerId: customerId,
     });
 
     // Send an email — welcome for first subscription, renewal confirmation
-    // when triggered by the manual renewal flow.
+    // when triggered by the manual renewal flow. Use the locale stored in
+    // the DB (captured at checkout creation time).
     const email = session.customer_details?.email || session.customer_email;
     if (email) {
+        const dbSub = await findByStripeCustomerId(customerId);
+        const locale = dbSub?.preferredLocale ?? 'fr';
         const isRenewal = session.metadata?.renewal === 'true';
         if (isRenewal) {
-            await sendRenewalConfirmation(email, null);
+            await sendRenewalConfirmation(email, null, locale);
         } else {
-            await sendWelcomeAtelier(email);
+            await sendWelcomeAtelier(email, locale);
         }
     }
 }
@@ -153,7 +157,7 @@ async function handleSubscriptionUpsert(sub: Stripe.Subscription) {
     });
 
     if (willCancelAtPeriodEnd && dbSub.email) {
-        await sendSubscriptionCanceled(dbSub.email, periodEnd);
+        await sendSubscriptionCanceled(dbSub.email, periodEnd, dbSub.preferredLocale);
     }
 }
 
@@ -180,7 +184,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
     await updateSubscription(dbSub.walletAddress, { status: 'past_due' });
     // Notify the artist they should update their card.
     if (dbSub.email) {
-        await sendPaymentFailed(dbSub.email);
+        await sendPaymentFailed(dbSub.email, dbSub.preferredLocale);
     }
 }
 

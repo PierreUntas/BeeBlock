@@ -10,6 +10,7 @@ import { sql } from '@vercel/postgres';
 // ---- Domain types ----------------------------------------------------------
 
 export type Plan = 'free' | 'atelier';
+export type Locale = 'fr' | 'de';
 export type SubStatus =
     | 'none'         // never had a subscription
     | 'active'       // Atelier paid and current
@@ -29,6 +30,7 @@ export interface ArtistSubscription {
     cancelAtPeriodEnd: boolean;
     freeQuotaUsed: number;
     privacyAcceptedAt: Date | null;
+    preferredLocale: Locale;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -77,9 +79,32 @@ function rowToSubscription(row: any): ArtistSubscription | null {
         cancelAtPeriodEnd: row.cancel_at_period_end,
         freeQuotaUsed: row.free_quota_used,
         privacyAcceptedAt: row.privacy_accepted_at ? new Date(row.privacy_accepted_at) : null,
+        preferredLocale: (row.preferred_locale || 'fr') as Locale,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     };
+}
+
+/**
+ * Update the preferred locale for a wallet. Called by any authenticated API
+ * route to keep the user's email language in sync with their browsing locale.
+ * Idempotent and non-throwing — failures only log.
+ */
+export async function setPreferredLocale(
+    walletAddress: string,
+    locale: Locale,
+): Promise<void> {
+    const wallet = normalizeWallet(walletAddress);
+    try {
+        await sql`
+            UPDATE artist_subscriptions
+            SET preferred_locale = ${locale}
+            WHERE wallet_address = ${wallet}
+              AND preferred_locale IS DISTINCT FROM ${locale}
+        `;
+    } catch (e) {
+        console.warn('[setPreferredLocale] failed:', (e as Error).message);
+    }
 }
 
 /**

@@ -10,10 +10,21 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/auth';
-import { getOrCreateSubscription, updateSubscription } from '@/lib/db';
+import {
+    getOrCreateSubscription,
+    updateSubscription,
+    setPreferredLocale,
+    type Locale,
+} from '@/lib/db';
 import { APP_URL, STRIPE_PRICE_ID, getStripe } from '@/lib/stripe';
 
 export const dynamic = 'force-dynamic';
+
+function detectLocale(req: NextRequest): Locale {
+    const referer = req.headers.get('referer') || '';
+    if (/\/de(\/|$)/.test(referer)) return 'de';
+    return 'fr';
+}
 
 export async function POST(req: NextRequest) {
     try {
@@ -24,6 +35,8 @@ export async function POST(req: NextRequest) {
 
         const stripe = getStripe();
         const sub = await getOrCreateSubscription(auth.walletAddress, auth.email);
+        // Capture the user's current locale so the welcome email is in their language.
+        await setPreferredLocale(auth.walletAddress, detectLocale(req));
 
         // Reuse existing Stripe customer if any, otherwise create one
         let customerId = sub.stripeCustomerId;
