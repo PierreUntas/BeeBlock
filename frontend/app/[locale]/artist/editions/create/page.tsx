@@ -125,7 +125,7 @@ export default function CreateEditionPage() {
         if (value) {
             const count = parseInt(value);
             if (count > 100) {
-                showAlert('La taille de l\'édition ne peut pas dépasser 100 exemplaires pour limiter les coûts de gas.');
+                showAlert(t('alerts.maxEditionSize'));
                 setAmount('');
                 setSecretKeys([]);
                 setMerkleRoot('');
@@ -159,7 +159,10 @@ export default function CreateEditionPage() {
 
         const oversized = files.filter(f => f.size > 20 * 1024 * 1024);
         if (oversized.length > 0) {
-            await showAlert(`${oversized.length > 1 ? 'Ces fichiers dépassent' : 'Ce fichier dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
+            await showAlert(t('alerts.photosTooLargeError', {
+                count: oversized.length,
+                names: oversized.map(f => f.name).join(', '),
+            }));
             return;
         }
 
@@ -175,10 +178,10 @@ export default function CreateEditionPage() {
                 console.log('Images uploadées:', updated.images.length);
                 return updated;
             });
-            await showAlert(`${newCids.length} image${newCids.length > 1 ? 's uploadées' : ' uploadée'} sur IPFS !`);
+            await showAlert(t('alerts.imagesUploadedSuccess', { count: newCids.length }));
         } catch (error) {
             console.error('Error uploading image:', error);
-            await showAlert('Erreur lors de l\'upload de l\'image');
+            await showAlert(t('alerts.imageUploadError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, uploadingImage: false }));
             // Reset input so the same file can be re-selected if needed
@@ -212,10 +215,10 @@ export default function CreateEditionPage() {
             const blob = base64ToBlob(base64Data);
             const url = URL.createObjectURL(blob);
             downloadFile(url, `QR_Edition_Page_${createdEditionId}.png`);
-            await showAlert('QR Code de la page du lot téléchargé avec succès !');
+            await showAlert(t('alerts.qrPageDownloadedSuccess'));
         } catch (error) {
             console.error('Error generating edition page QR code:', error);
-            await showAlert('Erreur lors de la génération du QR code de la page');
+            await showAlert(t('alerts.qrPageError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -260,10 +263,10 @@ export default function CreateEditionPage() {
             XLSX.utils.book_append_sheet(wb, ws, 'Secret Keys');
             XLSX.writeFile(wb, `secret-keys-edition-${createdEditionId}-${Date.now()}.xlsx`);
             setHasDownloadedKeys(true); // Mark as downloaded
-            await showAlert(`Fichier Excel avec ${secretKeys.length} QR codes généré avec succès !`);
+            await showAlert(t('alerts.excelSuccess', { count: secretKeys.length }));
         } catch (error) {
             console.error('Error generating Excel with QR codes:', error);
-            await showAlert('Erreur lors de la génération du fichier Excel avec QR codes');
+            await showAlert(t('alerts.excelError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -290,10 +293,10 @@ export default function CreateEditionPage() {
             const url = URL.createObjectURL(content);
             downloadFile(url, `qr-codes-claim-edition-${createdEditionId}-${Date.now()}.zip`);
             setHasDownloadedKeys(true); // Mark as downloaded
-            await showAlert(`${secretKeys.length} QR codes téléchargés avec succès !`);
+            await showAlert(t('alerts.qrZipSuccess', { count: secretKeys.length }));
         } catch (error) {
             console.error('Error generating QR codes:', error);
-            await showAlert('Erreur lors de la génération des QR codes');
+            await showAlert(t('alerts.qrZipError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -328,7 +331,7 @@ export default function CreateEditionPage() {
                     if (approved) { await refetchApproval(); setLoadingStates(prev => ({ ...prev, approving: false })); return; }
                 } catch {}
             }
-            await showAlert('Erreur lors de l\'approbation. Veuillez réessayer.');
+            await showAlert(t('alerts.approveError'));
             setLoadingStates(prev => ({ ...prev, approving: false }));
         }
     };
@@ -336,15 +339,15 @@ export default function CreateEditionPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editionData.title || !amount || !merkleRoot) {
-            await showAlert('Veuillez remplir tous les champs obligatoires');
+            await showAlert(t('alerts.missingFields'));
             return;
         }
         if (editionData.images.length === 0) {
-            await showAlert('Vous devez ajouter au moins une image de l\'œuvre');
+            await showAlert(t('alerts.missingImage'));
             return;
         }
         if (!isApproved) {
-            await showAlert('Vous devez d\'abord approuver le contrat');
+            await showAlert(t('alerts.mustApproveFirst'));
             return;
         }
 
@@ -418,10 +421,10 @@ export default function CreateEditionPage() {
                 } catch (e) {
                     console.warn('Failed to increment subscription counter:', e);
                 }
-                await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
+                await showAlert(t('alerts.createSuccess', { id: editionId }));
             } else {
                 console.error('NewArtworkEdition event not found in logs');
-                await showAlert('Transaction confirmée mais impossible de récupérer l\'ID de l\'œuvre. Vérifiez la console.');
+                await showAlert(t('alerts.createSuccessNoId'));
                 setCreatedEditionId('confirmed');
             }
         } catch (error) {
@@ -445,12 +448,12 @@ export default function CreateEditionPage() {
                         } catch (e) {
                             console.warn('Failed to increment subscription counter:', e);
                         }
-                        await showAlert(`Œuvre créée avec succès ! ID : ${editionId}`);
+                        await showAlert(t('alerts.createSuccess', { id: editionId }));
                         return;
                     }
                 } catch {}
             }
-            await showAlert('Erreur lors de la création de l\'œuvre');
+            await showAlert(t('alerts.createError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false, creating: false }));
         }
@@ -461,7 +464,7 @@ export default function CreateEditionPage() {
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                     <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Vérification des permissions…</p>
+                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('checkingPermissions')}</p>
                 </div>
             </div>
         );
@@ -471,7 +474,7 @@ export default function CreateEditionPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
+                    <p className=" italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notConnected')}</p>
                 </div>
             </div>
         );
@@ -481,8 +484,8 @@ export default function CreateEditionPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
-                        Accès refusé : vous n'êtes pas autorisé comme artiste
+                    <p className=" italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">
+                        {t('notAuthorized')}
                     </p>
                 </div>
             </div>
@@ -495,17 +498,17 @@ export default function CreateEditionPage() {
 
                 {isAuthorized && !isApproved && (
                     <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <div className="flex items-center justify-between gap-4">
-                            <div>
-                                <p className="text-[14px] font-medium text-[#1c1917] mb-1">Action requise</p>
-                                <p className="text-[13px] font-light text-[#78716c]">Vous autorisez Mona Editions à transférer des certificats en votre nom pour faciliter le transfert de propriété en toute sécurité.</p>
+                        <div className="flex items-center justify-between gap-4 flex-wrap">
+                            <div className="flex-1 min-w-[200px]">
+                                <p className="text-[14px] font-medium text-[#1c1917] mb-1">{t('actionRequired')}</p>
+                                <p className="text-[13px] font-light text-[#78716c] leading-[1.6]">{t('approveBannerBody')}</p>
                             </div>
                             <button
                                 onClick={handleApprove}
                                 disabled={loadingStates.approving}
-                                className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 whitespace-nowrap"
+                                className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 whitespace-nowrap cursor-pointer"
                             >
-                                {loadingStates.approving ? 'En cours…' : 'Approuver'}
+                                {loadingStates.approving ? t('approveInProgress') : t('approveCta')}
                             </button>
                         </div>
                     </div>
@@ -513,16 +516,18 @@ export default function CreateEditionPage() {
 
                 {createdEditionId && (
                     <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917] mb-1">Œuvre créée avec succès !</p>
-                        <p className="text-[13px] font-light text-[#78716c]">ID de l'œuvre : <span className="font-mono">{createdEditionId}</span></p>
+                        <p className="text-[14px] font-medium text-[#1c1917] mb-1">{t('successBannerTitle')}</p>
+                        <p className="text-[13px] font-light text-[#78716c]">
+                            {t('successBannerIdLabel')} <span className="font-mono">{createdEditionId}</span>
+                        </p>
                         {!hasDownloadedKeys && (
                             <p className="text-[14px] font-medium text-[#dc2626] mt-3 leading-[1.7]">
-                                IMPORTANT : Vous devez télécharger les clés secrètes maintenant. Une fois cette page fermée, vous ne pourrez plus les récupérer !
+                                {t('successBannerWarning')}
                             </p>
                         )}
                         {hasDownloadedKeys && (
                             <p className="text-[13px] font-light text-[#16a34a] mt-2">
-                                Clés secrètes téléchargées avec succès
+                                {t('successBannerDownloaded')}
                             </p>
                         )}
                     </div>
@@ -732,38 +737,37 @@ export default function CreateEditionPage() {
                         {!hasDownloadedKeys && (
                             <div className="border-2 border-[#dc2626] bg-[#fef2f2] p-6 mb-px">
                                 <p className="text-[16px] font-bold text-[#dc2626] mb-3">
-                                    ACTION REQUISE - TÉLÉCHARGEMENT OBLIGATOIRE
+                                    {t('postCreation.urgentTitle')}
                                 </p>
                                 <p className="text-[14px] font-medium text-[#991b1b] mb-2 leading-[1.7]">
-                                    Les clés secrètes ne sont disponibles que maintenant. Si vous quittez cette page sans les télécharger, 
-                                    vos collectionneurs ne pourront JAMAIS réclamer leurs certificats.
+                                    {t('postCreation.urgentBody1')}
                                 </p>
                                 <p className="text-[13px] font-medium text-[#991b1b] leading-[1.7]">
-                                    Téléchargez au moins un des formats ci-dessous avant de quitter !
+                                    {t('postCreation.urgentBody2')}
                                 </p>
                             </div>
                         )}
                         <div className="border border-[#d6d0c8] bg-[#fafaf8] p-6">
                             <p className="text-[14px] font-medium text-[#1c1917] mb-2">
-                                QR Codes pour les collectionneurs
+                                {t('postCreation.qrSectionTitle')}
                             </p>
                             <p className="text-[13px] font-light text-[#78716c] mb-4 leading-[1.7]">
-                                Ces QR codes permettent aux collectionneurs de réclamer leur certificat numérique.
+                                {t('postCreation.qrSectionBody')}
                             </p>
                             <div className="space-y-2">
                                 <button
                                     onClick={downloadExcelWithQRCodes}
                                     disabled={loadingStates.generatingQR}
-                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                                 >
-                                    {loadingStates.generatingQR ? 'Génération en cours…' : 'Télécharger Excel avec QR codes'}
+                                    {loadingStates.generatingQR ? t('postCreation.generating') : t('postCreation.qrExcelCta')}
                                 </button>
                                 <button
                                     onClick={downloadQRCodesZip}
                                     disabled={loadingStates.generatingQR}
-                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                                 >
-                                    {loadingStates.generatingQR ? 'Génération en cours…' : 'Télécharger QR codes (ZIP)'}
+                                    {loadingStates.generatingQR ? t('postCreation.generating') : t('postCreation.qrZipCta')}
                                 </button>
                             </div>
                         </div>
@@ -771,17 +775,17 @@ export default function CreateEditionPage() {
                         {createdEditionId !== 'pending' && createdEditionId !== 'confirmed' && (
                             <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6">
                                 <p className="text-[14px] font-medium text-[#1c1917] mb-2">
-                                    QR Code pour l'étiquette de l'œuvre
+                                    {t('postCreation.editionQrSectionTitle')}
                                 </p>
                                 <p className="text-[13px] font-light text-[#78716c] mb-4 leading-[1.7]">
-                                    Ce QR code pointe vers la page de l'œuvre et peut être apposé au dos.
+                                    {t('postCreation.editionQrSectionBody')}
                                 </p>
                                 <button
                                     onClick={downloadEditionPageQRCode}
                                     disabled={loadingStates.generatingQR}
-                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                    className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                                 >
-                                    {loadingStates.generatingQR ? 'Génération…' : 'Télécharger QR Code Œuvre'}
+                                    {loadingStates.generatingQR ? t('postCreation.generating') : t('postCreation.editionQrCta')}
                                 </button>
                             </div>
                         )}

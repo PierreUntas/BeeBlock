@@ -77,7 +77,7 @@ export default function ArtistProfilePage() {
         const file = e.target.files?.[0];
         if (file) {
             if (file.size > MAX_FILE_SIZE) {
-                showAlert(`Le logo dépasse la limite de 20 Mo (${(file.size / 1024 / 1024).toFixed(1)} Mo).`);
+                showAlert(t('form.logoTooLargeError', { sizeMb: (file.size / 1024 / 1024).toFixed(1) }));
                 return;
             }
             setLogoFile(file);
@@ -92,7 +92,10 @@ export default function ArtistProfilePage() {
         if (files.length > 0) {
             const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
             if (oversized.length > 0) {
-                showAlert(`${oversized.length > 1 ? 'Ces photos dépassent' : 'Cette photo dépasse'} la limite de 20 Mo : ${oversized.map(f => f.name).join(', ')}`);
+                showAlert(t('form.photosTooLargeError', {
+                    count: oversized.length,
+                    names: oversized.map(f => f.name).join(', '),
+                }));
                 return;
             }
             setPhotoFiles(prev => [...prev, ...files]);
@@ -126,10 +129,10 @@ export default function ArtistProfilePage() {
             const blob = base64ToBlob(base64Data);
             const url = URL.createObjectURL(blob);
             downloadFile(url, `QR_Artist_${name.replace(/\s+/g, '_')}_${address.slice(0, 8)}.png`);
-            await showAlert('QR Code de votre page artiste téléchargé avec succès !');
+            await showAlert(t('form.qrSuccess'));
         } catch (error) {
             console.error('Error generating artist page QR code:', error);
-            await showAlert('Erreur lors de la génération du QR code');
+            await showAlert(t('form.qrError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, generatingQR: false }));
         }
@@ -302,7 +305,7 @@ export default function ArtistProfilePage() {
                     }
                 } catch {}
             }
-            await showAlert('Erreur lors de l\'enregistrement');
+            await showAlert(t('form.saveError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false }));
         }
@@ -466,7 +469,7 @@ export default function ArtistProfilePage() {
                                 <div className="mt-3">
                                     <img
                                         src={logoPreview}
-                                        alt="Aperçu du logo"
+                                        alt={t('form.logoPreviewAlt')}
                                         className="w-24 h-24 object-contain border border-[#d6d0c8] bg-[#f5f3ef]"
                                     />
                                 </div>
@@ -524,7 +527,7 @@ export default function ArtistProfilePage() {
                                 type="url"
                                 value={additionalData.website}
                                 onChange={(e) => setAdditionalData({...additionalData, website: e.target.value})}
-                                placeholder="https://mon-atelier.fr"
+                                placeholder={t('form.websitePlaceholderExample')}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                             />
                         </div>
@@ -539,7 +542,7 @@ export default function ArtistProfilePage() {
                                     ...additionalData,
                                     exhibitions: e.target.value.split('\n').filter(Boolean)
                                 })}
-                                placeholder={"2024 — Galerie Perrotin, Paris\n2023 — Art Basel, Bâle"}
+                                placeholder={t('form.exhibitionsExamplePlaceholder')}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
                             />
                             <p className="text-[11px] text-[#a8a29e] mt-1">{t('form.exhibitionsPlaceholder')}</p>
@@ -557,7 +560,7 @@ export default function ArtistProfilePage() {
                                         ...additionalData,
                                         socialMedia: { ...additionalData.socialMedia, instagram: e.target.value }
                                     })}
-                                    placeholder="Instagram (@handle)"
+                                    placeholder={t('form.instagramPlaceholder')}
                                     className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                 />
                                 <input
@@ -567,7 +570,7 @@ export default function ArtistProfilePage() {
                                         ...additionalData,
                                         socialMedia: { ...additionalData.socialMedia, twitter: e.target.value }
                                     })}
-                                    placeholder="Twitter / X (@handle)"
+                                    placeholder={t('form.twitterPlaceholder')}
                                     className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                 />
                                 <input
@@ -577,7 +580,7 @@ export default function ArtistProfilePage() {
                                         ...additionalData,
                                         socialMedia: { ...additionalData.socialMedia, facebook: e.target.value }
                                     })}
-                                    placeholder="Facebook (URL ou @page)"
+                                    placeholder={t('form.facebookPlaceholder')}
                                     className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
                                 />
                             </div>

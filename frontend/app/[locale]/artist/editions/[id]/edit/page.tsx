@@ -134,7 +134,7 @@ export default function EditEditionPage() {
             }
             setEditionData(prev => ({ ...prev, images: [...prev.images, ...newCids] }));
         } catch (error) {
-            await showAlert('Erreur lors de l\'upload de l\'image');
+            await showAlert(t('form.uploadError'));
         } finally {
             setLoadingStates(prev => ({ ...prev, uploadingImage: false }));
             if (imageInputRef.current) imageInputRef.current.value = '';
@@ -148,7 +148,7 @@ export default function EditEditionPage() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (editionData.images.length === 0) {
-            await showAlert('Vous devez conserver au moins une image de l\'œuvre');
+            await showAlert(t('form.minOneImageError'));
             return;
         }
 
@@ -185,12 +185,9 @@ export default function EditEditionPage() {
         } catch (error: any) {
             const rawMessage = error?.message || '';
             if (rawMessage.includes('MetadataLocked')) {
-                await showAlert(
-                    "Modification impossible : au moins un certificat de cette édition a quitté votre portefeuille. " +
-                    "Les métadonnées sont désormais immuables."
-                );
+                await showAlert(t('errorMetadataLocked'));
             } else {
-                await showAlert(`Erreur : ${rawMessage || 'Échec de la mise à jour'}`);
+                await showAlert(t('errorGeneric', { message: rawMessage || '—' }));
             }
         } finally {
             setLoadingStates(prev => ({ ...prev, uploading: false, saving: false }));
@@ -275,7 +272,7 @@ export default function EditEditionPage() {
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Titre de l'œuvre *
+                                {t('form.titleLabel')}
                             </label>
                             <input
                                 type="text"
@@ -288,7 +285,7 @@ export default function EditEditionPage() {
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Année de création *
+                                {t('form.yearLabel')}
                             </label>
                             <input
                                 type="number"
@@ -303,14 +300,14 @@ export default function EditEditionPage() {
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Catégorie
+                                {t('form.categoryLabel')}
                             </label>
                             <select
                                 value={editionData.category}
                                 onChange={(e) => setEditionData({ ...editionData, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
                             >
-                                <option value="">Sélectionner une catégorie</option>
+                                <option value="">{t('form.categoryPlaceholder')}</option>
                                 {CATEGORIES_EN.map(cat => (
                                     <option key={cat} value={cat}>{CATEGORIES_FR[cat]}</option>
                                 ))}
@@ -319,45 +316,45 @@ export default function EditEditionPage() {
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Technique
+                                {t('form.techniqueLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.technique}
                                 onChange={(e) => setEditionData({ ...editionData, technique: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex : Huile sur toile, Aquarelle, Bronze…"
+                                placeholder={t('form.techniquePlaceholder')}
                             />
                         </div>
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Dimensions
+                                {t('form.dimensionsLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.dimensions}
                                 onChange={(e) => setEditionData({ ...editionData, dimensions: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                placeholder="Ex: 100x150 cm"
+                                placeholder={t('form.dimensionsPlaceholder')}
                             />
                         </div>
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Description
+                                {t('form.descriptionLabel')}
                             </label>
                             <textarea
                                 value={editionData.description}
                                 onChange={(e) => setEditionData({ ...editionData, description: e.target.value })}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[120px]"
-                                placeholder="Décrivez votre œuvre…"
+                                placeholder={t('form.descriptionPlaceholder')}
                             />
                         </div>
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Images de l'œuvre *
+                                {t('form.imagesLabel')}
                             </label>
                             <input
                                 type="file"
@@ -373,7 +370,7 @@ export default function EditEditionPage() {
                                 disabled={loadingStates.uploadingImage}
                                 className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors disabled:opacity-50 text-left"
                             >
-                                {loadingStates.uploadingImage ? 'Upload en cours…' : 'Ajouter des images (upload IPFS)'}
+                                {loadingStates.uploadingImage ? t('form.uploadingImages') : t('form.addImagesCta')}
                             </button>
                             {editionData.images.length > 0 && (
                                 <ul className="mt-3 space-y-1">
@@ -405,7 +402,7 @@ export default function EditEditionPage() {
                                 href="/artist/editions"
                                 className="flex-1 text-center text-[12px] font-normal tracking-[0.06em] text-[#78716c] border border-[#d6d0c8] py-3.5 hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
                             >
-                                Annuler
+                                {t('cancel')}
                             </Link>
                             <button
                                 type="submit"
@@ -413,21 +410,46 @@ export default function EditEditionPage() {
                                 className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                             >
                                 {loadingStates.uploadingImage
-                                    ? 'Upload image…'
+                                    ? t('uploadingButton')
                                     : loadingStates.uploading
-                                        ? 'Upload IPFS…'
+                                        ? t('submitLoading')
                                         : loadingStates.saving
-                                            ? 'Enregistrement…'
-                                            : 'Enregistrer les modifications'}
+                                            ? t('savingTxButton')
+                                            : t('submit')}
                             </button>
                         </div>
                     </form>
                 </div>
 
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className="italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                {/* Trust footer */}
+                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                    <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
+                        <img
+                            src="/logo-mona.svg"
+                            alt="Mona Editions"
+                            className="w-24 h-12 object-contain opacity-60"
+                        />
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            {t('trustTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                            {t('trustBody')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
+                            <Link
+                                href="/artist/editions"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkEditions')}
+                            </Link>
+                            <span className="text-[#d6d0c8]">·</span>
+                            <Link
+                                href="/artist"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkDashboard')}
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
