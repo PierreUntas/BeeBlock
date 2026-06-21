@@ -39,14 +39,25 @@ export async function POST(req: NextRequest) {
         const editionId = Number(body?.editionId);
         const txHash = typeof body?.txHash === 'string' ? body.txHash : '';
         const locale = detectLocale(req);
+        // Fallback titles per locale when the client can't enrich the payload.
+        // Keep aligned with the email templates so the body reads naturally.
+        const fallbackTitle =
+            locale === 'de' ? 'Ihr Werk' :
+            locale === 'en' ? 'your work' :
+            'votre œuvre';
+        const fallbackArtist =
+            locale === 'de' ? 'dem Künstler' :
+            locale === 'en' ? 'the artist' :
+            "l'artiste";
+
         const artworkTitle =
             typeof body?.artworkTitle === 'string' && body.artworkTitle.trim()
                 ? body.artworkTitle.trim()
-                : (locale === 'de' ? 'Ihr Werk' : 'votre œuvre');
+                : fallbackTitle;
         const artistName =
             typeof body?.artistName === 'string' && body.artistName.trim()
                 ? body.artistName.trim()
-                : (locale === 'de' ? 'dem Künstler' : "l'artiste");
+                : fallbackArtist;
 
         if (!Number.isFinite(editionId) || editionId < 0) {
             return NextResponse.json({ error: 'invalid_payload' }, { status: 400 });

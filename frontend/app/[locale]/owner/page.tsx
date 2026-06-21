@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useAccount, useWriteContract, useReadContract } from 'wagmi';
+import { useTranslations } from 'next-intl';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
 
 export default function AdminPage() {
+    const t = useTranslations('Owner');
     const { address } = useAccount();
     const [newAdminAddress, setNewAdminAddress] = useState('');
     const [removeAdminAddress, setRemoveAdminAddress] = useState('');
@@ -66,7 +68,7 @@ export default function AdminPage() {
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
                     <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Vérification des permissions…</p>
+                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('checkingPermissions')}</p>
                 </div>
             </div>
         );
@@ -76,7 +78,7 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
+                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notConnected')}</p>
                 </div>
             </div>
         );
@@ -86,8 +88,8 @@ export default function AdminPage() {
         return (
             <div className="min-h-screen bg-[#f5f3ef]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
-                        Accès refusé : vous n'êtes pas le propriétaire du contrat
+                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">
+                        {t('notOwner')}
                     </p>
                 </div>
             </div>
@@ -100,23 +102,23 @@ export default function AdminPage() {
                 <div className="text-center mb-12">
                     <img
                         src="/logo-mona.svg"
-                        alt="Mona Editions Logo"
+                        alt={t('logoAlt')}
                         className="w-[100px] h-[100px] object-contain mx-auto mb-6"
                     />
                     <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Gestion des <em className="italic text-[#78716c]">Admins</em>
+                        {t('titleStart')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
                 </div>
 
                 {/* Add an admin */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Ajouter un <em className="italic text-[#78716c]">Admin</em>
+                        {t('addTitleStart')} <em className="italic text-[#78716c]">{t('addTitleAccent')}</em>
                     </h2>
                     <form onSubmit={handleAddAdmin} className="space-y-4">
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Adresse de l'admin
+                                {t('addressLabel')}
                             </label>
                             <input
                                 type="text"
@@ -131,9 +133,9 @@ export default function AdminPage() {
                         <button
                             type="submit"
                             disabled={isAddingAdmin}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                         >
-                            {isAddingAdmin ? 'Ajout en cours…' : 'Ajouter Admin'}
+                            {isAddingAdmin ? t('addingButton') : t('addButton')}
                         </button>
                     </form>
                 </div>
@@ -141,12 +143,12 @@ export default function AdminPage() {
                 {/* Remove an admin */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Retirer un <em className="italic text-[#78716c]">Admin</em>
+                        {t('removeTitleStart')} <em className="italic text-[#78716c]">{t('removeTitleAccent')}</em>
                     </h2>
                     <form onSubmit={handleRemoveAdmin} className="space-y-4">
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Adresse de l'admin
+                                {t('addressLabel')}
                             </label>
                             <input
                                 type="text"
@@ -161,9 +163,9 @@ export default function AdminPage() {
                         <button
                             type="submit"
                             disabled={isRemovingAdmin}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                         >
-                            {isRemovingAdmin ? 'Suppression en cours…' : 'Retirer Admin'}
+                            {isRemovingAdmin ? t('removingButton') : t('removeButton')}
                         </button>
                     </form>
                 </div>
@@ -171,12 +173,12 @@ export default function AdminPage() {
                 {/* Check admin status */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
                     <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Vérifier le <em className="italic text-[#78716c]">Statut Admin</em>
+                        {t('checkTitleStart')} <em className="italic text-[#78716c]">{t('checkTitleAccent')}</em>
                     </h2>
                     <div className="space-y-4">
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                Adresse à vérifier
+                                {t('checkAddressLabel')}
                             </label>
                             <input
                                 type="text"
@@ -189,7 +191,7 @@ export default function AdminPage() {
                         </div>
                         {checkAdminAddress && isAdminResult !== undefined && (
                             <div className="p-4 border border-[#d6d0c8] bg-[#f5f3ef] text-[14px] font-light text-[#1c1917]">
-                                {isAdminResult ? '✓ Cette adresse est admin' : '✗ Cette adresse n\'est pas admin'}
+                                {isAdminResult ? t('isAdminYes') : t('isAdminNo')}
                             </div>
                         )}
                     </div>

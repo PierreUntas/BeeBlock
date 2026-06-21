@@ -128,14 +128,14 @@ export default function ContactPage() {
 
                 <div className="mt-10 border border-[#d6d0c8] bg-[#fafaf8] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
-                        <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">Email direct</p>
+                        <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">{t('directEmailLabel')}</p>
                         <a href="mailto:pierre.untas@gmail.com" className="text-[14px] font-light text-[#1c1917] hover:text-[#78716c] transition-colors">
                             pierre.untas@gmail.com
                         </a>
                     </div>
                     <div className="w-px h-8 bg-[#d6d0c8] hidden md:block" />
                     <div>
-                        <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">Réseau</p>
+                        <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">{t('networkLabel')}</p>
                         <p className="text-[14px] font-light text-[#78716c]">{isProduction ? 'Base Mainnet · Ethereum L2' : 'Sepolia Testnet · Ethereum'}</p>
                     </div>
                 </div>

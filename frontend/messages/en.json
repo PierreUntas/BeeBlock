@@ -786,7 +786,31 @@
     "submit": "Send message",
     "submitLoading": "Sending…",
     "success": "Message sent. We'll reply within 48 hours.",
-    "error": "Send failed. Try again or write directly to pierre.untas@gmail.com."
+    "error": "Send failed. Try again or write directly to pierre.untas@gmail.com.",
+    "directEmailLabel": "Direct email",
+    "networkLabel": "Network"
+  },
+  "Owner": {
+    "checkingPermissions": "Checking permissions…",
+    "notConnected": "Please connect your wallet.",
+    "notOwner": "Access denied: you are not the contract owner.",
+    "logoAlt": "Mona Editions Logo",
+    "titleStart": "Admin",
+    "titleAccent": "management",
+    "addTitleStart": "Add an",
+    "addTitleAccent": "Admin",
+    "removeTitleStart": "Remove an",
+    "removeTitleAccent": "Admin",
+    "checkTitleStart": "Check admin",
+    "checkTitleAccent": "status",
+    "addressLabel": "Admin address",
+    "checkAddressLabel": "Address to check",
+    "addingButton": "Adding…",
+    "addButton": "Add Admin",
+    "removingButton": "Removing…",
+    "removeButton": "Remove Admin",
+    "isAdminYes": "✓ This address is admin",
+    "isAdminNo": "✗ This address is not admin"
   },
   "Legal": {
     "deDisclaimer": {

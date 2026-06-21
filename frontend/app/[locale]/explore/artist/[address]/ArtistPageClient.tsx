@@ -275,7 +275,7 @@ export default function ArtistPageClient() {
 
                     <div className="p-8">
                         {/* Name + logo + share */}
-                        <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[#e7e3dc]">
+                        <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[#e7e3dc] flex-wrap">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
                                     <div className="w-6 h-px bg-[#d6d0c8]" />

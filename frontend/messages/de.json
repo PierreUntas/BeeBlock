@@ -777,7 +777,31 @@
     "submit": "Nachricht senden",
     "submitLoading": "Wird gesendet…",
     "success": "Nachricht gesendet. Wir antworten innerhalb von 48 Stunden.",
-    "error": "Fehler beim Senden. Bitte versuchen Sie es erneut oder schreiben Sie direkt an pierre.untas@gmail.com."
+    "error": "Fehler beim Senden. Bitte versuchen Sie es erneut oder schreiben Sie direkt an pierre.untas@gmail.com.",
+    "directEmailLabel": "Direkt-E-Mail",
+    "networkLabel": "Netzwerk"
+  },
+  "Owner": {
+    "checkingPermissions": "Berechtigungen werden überprüft…",
+    "notConnected": "Bitte verbinden Sie Ihr Wallet.",
+    "notOwner": "Zugriff verweigert: Sie sind nicht der Eigentümer des Vertrags.",
+    "logoAlt": "Mona Editions Logo",
+    "titleStart": "Admin-",
+    "titleAccent": "Verwaltung",
+    "addTitleStart": "Admin",
+    "addTitleAccent": "hinzufügen",
+    "removeTitleStart": "Admin",
+    "removeTitleAccent": "entfernen",
+    "checkTitleStart": "Admin-Status",
+    "checkTitleAccent": "prüfen",
+    "addressLabel": "Admin-Adresse",
+    "checkAddressLabel": "Zu überprüfende Adresse",
+    "addingButton": "Wird hinzugefügt…",
+    "addButton": "Admin hinzufügen",
+    "removingButton": "Wird entfernt…",
+    "removeButton": "Admin entfernen",
+    "isAdminYes": "✓ Diese Adresse ist Admin",
+    "isAdminNo": "✗ Diese Adresse ist kein Admin"
   },
   "Legal": {
     "deDisclaimer": {
