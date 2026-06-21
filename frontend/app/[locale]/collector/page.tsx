@@ -1,61 +1,100 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/**
+ * /collector — the collector's "My collection" page.
+ *
+ * Lists every ERC-1155 the connected wallet currently holds, with the
+ * artwork's title, image, artist, and quick actions: view detail page,
+ * leave a verified review, transfer to another wallet, share publicly.
+ *
+ * Polish goals (vs. the older text-only list):
+ *  - Each owned token displays its IPFS image — the collector should
+ *    see their collection, not read about it.
+ *  - Horizontal layout (image + info side-by-side) reads like a
+ *    catalogue, not a form.
+ *  - Share button per token using the shared <ShareMenu/>.
+ *  - Empty state is engaging (collection icon + helpful CTA) instead
+ *    of an italic gray line.
+ *  - All copy is in the Collector i18n namespace — modals included.
+ *  - Trust footer matches the artist / claim / edition pages.
+ */
+
+import { useEffect, useState } from 'react';
 import { useAccount } from 'wagmi';
-import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
-import { getFromIPFSGateway, uploadToIPFS } from '@/app/utils/ipfs';
+import { useSendTransaction } from '@privy-io/react-auth';
+import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { parseAbiItem, encodeFunctionData, isAddress } from 'viem';
+
+import {
+    ARTWORK_REGISTRY_ADDRESS,
+    ARTWORK_REGISTRY_ABI,
+    ARTWORK_TOKENIZATION_ADDRESS,
+    ARTWORK_TOKENIZATION_ABI,
+} from '@/config/contracts';
 import { publicClient, getDeploymentBlock } from '@/lib/client';
-import { useSendTransaction } from '@privy-io/react-auth';
+import { getFromIPFSGateway, uploadToIPFS } from '@/app/utils/ipfs';
+import { ipfsToHttp } from '@/app/utils/file';
 import { useModal } from '@/app/ModalProvider';
-import { useTranslations } from 'next-intl';
+import ShareMenu from '@/components/shared/ShareMenu';
+
+// =========================================================================
+// Types
+// =========================================================================
 
 interface OwnedToken {
     tokenId: bigint;
     balance: bigint;
     title: string;
-    metadata: string;
-    artist: string;
+    metadataCid: string;
+    artist: `0x${string}`;
     artistName: string;
+    image: string | null;
 }
+
+// =========================================================================
+// Main component
+// =========================================================================
 
 export default function CollectorPage() {
     const t = useTranslations('Collector');
-    const tCommon = useTranslations('Common');
     const { address } = useAccount();
+    const { sendTransaction } = useSendTransaction();
+    const { showAlert } = useModal();
+
     const [ownedTokens, setOwnedTokens] = useState<OwnedToken[]>([]);
-    
     const [loadingStates, setLoadingStates] = useState({
         fetchingTokens: true,
         commenting: false,
         transferring: false,
     });
 
+    // Review modal
     const [selectedToken, setSelectedToken] = useState<bigint | null>(null);
     const [rating, setRating] = useState(5);
     const [comment, setComment] = useState('');
 
+    // Transfer modal
     const [transferToken, setTransferToken] = useState<OwnedToken | null>(null);
     const [transferStep, setTransferStep] = useState<'form' | 'confirm'>('form');
     const [recipientAddress, setRecipientAddress] = useState('');
     const [transferAmount, setTransferAmount] = useState(1);
     const [recipientError, setRecipientError] = useState('');
 
-    const { sendTransaction } = useSendTransaction();
-    const { showAlert } = useModal();
-
+    // -------- Load owned tokens on wallet change --------
     useEffect(() => {
         const fetchOwnedTokens = async () => {
-            if (!address || !publicClient) { setLoadingStates(prev => ({ ...prev, fetchingTokens: false })); return; }
-
+            if (!address || !publicClient) {
+                setLoadingStates(prev => ({ ...prev, fetchingTokens: false }));
+                return;
+            }
             setLoadingStates(prev => ({ ...prev, fetchingTokens: true }));
             try {
                 const logs = await publicClient.getLogs({
                     address: ARTWORK_REGISTRY_ADDRESS,
                     event: parseAbiItem('event NewArtworkEdition(address indexed artist, uint indexed editionId)'),
                     fromBlock: getDeploymentBlock(),
-                    toBlock: 'latest'
+                    toBlock: 'latest',
                 });
 
                 const tokensData: OwnedToken[] = [];
@@ -68,40 +107,44 @@ export default function CollectorPage() {
                         address: ARTWORK_TOKENIZATION_ADDRESS,
                         abi: ARTWORK_TOKENIZATION_ABI,
                         functionName: 'balanceOf',
-                        args: [address, tokenId]
+                        args: [address, tokenId],
                     }) as bigint;
 
                     if (balance > 0n) {
-                        const [[editionMetadata], artistData] = await Promise.all([
+                        const [editionRecord, artistData] = await Promise.all([
                             publicClient.readContract({
                                 address: ARTWORK_REGISTRY_ADDRESS,
                                 abi: ARTWORK_REGISTRY_ABI,
                                 functionName: 'getArtworkEdition',
-                                args: [tokenId]
-                            }) as Promise<any>,
+                                args: [tokenId],
+                            }) as Promise<readonly [string, string, boolean]>,
                             publicClient.readContract({
                                 address: ARTWORK_REGISTRY_ADDRESS,
                                 abi: ARTWORK_REGISTRY_ABI,
                                 functionName: 'getArtist',
-                                args: [artistAddress]
-                            }) as Promise<any>
+                                args: [artistAddress],
+                            }) as Promise<{ authorized: boolean; metadata: string }>,
                         ]);
 
-                        let artworkTitle = 'Œuvre sans titre';
-                        if (editionMetadata?.trim()) {
+                        const [editionMetadataCid] = editionRecord;
+
+                        let artworkTitle = t('untitled');
+                        let imageUrl: string | null = null;
+                        if (editionMetadataCid?.trim()) {
                             try {
-                                const editionIpfs = await getFromIPFSGateway(editionMetadata);
-                                artworkTitle = editionIpfs.title || 'Œuvre sans titre';
+                                const editionIpfs = await getFromIPFSGateway(editionMetadataCid);
+                                if (editionIpfs?.title) artworkTitle = editionIpfs.title;
+                                if (editionIpfs?.images?.[0]) imageUrl = ipfsToHttp(editionIpfs.images[0]);
                             } catch (e) {
                                 console.error('Error loading edition metadata:', e);
                             }
                         }
 
-                        let artistName = 'Artiste anonyme';
+                        let artistName = t('anonymousArtist');
                         if (artistData.metadata?.trim()) {
                             try {
                                 const artistIpfs = await getFromIPFSGateway(artistData.metadata);
-                                artistName = artistIpfs.name || 'Artiste anonyme';
+                                if (artistIpfs?.name) artistName = artistIpfs.name;
                             } catch (e) {
                                 console.error('Error loading artist metadata:', e);
                             }
@@ -111,9 +154,10 @@ export default function CollectorPage() {
                             tokenId,
                             balance,
                             title: artworkTitle,
-                            metadata: editionMetadata,
+                            metadataCid: editionMetadataCid,
                             artist: artistAddress,
-                            artistName: artistName
+                            artistName,
+                            image: imageUrl,
                         });
                     }
                 }
@@ -128,15 +172,18 @@ export default function CollectorPage() {
         };
 
         fetchOwnedTokens();
+    // t is stable per locale (next-intl).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [address]);
 
+    // -------- Review submission --------
     const handleAddComment = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedToken) return;
 
         const token = ownedTokens.find(t => t.tokenId === selectedToken);
         if (token && address && token.artist.toLowerCase() === address.toLowerCase()) {
-            await showAlert('Vous ne pouvez pas laisser un avis sur vos propres œuvres');
+            await showAlert(t('review.errorOwnArtwork'));
             return;
         }
 
@@ -144,7 +191,12 @@ export default function CollectorPage() {
         let transactionAttempted = false;
         let countBefore = 0n;
         try {
-            countBefore = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+            countBefore = await publicClient.readContract({
+                address: ARTWORK_REGISTRY_ADDRESS,
+                abi: ARTWORK_REGISTRY_ABI,
+                functionName: 'getEditionReviewsCount',
+                args: [selectedToken],
+            }) as bigint;
         } catch {}
         try {
             const reviewMetadata = { rating, comment };
@@ -153,36 +205,49 @@ export default function CollectorPage() {
             const data = encodeFunctionData({
                 abi: ARTWORK_REGISTRY_ABI,
                 functionName: 'addReview',
-                args: [selectedToken, rating, cid]
+                args: [selectedToken, rating, cid],
             });
 
             transactionAttempted = true;
-            const txResult = await sendTransaction({ to: ARTWORK_REGISTRY_ADDRESS, data }, { sponsor: true });
+            const txResult = await sendTransaction(
+                { to: ARTWORK_REGISTRY_ADDRESS, data },
+                { sponsor: true },
+            );
             await publicClient.waitForTransactionReceipt({ hash: txResult.hash });
 
-            await showAlert('Avis envoyé avec succès !');
+            await showAlert(t('review.success'));
             setSelectedToken(null);
             setRating(5);
             setComment('');
         } catch (error) {
             console.error('Error adding comment:', error);
+            // Privy may surface an error even when the tx succeeded. Re-check
+            // the on-chain review count before declaring failure.
             if (transactionAttempted) {
                 await new Promise(r => setTimeout(r, 5000));
                 try {
-                    const countAfter = await publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getEditionReviewsCount', args: [selectedToken] }) as bigint;
+                    const countAfter = await publicClient.readContract({
+                        address: ARTWORK_REGISTRY_ADDRESS,
+                        abi: ARTWORK_REGISTRY_ABI,
+                        functionName: 'getEditionReviewsCount',
+                        args: [selectedToken],
+                    }) as bigint;
                     if (countAfter > countBefore) {
-                        await showAlert('Avis envoyé avec succès !');
-                        setSelectedToken(null); setRating(5); setComment('');
+                        await showAlert(t('review.success'));
+                        setSelectedToken(null);
+                        setRating(5);
+                        setComment('');
                         return;
                     }
                 } catch {}
             }
-            await showAlert('Erreur lors de l\'ajout du commentaire');
+            await showAlert(t('review.errorGeneric'));
         } finally {
             setLoadingStates(prev => ({ ...prev, commenting: false }));
         }
     };
 
+    // -------- Transfer flow --------
     const openTransferModal = (token: OwnedToken) => {
         setTransferToken(token);
         setTransferStep('form');
@@ -190,28 +255,25 @@ export default function CollectorPage() {
         setTransferAmount(1);
         setRecipientError('');
     };
-
     const closeTransferModal = () => {
         setTransferToken(null);
         setTransferStep('form');
         setRecipientAddress('');
         setRecipientError('');
     };
-
     const handleTransferPreview = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isAddress(recipientAddress)) {
-            setRecipientError('Adresse invalide — elle doit commencer par 0x et faire 42 caractères');
+            setRecipientError(t('transfer.errorInvalidAddress'));
             return;
         }
         if (address && recipientAddress.toLowerCase() === address.toLowerCase()) {
-            setRecipientError('Vous ne pouvez pas transférer vers votre propre adresse');
+            setRecipientError(t('transfer.errorSelfTransfer'));
             return;
         }
         setRecipientError('');
         setTransferStep('confirm');
     };
-
     const handleTransferConfirm = async () => {
         if (!transferToken || !address) return;
         setLoadingStates(prev => ({ ...prev, transferring: true }));
@@ -219,24 +281,35 @@ export default function CollectorPage() {
             const data = encodeFunctionData({
                 abi: ARTWORK_TOKENIZATION_ABI,
                 functionName: 'safeTransferFrom',
-                args: [address, recipientAddress as `0x${string}`, transferToken.tokenId, BigInt(transferAmount), '0x'],
+                args: [
+                    address,
+                    recipientAddress as `0x${string}`,
+                    transferToken.tokenId,
+                    BigInt(transferAmount),
+                    '0x',
+                ],
             });
-            const tx = await sendTransaction({ to: ARTWORK_TOKENIZATION_ADDRESS, data }, { sponsor: true });
+            const tx = await sendTransaction(
+                { to: ARTWORK_TOKENIZATION_ADDRESS, data },
+                { sponsor: true },
+            );
             await publicClient.waitForTransactionReceipt({ hash: tx.hash });
 
-            setOwnedTokens(prev => {
-                const updated = prev.map(t => {
-                    if (t.tokenId !== transferToken.tokenId) return t;
-                    return { ...t, balance: t.balance - BigInt(transferAmount) };
-                }).filter(t => t.balance > 0n);
-                return updated;
-            });
+            setOwnedTokens(prev =>
+                prev
+                    .map(t =>
+                        t.tokenId !== transferToken.tokenId
+                            ? t
+                            : { ...t, balance: t.balance - BigInt(transferAmount) },
+                    )
+                    .filter(t => t.balance > 0n),
+            );
 
             closeTransferModal();
-            await showAlert(`Transfert effectué avec succès !`);
+            await showAlert(t('transfer.success'));
         } catch (error) {
             console.error('Transfer error:', error);
-            await showAlert('Erreur lors du transfert');
+            await showAlert(t('transfer.errorGeneric'));
         } finally {
             setLoadingStates(prev => ({ ...prev, transferring: false }));
         }
@@ -247,264 +320,486 @@ export default function CollectorPage() {
 
     return (
         <div className="min-h-screen bg-[#f5f3ef]">
-            <div className="max-w-[860px] mx-auto px-6 pt-28 pb-20">
-                <div className="text-center mb-12">
-                    <img 
-                        src="/logo-mona.svg" 
-                        alt="Mona Editions Logo" 
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
-                    />
-                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
+            <div className="max-w-4xl mx-auto px-6 pt-24 pb-20">
+
+                {/* ============================================================ */}
+                {/* HERO                                                         */}
+                {/* ============================================================ */}
+                <header className="text-center mb-12">
+                    <div className="flex items-center justify-center gap-3 mb-4">
+                        <div className="w-8 h-px bg-[#d6d0c8]" />
+                        <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#a8a29e]">
+                            Mona Editions
+                        </span>
+                        <div className="w-8 h-px bg-[#d6d0c8]" />
+                    </div>
+                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-3">
                         {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
                     </h1>
-                </div>
+                    {address && !loadingStates.fetchingTokens && (
+                        <p className="text-[13px] font-light text-[#78716c]">
+                            {t('heroSubtitle', { count: ownedTokens.length })}
+                        </p>
+                    )}
+                </header>
 
-                {loadingStates.fetchingTokens || !address ? (
-                    <div className="flex flex-col items-center justify-center py-12 gap-4">
+                {/* ============================================================ */}
+                {/* CONTENT                                                      */}
+                {/* ============================================================ */}
+                {!address ? (
+                    <EmptyShell message={t('notConnected')} />
+                ) : loadingStates.fetchingTokens ? (
+                    <div className="flex flex-col items-center justify-center py-16 gap-4">
                         <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
-                    </div>
-                ) : ownedTokens.length === 0 ? (
-                    <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-                        <p className=" italic text-[18px] text-[#78716c]">
-                            {t('empty')}
+                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
+                            {t('loading')}
                         </p>
                     </div>
+                ) : ownedTokens.length === 0 ? (
+                    <EmptyCollection />
                 ) : (
                     <div className="space-y-px">
-                        {ownedTokens.map((token) => (
-                            <div key={token.tokenId.toString()} className="border border-[#d6d0c8] bg-[#fafaf8] p-8">
-                                <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <h2 className=" text-[28px] font-normal text-[#1c1917] mb-2 leading-tight">
-                                            {token.title}
-                                        </h2>
-                                        <p className="text-[12px] font-light tracking-[0.06em] text-[#a8a29e] mb-1">
-                                            ŒUVRE #{token.tokenId.toString()}
-                                        </p>
-                                        <p className="text-[13px] font-light text-[#78716c] mb-2">
-                                            Par {token.artistName}
-                                        </p>
-                                        {isOwnArtist(token) && (
-                                            <p className="text-[11px] font-medium text-[#1c1917] bg-[#ede9e3] px-3 py-1.5 border border-[#d6d0c8] inline-block tracking-[0.06em]">
-                                                Votre création
-                                            </p>
-                                        )}
-                                    </div>
-                                    <div className="text-right flex-shrink-0 ml-6">
-                                        <p className="text-[11px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                            Exemplaires
-                                        </p>
-                                        <p className=" text-[36px] font-normal text-[#1c1917] leading-none">
-                                            {token.balance.toString()}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="flex gap-2">
-                                    <Link
-                                        href={`/explore/edition/${token.tokenId}`}
-                                        className="flex-1 bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200 text-center"
-                                    >
-                                        Voir les détails
-                                    </Link>
-                                    {!isOwnArtist(token) && (
-                                        <button
-                                            onClick={() => setSelectedToken(token.tokenId)}
-                                            className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
-                                        >
-                                            Laisser un avis
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => openTransferModal(token)}
-                                        className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
-                                    >
-                                        Transférer
-                                    </button>
-                                </div>
-                            </div>
+                        {ownedTokens.map(token => (
+                            <CollectionCard
+                                key={token.tokenId.toString()}
+                                token={token}
+                                isOwnArtist={!!isOwnArtist(token)}
+                                onReview={() => setSelectedToken(token.tokenId)}
+                                onTransfer={() => openTransferModal(token)}
+                            />
                         ))}
                     </div>
                 )}
 
-                {/* Review modal */}
-                {selectedToken && (
-                    <div className="fixed inset-0 bg-[#1c1917]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 max-w-md w-full">
-                            <h3 className=" text-[28px] font-normal text-[#1c1917] mb-6 leading-tight">
-                                Laisser un avis
-                            </h3>
-                            <form onSubmit={handleAddComment} className="space-y-5">
-                                <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                        Note
-                                    </label>
-                                    <select
-                                        value={rating}
-                                        onChange={(e) => setRating(Number(e.target.value))}
-                                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors cursor-pointer"
-                                        required
-                                    >
-                                        <option value={5}>⭐⭐⭐⭐⭐ 5 / 5</option>
-                                        <option value={4}>⭐⭐⭐⭐ 4 / 5</option>
-                                        <option value={3}>⭐⭐⭐ 3 / 5</option>
-                                        <option value={2}>⭐⭐ 2 / 5</option>
-                                        <option value={1}>⭐ 1 / 5</option>
-                                        <option value={0}>0 / 5</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                        Commentaire (5–500 caractères)
-                                    </label>
-                                    <textarea
-                                        value={comment}
-                                        onChange={(e) => setComment(e.target.value)}
-                                        minLength={5}
-                                        maxLength={500}
-                                        rows={4}
-                                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
-                                        required
-                                    />
-                                </div>
-                                <div className="flex gap-2 pt-2">
-                                    <button
-                                        type="button"
-                                        onClick={() => setSelectedToken(null)}
-                                        className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
-                                    >
-                                        Annuler
-                                    </button>
-                                    <button
-                                        type="submit"
-                                        disabled={loadingStates.commenting}
-                                        className="flex-1 bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
-                                    >
-                                        {loadingStates.commenting ? 'Envoi…' : 'Envoyer'}
-                                    </button>
-                                </div>
-                            </form>
+                {/* ============================================================ */}
+                {/* TRUST FOOTER                                                  */}
+                {/* ============================================================ */}
+                {address && (
+                    <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                        <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
+                            <img
+                                src="/logo-mona.svg"
+                                alt="Mona Editions"
+                                className="w-24 h-12 object-contain opacity-60"
+                            />
+                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                                {t('trustTitle')}
+                            </p>
+                            <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                                {t('trustBody')}
+                            </p>
+                            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
+                                <Link
+                                    href="/about"
+                                    className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                >
+                                    {t('trustLinkAbout')}
+                                </Link>
+                                <span className="text-[#d6d0c8]">·</span>
+                                <Link
+                                    href="/explore/editions"
+                                    className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                >
+                                    {t('trustLinkExplore')}
+                                </Link>
+                            </div>
                         </div>
                     </div>
                 )}
 
-                {/* Transfer modal */}
-                {transferToken && (
-                    <div className="fixed inset-0 bg-[#1c1917]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 max-w-md w-full">
+                {/* ============================================================ */}
+                {/* REVIEW MODAL                                                  */}
+                {/* ============================================================ */}
+                {selectedToken && (
+                    <Modal onClose={() => setSelectedToken(null)}>
+                        <h3 className="text-[24px] font-normal text-[#1c1917] mb-6 leading-tight">
+                            {t('review.title')}
+                        </h3>
+                        <form onSubmit={handleAddComment} className="space-y-5">
+                            <div>
+                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                    {t('review.ratingLabel')}
+                                </label>
+                                <select
+                                    value={rating}
+                                    onChange={e => setRating(Number(e.target.value))}
+                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors cursor-pointer"
+                                    required
+                                >
+                                    <option value={5}>{t('review.rating5')}</option>
+                                    <option value={4}>{t('review.rating4')}</option>
+                                    <option value={3}>{t('review.rating3')}</option>
+                                    <option value={2}>{t('review.rating2')}</option>
+                                    <option value={1}>{t('review.rating1')}</option>
+                                    <option value={0}>{t('review.rating0')}</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                    {t('review.commentLabel')}
+                                </label>
+                                <textarea
+                                    value={comment}
+                                    onChange={e => setComment(e.target.value)}
+                                    minLength={5}
+                                    maxLength={500}
+                                    rows={4}
+                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
+                                    required
+                                />
+                            </div>
+                            <div className="flex gap-2 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setSelectedToken(null)}
+                                    className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                                >
+                                    {t('review.cancel')}
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={loadingStates.commenting}
+                                    className="flex-1 bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                                >
+                                    {loadingStates.commenting ? t('review.submitting') : t('review.submit')}
+                                </button>
+                            </div>
+                        </form>
+                    </Modal>
+                )}
 
-                            {transferStep === 'form' ? (
-                                <>
-                                    <h3 className="text-[28px] font-normal text-[#1c1917] mb-1 leading-tight">
-                                        Transférer le certificat
-                                    </h3>
-                                    <p className="text-[13px] font-light text-[#78716c] mb-6">
-                                        {transferToken.title}
-                                    </p>
-                                    <form onSubmit={handleTransferPreview} className="space-y-5">
+                {/* ============================================================ */}
+                {/* TRANSFER MODAL                                                */}
+                {/* ============================================================ */}
+                {transferToken && (
+                    <Modal onClose={closeTransferModal}>
+                        {transferStep === 'form' ? (
+                            <>
+                                <h3 className="text-[24px] font-normal text-[#1c1917] mb-1 leading-tight">
+                                    {t('transfer.title')}
+                                </h3>
+                                <p className="text-[13px] font-light italic text-[#78716c] mb-6">
+                                    {transferToken.title}
+                                </p>
+                                <form onSubmit={handleTransferPreview} className="space-y-5">
+                                    <div>
+                                        <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                            {t('transfer.recipientLabel')}
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={recipientAddress}
+                                            onChange={e => {
+                                                setRecipientAddress(e.target.value);
+                                                setRecipientError('');
+                                            }}
+                                            placeholder={t('transfer.recipientPlaceholder')}
+                                            className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] font-mono text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                            required
+                                        />
+                                        {recipientError && (
+                                            <p className="mt-2 text-[12px] text-[#dc2626]">{recipientError}</p>
+                                        )}
+                                    </div>
+                                    {transferToken.balance > 1n && (
                                         <div>
-                                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                                Adresse du destinataire
+                                            <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                                {t('transfer.amountLabel')}
                                             </label>
                                             <input
-                                                type="text"
-                                                value={recipientAddress}
-                                                onChange={(e) => { setRecipientAddress(e.target.value); setRecipientError(''); }}
-                                                placeholder="0x..."
-                                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] font-mono text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                                type="number"
+                                                value={transferAmount}
+                                                onChange={e => setTransferAmount(Math.min(Number(e.target.value), Number(transferToken.balance)))}
+                                                min={1}
+                                                max={Number(transferToken.balance)}
+                                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
                                                 required
                                             />
-                                            {recipientError && (
-                                                <p className="mt-2 text-[12px] text-[#dc2626]">{recipientError}</p>
-                                            )}
+                                            <p className="mt-1.5 text-[11px] text-[#a8a29e]">
+                                                {t('transfer.youHave', { count: Number(transferToken.balance) })}
+                                            </p>
                                         </div>
-                                        {transferToken.balance > 1n && (
-                                            <div>
-                                                <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                                    Nombre d'exemplaires à transférer
-                                                </label>
-                                                <input
-                                                    type="number"
-                                                    value={transferAmount}
-                                                    onChange={(e) => setTransferAmount(Math.min(Number(e.target.value), Number(transferToken.balance)))}
-                                                    min={1}
-                                                    max={Number(transferToken.balance)}
-                                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
-                                                    required
-                                                />
-                                                <p className="mt-1.5 text-[11px] text-[#a8a29e]">
-                                                    Vous possédez {transferToken.balance.toString()} exemplaire{transferToken.balance > 1n ? 's' : ''}
-                                                </p>
-                                            </div>
-                                        )}
-                                        <div className="flex gap-2 pt-2">
-                                            <button
-                                                type="button"
-                                                onClick={closeTransferModal}
-                                                className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200"
-                                            >
-                                                Annuler
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
-                                            >
-                                                Prévisualiser le transfert →
-                                            </button>
-                                        </div>
-                                    </form>
-                                </>
-                            ) : (
-                                <>
-                                    <h3 className="text-[28px] font-normal text-[#1c1917] mb-6 leading-tight">
-                                        Confirmer le transfert
-                                    </h3>
-                                    <div className="border border-[#d6d0c8] bg-[#f5f3ef] p-5 space-y-3 mb-6">
-                                        <div>
-                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Œuvre</p>
-                                            <p className="text-[13px] text-[#1c1917]">{transferToken.title} <span className="text-[#a8a29e]">#{transferToken.tokenId.toString()}</span></p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Exemplaires</p>
-                                            <p className="text-[13px] text-[#1c1917]">{transferAmount}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">Destinataire</p>
-                                            <p className="text-[12px] font-mono text-[#1c1917] break-all">{recipientAddress}</p>
-                                        </div>
-                                    </div>
-                                    <p className="text-[12px] font-medium text-[#dc2626] mb-6">
-                                        Cette action est irréversible. Vérifiez bien l'adresse du destinataire avant de confirmer.
-                                    </p>
-                                    <div className="flex gap-2">
+                                    )}
+                                    <div className="flex gap-2 pt-2">
                                         <button
-                                            onClick={() => setTransferStep('form')}
-                                            disabled={loadingStates.transferring}
-                                            className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 disabled:opacity-50"
+                                            type="button"
+                                            onClick={closeTransferModal}
+                                            className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
                                         >
-                                            Modifier
+                                            {t('transfer.cancel')}
                                         </button>
                                         <button
-                                            onClick={handleTransferConfirm}
-                                            disabled={loadingStates.transferring}
-                                            className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                            type="submit"
+                                            className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200 cursor-pointer"
                                         >
-                                            {loadingStates.transferring ? 'Transfert en cours…' : 'Confirmer le transfert'}
+                                            {t('transfer.previewCta')} <span aria-hidden>→</span>
                                         </button>
                                     </div>
-                                </>
-                            )}
-                        </div>
-                    </div>
+                                </form>
+                            </>
+                        ) : (
+                            <>
+                                <h3 className="text-[24px] font-normal text-[#1c1917] mb-6 leading-tight">
+                                    {t('transfer.confirmTitle')}
+                                </h3>
+                                <div className="border border-[#d6d0c8] bg-[#f5f3ef] p-5 space-y-3 mb-6">
+                                    <div>
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                            {t('transfer.labelArtwork')}
+                                        </p>
+                                        <p className="text-[13px] text-[#1c1917]">
+                                            {transferToken.title} <span className="text-[#a8a29e]">#{transferToken.tokenId.toString()}</span>
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                            {t('transfer.labelCopies')}
+                                        </p>
+                                        <p className="text-[13px] text-[#1c1917]">{transferAmount}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                            {t('transfer.labelRecipient')}
+                                        </p>
+                                        <p className="text-[12px] font-mono text-[#1c1917] break-all">{recipientAddress}</p>
+                                    </div>
+                                </div>
+                                <p className="text-[12px] font-medium text-[#dc2626] mb-6 leading-[1.6]">
+                                    {t('transfer.warning')}
+                                </p>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => setTransferStep('form')}
+                                        disabled={loadingStates.transferring}
+                                        className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                    >
+                                        {t('transfer.back')}
+                                    </button>
+                                    <button
+                                        onClick={handleTransferConfirm}
+                                        disabled={loadingStates.transferring}
+                                        className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                                    >
+                                        {loadingStates.transferring ? t('transfer.submitting') : t('transfer.confirmCta')}
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </Modal>
                 )}
+            </div>
+        </div>
+    );
+}
 
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+// =========================================================================
+// CollectionCard — single owned token displayed as a horizontal card
+// =========================================================================
+
+function CollectionCard({
+    token,
+    isOwnArtist,
+    onReview,
+    onTransfer,
+}: {
+    token: OwnedToken;
+    isOwnArtist: boolean;
+    onReview: () => void;
+    onTransfer: () => void;
+}) {
+    const t = useTranslations('Collector');
+    const [pageUrl, setPageUrl] = useState('');
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setPageUrl(`${window.location.origin}/explore/edition/${token.tokenId.toString()}`);
+        }
+    }, [token.tokenId]);
+
+    return (
+        <article className="border border-[#d6d0c8] bg-[#fafaf8] overflow-hidden">
+            <div className="flex flex-col md:flex-row">
+                {/* ---- Image ---- */}
+                <Link
+                    href={`/explore/edition/${token.tokenId}`}
+                    className="block md:w-56 flex-shrink-0 bg-[#e7e3dc] aspect-[4/3] md:aspect-square overflow-hidden no-underline group"
+                    aria-label={token.title}
+                >
+                    {token.image ? (
+                        <img
+                            src={token.image}
+                            alt={token.title}
+                            className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-500"
+                        />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                            <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-25" />
+                        </div>
+                    )}
+                </Link>
+
+                {/* ---- Info + actions ---- */}
+                <div className="flex-1 p-6 flex flex-col">
+                    <div className="flex items-start justify-between gap-4 mb-3">
+                        <div className="min-w-0 flex-1">
+                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-1">
+                                {t('edition', { id: token.tokenId.toString() })}
+                            </p>
+                            <h2 className="text-[22px] font-normal text-[#1c1917] leading-tight mb-1">
+                                <Link
+                                    href={`/explore/edition/${token.tokenId}`}
+                                    className="hover:text-[#78716c] no-underline transition-colors"
+                                >
+                                    {token.title}
+                                </Link>
+                            </h2>
+                            <p className="text-[13px] italic text-[#78716c]">
+                                <Link
+                                    href={`/explore/artist/${token.artist}`}
+                                    className="hover:text-[#1c1917] no-underline transition-colors"
+                                >
+                                    {t('byArtist', { artist: token.artistName })}
+                                </Link>
+                            </p>
+                        </div>
+                        {isOwnArtist && (
+                            <span className="text-[10px] font-medium tracking-[0.1em] uppercase text-[#4a5240] border border-[#4a5240] px-2 py-0.5 flex-shrink-0">
+                                {t('ownCreationBadge')}
+                            </span>
+                        )}
+                    </div>
+
+                    <p className="text-[12px] font-light text-[#78716c] mb-5">
+                        {t('copiesLabel', { count: Number(token.balance) })}
+                    </p>
+
+                    {/* Actions */}
+                    <div className="mt-auto flex flex-wrap gap-2">
+                        <Link
+                            href={`/explore/edition/${token.tokenId}`}
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#1c1917] border border-[#1c1917] px-3.5 py-2 no-underline hover:bg-[#292524] transition-all duration-200"
+                        >
+                            {t('viewDetailsCta')}
+                        </Link>
+                        {!isOwnArtist && (
+                            <button
+                                type="button"
+                                onClick={onReview}
+                                className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                            >
+                                {t('reviewCta')}
+                            </button>
+                        )}
+                        <button
+                            type="button"
+                            onClick={onTransfer}
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                        >
+                            {t('transferCta')}
+                        </button>
+                        <ShareMenu
+                            data={{
+                                pageUrl,
+                                twitterText: t('shareSocialText', {
+                                    title: token.title,
+                                    artist: token.artistName,
+                                    url: pageUrl,
+                                }),
+                                emailSubject: t('shareEmailSubject', {
+                                    title: token.title,
+                                    artist: token.artistName,
+                                }),
+                                emailBody: t('shareEmailBody', {
+                                    title: token.title,
+                                    artist: token.artistName,
+                                    url: pageUrl,
+                                }),
+                            }}
+                            labels={{
+                                share: t('share'),
+                                shareCopied: t('shareCopied'),
+                                shareCopyLink: t('shareCopyLink'),
+                                shareTwitter: t('shareTwitter'),
+                                shareFacebook: t('shareFacebook'),
+                                shareEmail: t('shareEmail'),
+                            }}
+                        />
                     </div>
                 </div>
+            </div>
+        </article>
+    );
+}
+
+// =========================================================================
+// Empty states
+// =========================================================================
+
+function EmptyShell({ message }: { message: string }) {
+    return (
+        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
+            <p className="italic text-[16px] text-[#78716c] max-w-md mx-auto leading-[1.7]">
+                {message}
+            </p>
+        </div>
+    );
+}
+
+function EmptyCollection() {
+    const t = useTranslations('Collector');
+    return (
+        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
+            <img
+                src="/logo-mona.svg"
+                alt=""
+                className="w-16 h-16 object-contain mx-auto mb-6 opacity-30"
+            />
+            <h2 className="text-[24px] font-normal text-[#1c1917] mb-3">
+                {t('emptyTitle')}
+            </h2>
+            <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto leading-[1.7] mb-6">
+                {t('empty')}
+            </p>
+            <Link
+                href="/explore/editions"
+                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+            >
+                {t('emptyLinkExplore')} <span aria-hidden>→</span>
+            </Link>
+        </div>
+    );
+}
+
+// =========================================================================
+// Modal wrapper (shared between Review and Transfer)
+// =========================================================================
+
+function Modal({
+    children,
+    onClose,
+}: {
+    children: React.ReactNode;
+    onClose: () => void;
+}) {
+    // Close on Escape
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+        };
+        document.addEventListener('keydown', onKey);
+        return () => document.removeEventListener('keydown', onKey);
+    }, [onClose]);
+
+    return (
+        <div
+            className="fixed inset-0 bg-[#1c1917]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <div
+                className="border border-[#d6d0c8] bg-[#fafaf8] p-8 max-w-md w-full"
+                onClick={e => e.stopPropagation()}
+            >
+                {children}
             </div>
         </div>
     );

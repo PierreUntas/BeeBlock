@@ -6,9 +6,9 @@ import { useAccount, useReadContract } from 'wagmi';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI, ARTWORK_TOKENIZATION_ADDRESS, ARTWORK_TOKENIZATION_ABI } from '@/config/contracts';
 import { useSendTransaction, usePrivy } from '@privy-io/react-auth';
 import { useModal } from '@/app/ModalProvider';
-import { encodeFunctionData, keccak256 } from 'viem';
+import { encodeFunctionData, keccak256, parseAbiItem } from 'viem';
 import { MerkleTree } from 'merkletreejs';
-import { publicClient } from '@/lib/client';
+import { publicClient, getDeploymentBlock } from '@/lib/client';
 import { BASE_URL } from '@/config/constants';
 import { downloadFile } from '@/app/utils/file';
 
@@ -57,6 +57,19 @@ export default function AdminPage() {
     const [artists, setArtists] = useState<ArtistRow[]>([]);
     const [isLoadingArtists, setIsLoadingArtists] = useState(false);
     const [artistsSearch, setArtistsSearch] = useState('');
+
+    // On-chain enrichment per artist wallet — claims, unique collectors,
+    // last activity timestamp. Built from a single TransferSingle log scan
+    // covering the whole tokenization contract, then grouped client-side.
+    interface PilotStats {
+        totalClaims: number;
+        recentClaims: number;       // last 7 days
+        uniqueCollectors: number;
+        lastActivityDate: Date | null;
+    }
+    const [pilotStatsMap, setPilotStatsMap] = useState<Map<string, PilotStats>>(new Map());
+    const [isLoadingPilotStats, setIsLoadingPilotStats] = useState(false);
+    const [pilotFilter, setPilotFilter] = useState<'all' | 'attention' | 'active' | 'dormant'>('all');
 
     const router = useRouter();
     const { sendTransaction } = useSendTransaction();
@@ -194,6 +207,146 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
         if (isAdmin) loadArtists();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isAdmin]);
+
+    /**
+     * Aggregate on-chain claim activity per artist wallet. Done in one
+     * RPC call by scanning all TransferSingle events from the tokenization
+     * contract since deployment. Each event with from=artist represents
+     * a single claim by a collector.
+     *
+     * Used to enrich the admin pilot dashboard with "real" activity data
+     * the off-chain DB doesn't have (the DB tracks edition creations, not
+     * collector claims).
+     */
+    const loadPilotStats = async () => {
+        if (!publicClient) return;
+        setIsLoadingPilotStats(true);
+        try {
+            const [transferLogs, latestBlock] = await Promise.all([
+                publicClient.getLogs({
+                    address: ARTWORK_TOKENIZATION_ADDRESS,
+                    event: parseAbiItem('event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)'),
+                    fromBlock: getDeploymentBlock(),
+                    toBlock: 'latest',
+                }),
+                publicClient.getBlock({ blockTag: 'latest' }),
+            ]);
+
+            const latestBlockNum = latestBlock.number;
+            const latestTs = Number(latestBlock.timestamp);
+            // Base average block time ≈ 2s. Close enough for relative
+            // "X days ago" labels; not used for legal/financial calc.
+            const BLOCK_SECONDS = 2;
+            const SEVEN_DAYS = 7 * 86400;
+            const cutoff7d = latestTs - SEVEN_DAYS;
+
+            type Accum = {
+                totalClaims: number;
+                recentClaims: number;
+                uniqueCollectors: Set<string>;
+                lastBlock: bigint;
+            };
+            const accum = new Map<string, Accum>();
+
+            for (const log of transferLogs) {
+                const from = (log.args.from as string | undefined)?.toLowerCase();
+                const to = (log.args.to as string | undefined)?.toLowerCase();
+                const value = Number(log.args.value ?? 0n);
+                const blockNum = log.blockNumber;
+                if (!from || !to || from === to) continue;
+                // Skip mints (from == zero address) — those are the artist
+                // receiving their own initial supply, not collector claims.
+                if (from === '0x0000000000000000000000000000000000000000') continue;
+
+                const existing: Accum = accum.get(from) ?? {
+                    totalClaims: 0,
+                    recentClaims: 0,
+                    uniqueCollectors: new Set<string>(),
+                    lastBlock: 0n,
+                };
+                existing.totalClaims += value;
+                existing.uniqueCollectors.add(to);
+                if (blockNum !== null) {
+                    if (blockNum > existing.lastBlock) existing.lastBlock = blockNum;
+                    const approxTs = latestTs - Number(latestBlockNum - blockNum) * BLOCK_SECONDS;
+                    if (approxTs >= cutoff7d) existing.recentClaims += value;
+                }
+                accum.set(from, existing);
+            }
+
+            const finalMap = new Map<string, PilotStats>();
+            for (const [wallet, a] of accum.entries()) {
+                let lastActivityDate: Date | null = null;
+                if (a.lastBlock > 0n) {
+                    const approxTs = latestTs - Number(latestBlockNum - a.lastBlock) * BLOCK_SECONDS;
+                    lastActivityDate = new Date(approxTs * 1000);
+                }
+                finalMap.set(wallet, {
+                    totalClaims: a.totalClaims,
+                    recentClaims: a.recentClaims,
+                    uniqueCollectors: a.uniqueCollectors.size,
+                    lastActivityDate,
+                });
+            }
+
+            setPilotStatsMap(finalMap);
+        } catch (e) {
+            console.error('Failed to load pilot stats:', e);
+        } finally {
+            setIsLoadingPilotStats(false);
+        }
+    };
+
+    // Trigger on-chain enrichment once artists are loaded
+    useEffect(() => {
+        if (artists.length > 0) loadPilotStats();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [artists.length]);
+
+    /**
+     * Compute the health bucket for an artist row based on subscription
+     * state + recent on-chain activity. Used both to render the row badge
+     * and to bucket-filter the list.
+     */
+    type HealthBucket = 'attention' | 'active' | 'dormant';
+    const computeHealth = (a: ArtistRow, stats: PilotStats | undefined): HealthBucket => {
+        // Past-due payment is always "attention" regardless of activity.
+        if (a.status === 'past_due' || a.status === 'incomplete') return 'attention';
+
+        // Atelier subscribers with no editions after 14 days → attention.
+        const isAtelier = a.plan === 'atelier' && a.status === 'active';
+        const ageMs = Date.now() - new Date(a.createdAt).getTime();
+        const ageDays = ageMs / (24 * 3600 * 1000);
+        if (isAtelier && a.editionsCount === 0 && ageDays > 14) return 'attention';
+
+        // Recent on-chain activity = active.
+        const last = stats?.lastActivityDate;
+        if (last) {
+            const sinceMs = Date.now() - last.getTime();
+            const sinceDays = sinceMs / (24 * 3600 * 1000);
+            if (sinceDays < 30) return 'active';
+            return 'dormant';
+        }
+
+        // No on-chain activity yet. Recent signup → active; old → dormant.
+        if (ageDays < 7) return 'active';
+        if (ageDays > 30) return 'dormant';
+        return 'active';
+    };
+
+    /** Format a date as "il y a 2j" / "il y a 3h" / "à l'instant". */
+    const formatRelative = (date: Date | null): string => {
+        if (!date) return '—';
+        const sec = Math.max(0, (Date.now() - date.getTime()) / 1000);
+        if (sec < 60) return "à l'instant";
+        if (sec < 3600) return `il y a ${Math.floor(sec / 60)} min`;
+        if (sec < 86400) return `il y a ${Math.floor(sec / 3600)} h`;
+        const days = Math.floor(sec / 86400);
+        if (days < 30) return `il y a ${days} j`;
+        const months = Math.floor(days / 30);
+        if (months < 12) return `il y a ${months} mois`;
+        return `il y a ${Math.floor(months / 12)} an${months >= 24 ? 's' : ''}`;
+    };
 
     const handleGrantAtelier = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -706,117 +859,228 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     </div>
                 </div>
 
-                {/* Artists dashboard */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <div className="flex items-start justify-between mb-5 gap-4 flex-wrap">
-                        <div>
-                            <h2 className="text-[22px] font-normal text-[#1c1917]">
-                                Artistes <em className="italic text-[#78716c]">inscrits</em>
-                            </h2>
-                            <p className="text-[13px] font-light text-[#78716c] mt-1">
-                                {artists.length} artiste{artists.length > 1 ? 's' : ''} en base — toutes plateformes confondues
-                            </p>
-                        </div>
-                        <button
-                            type="button"
-                            onClick={loadArtists}
-                            disabled={isLoadingArtists}
-                            className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] border border-[#d6d0c8] hover:border-[#1c1917] px-4 py-2 transition-all"
-                        >
-                            {isLoadingArtists ? 'Chargement…' : '↻ Rafraîchir'}
-                        </button>
-                    </div>
+                {/* =========================================================
+                    OPS PILOT DASHBOARD — at-a-glance health of each artist,
+                    backed by both off-chain DB (subscription, profile) and
+                    on-chain enrichment (claims, collectors, last activity).
+                ========================================================= */}
+                {(() => {
+                    // -------- Aggregate stats for top cards --------
+                    const totalArtists = artists.length;
+                    const totalEditions = artists.reduce((sum, a) => sum + a.editionsCount, 0);
+                    let totalClaims = 0;
+                    let recentClaims = 0;
+                    let atelierCount = 0;
+                    let attentionCount = 0;
+                    const enriched = artists.map(a => {
+                        const stats = pilotStatsMap.get(a.walletAddress.toLowerCase());
+                        if (stats) {
+                            totalClaims += stats.totalClaims;
+                            recentClaims += stats.recentClaims;
+                        }
+                        if (a.plan === 'atelier' && a.status === 'active') atelierCount++;
+                        const health = computeHealth(a, stats);
+                        if (health === 'attention') attentionCount++;
+                        return { artist: a, stats, health };
+                    });
 
-                    <input
-                        type="text"
-                        value={artistsSearch}
-                        onChange={(e) => setArtistsSearch(e.target.value)}
-                        placeholder="Filtrer par adresse, email…"
-                        className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors mb-5"
-                    />
+                    const filtered = enriched.filter(({ artist: a, health }) => {
+                        if (pilotFilter !== 'all' && health !== pilotFilter) return false;
+                        if (!artistsSearch) return true;
+                        const q = artistsSearch.toLowerCase();
+                        return (
+                            a.walletAddress.toLowerCase().includes(q) ||
+                            (a.email?.toLowerCase().includes(q) ?? false)
+                        );
+                    });
 
-                    {artists.length === 0 && !isLoadingArtists && (
-                        <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
-                            Aucun artiste inscrit pour l'instant.
-                        </p>
-                    )}
+                    // Sort: attention first, then by last activity desc, then by signup desc
+                    filtered.sort((a, b) => {
+                        if (a.health === 'attention' && b.health !== 'attention') return -1;
+                        if (b.health === 'attention' && a.health !== 'attention') return 1;
+                        const aLast = a.stats?.lastActivityDate?.getTime() ?? 0;
+                        const bLast = b.stats?.lastActivityDate?.getTime() ?? 0;
+                        if (aLast !== bLast) return bLast - aLast;
+                        return new Date(b.artist.createdAt).getTime() - new Date(a.artist.createdAt).getTime();
+                    });
 
-                    <div className="space-y-px">
-                        {artists
-                            .filter((a) => {
-                                if (!artistsSearch) return true;
-                                const q = artistsSearch.toLowerCase();
-                                return (
-                                    a.walletAddress.toLowerCase().includes(q) ||
-                                    (a.email?.toLowerCase().includes(q) ?? false)
-                                );
-                            })
-                            .map((a) => {
-                                const isAtelierActive = a.plan === 'atelier' && a.status === 'active';
-                                const isPastDue = a.status === 'past_due';
-                                const isCanceled = a.status === 'canceled';
-                                const isComp = isAtelierActive && !a.hasStripeSubscription;
-                                let planLabel = 'Découverte';
-                                let planClass = 'text-[#78716c] border-[#d6d0c8]';
-                                if (isAtelierActive) {
-                                    planLabel = isComp ? 'Atelier (offert)' : 'Atelier';
-                                    planClass = 'text-[#1c1917] border-[#1c1917]';
-                                }
-                                if (isPastDue) {
-                                    planLabel = 'Atelier (paiement échoué)';
-                                    planClass = 'text-[#991b1b] border-[#dc2626]';
-                                }
-                                if (isCanceled) {
-                                    planLabel = 'Atelier (annulé)';
-                                    planClass = 'text-[#a8a29e] border-[#d6d0c8]';
-                                }
+                    return (
+                        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                            <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
+                                <div>
+                                    <h2 className="text-[22px] font-normal text-[#1c1917]">
+                                        Pilotes <em className="italic text-[#78716c]">en cours</em>
+                                    </h2>
+                                    <p className="text-[13px] font-light text-[#78716c] mt-1">
+                                        Vue ops : santé, activité, abonnements
+                                    </p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => { loadArtists(); loadPilotStats(); }}
+                                    disabled={isLoadingArtists || isLoadingPilotStats}
+                                    className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] border border-[#d6d0c8] hover:border-[#1c1917] px-4 py-2 transition-all disabled:opacity-50"
+                                >
+                                    {(isLoadingArtists || isLoadingPilotStats) ? 'Chargement…' : '↻ Rafraîchir'}
+                                </button>
+                            </div>
 
-                                return (
-                                    <div
-                                        key={a.walletAddress}
-                                        className="border border-[#d6d0c8] bg-[#f5f3ef] p-4 grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3"
+                            {/* Top stats cards */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#e7e3dc] border border-[#e7e3dc] mb-6">
+                                <PilotStatCard label="Pilotes" value={totalArtists} />
+                                <PilotStatCard label="Éditions totales" value={totalEditions} />
+                                <PilotStatCard label="Claims (vie)" value={totalClaims} subtle={isLoadingPilotStats ? '…' : `${recentClaims} sur 7 j`} />
+                                <PilotStatCard label="À surveiller" value={attentionCount} accent={attentionCount > 0 ? 'red' : 'neutral'} />
+                            </div>
+
+                            {/* Filters */}
+                            <div className="flex items-center gap-2 mb-4 flex-wrap">
+                                {([
+                                    { key: 'all', label: `Tous (${enriched.length})` },
+                                    { key: 'attention', label: `À surveiller (${enriched.filter(e => e.health === 'attention').length})` },
+                                    { key: 'active', label: `Actifs (${enriched.filter(e => e.health === 'active').length})` },
+                                    { key: 'dormant', label: `Dormants (${enriched.filter(e => e.health === 'dormant').length})` },
+                                ] as const).map(opt => (
+                                    <button
+                                        key={opt.key}
+                                        type="button"
+                                        onClick={() => setPilotFilter(opt.key)}
+                                        className={`text-[11px] font-medium tracking-[0.06em] uppercase border px-3 py-1.5 transition-all ${
+                                            pilotFilter === opt.key
+                                                ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
+                                                : 'text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
+                                        }`}
                                     >
-                                        <div className="space-y-1.5 min-w-0">
-                                            <div className="flex items-center gap-2 flex-wrap">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setCompArtistAddress(a.walletAddress)}
-                                                    className="font-mono text-[12px] text-[#1c1917] hover:underline cursor-pointer text-left"
-                                                    title="Copier dans le champ de comp"
-                                                >
-                                                    {a.walletAddress.slice(0, 10)}…{a.walletAddress.slice(-6)}
-                                                </button>
-                                                <span className={`inline-block text-[10px] font-medium tracking-[0.06em] uppercase border px-2 py-0.5 ${planClass}`}>
-                                                    {planLabel}
-                                                </span>
-                                                {a.privacyAcceptedAt && (
-                                                    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#4a5240] border border-[#4a5240] px-2 py-0.5">
-                                                        RGPD ✓
-                                                    </span>
-                                                )}
-                                                {!a.privacyAcceptedAt && (
-                                                    <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-2 py-0.5">
-                                                        RGPD —
-                                                    </span>
-                                                )}
+                                        {opt.label}
+                                    </button>
+                                ))}
+                            </div>
+
+                            <input
+                                type="text"
+                                value={artistsSearch}
+                                onChange={(e) => setArtistsSearch(e.target.value)}
+                                placeholder="Filtrer par adresse, email…"
+                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors mb-5"
+                            />
+
+                            {artists.length === 0 && !isLoadingArtists && (
+                                <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
+                                    Aucun pilote inscrit pour l'instant.
+                                </p>
+                            )}
+
+                            {filtered.length === 0 && artists.length > 0 && (
+                                <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
+                                    Aucun pilote ne correspond à ce filtre.
+                                </p>
+                            )}
+
+                            <div className="space-y-px">
+                                {filtered.map(({ artist: a, stats, health }) => {
+                                    const isAtelierActive = a.plan === 'atelier' && a.status === 'active';
+                                    const isPastDue = a.status === 'past_due';
+                                    const isCanceled = a.status === 'canceled';
+                                    const isComp = isAtelierActive && !a.hasStripeSubscription;
+                                    let planLabel = 'Découverte';
+                                    let planClass = 'text-[#78716c] border-[#d6d0c8]';
+                                    if (isAtelierActive) {
+                                        planLabel = isComp ? 'Atelier (offert)' : 'Atelier';
+                                        planClass = 'text-[#1c1917] border-[#1c1917]';
+                                    }
+                                    if (isPastDue) {
+                                        planLabel = 'Atelier (paiement échoué)';
+                                        planClass = 'text-[#991b1b] border-[#dc2626]';
+                                    }
+                                    if (isCanceled) {
+                                        planLabel = 'Atelier (annulé)';
+                                        planClass = 'text-[#a8a29e] border-[#d6d0c8]';
+                                    }
+
+                                    const healthDot = health === 'attention' ? 'bg-[#dc2626]' : health === 'active' ? 'bg-[#4a5240]' : 'bg-[#d6d0c8]';
+                                    const healthLabel = health === 'attention' ? 'À surveiller' : health === 'active' ? 'Actif' : 'Dormant';
+
+                                    return (
+                                        <div
+                                            key={a.walletAddress}
+                                            className="border border-[#d6d0c8] bg-[#f5f3ef] p-4"
+                                        >
+                                            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
+                                                <div className="space-y-1.5 min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap">
+                                                        <span
+                                                            className={`inline-block w-2 h-2 rounded-full ${healthDot}`}
+                                                            title={healthLabel}
+                                                            aria-label={healthLabel}
+                                                        />
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => setCompArtistAddress(a.walletAddress)}
+                                                            className="font-mono text-[12px] text-[#1c1917] hover:underline cursor-pointer text-left"
+                                                            title="Copier dans le champ de comp"
+                                                        >
+                                                            {a.walletAddress.slice(0, 10)}…{a.walletAddress.slice(-6)}
+                                                        </button>
+                                                        <span className={`inline-block text-[10px] font-medium tracking-[0.06em] uppercase border px-2 py-0.5 ${planClass}`}>
+                                                            {planLabel}
+                                                        </span>
+                                                        {a.privacyAcceptedAt ? (
+                                                            <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#4a5240] border border-[#4a5240] px-2 py-0.5">
+                                                                RGPD ✓
+                                                            </span>
+                                                        ) : (
+                                                            <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-2 py-0.5">
+                                                                RGPD —
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-[12px] font-light text-[#78716c] truncate">
+                                                        {a.email || <em className="italic">email non renseigné</em>}
+                                                    </p>
+                                                    {/* On-chain activity line */}
+                                                    <p className="text-[11px] font-light text-[#78716c]">
+                                                        <span className="text-[#1c1917] font-medium">{a.editionsCount}</span> éd ·{' '}
+                                                        <span className="text-[#1c1917] font-medium">{stats?.totalClaims ?? (isLoadingPilotStats ? '…' : '0')}</span> claims ·{' '}
+                                                        <span className="text-[#1c1917] font-medium">{stats?.uniqueCollectors ?? (isLoadingPilotStats ? '…' : '0')}</span> collect.
+                                                        {stats?.lastActivityDate && (
+                                                            <> · dernier claim {formatRelative(stats.lastActivityDate)}</>
+                                                        )}
+                                                    </p>
+                                                    {/* Quota / period info */}
+                                                    <p className="text-[10px] font-light text-[#a8a29e]">
+                                                        {a.plan === 'free' && `Quota Découverte : ${a.freeQuotaUsed}/5 — `}
+                                                        {isAtelierActive && a.currentPeriodEnd && `Expire le ${new Date(a.currentPeriodEnd).toLocaleDateString('fr-FR')} — `}
+                                                        Inscrit le {new Date(a.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
+                                                    </p>
+                                                </div>
+
+                                                {/* Quick actions */}
+                                                <div className="flex items-start gap-2 flex-wrap">
+                                                    <a
+                                                        href={`/explore/artist/${a.walletAddress}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[#78716c] border border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917] px-2.5 py-1.5 no-underline transition-all"
+                                                    >
+                                                        Profil ↗
+                                                    </a>
+                                                    {a.email && (
+                                                        <a
+                                                            href={`mailto:${a.email}?subject=${encodeURIComponent('Mona Editions — un message de Pierre')}`}
+                                                            className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[#78716c] border border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917] px-2.5 py-1.5 no-underline transition-all"
+                                                        >
+                                                            Contacter →
+                                                        </a>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <p className="text-[12px] font-light text-[#78716c] truncate">
-                                                {a.email || <em className="italic">email non renseigné</em>}
-                                            </p>
-                                            <p className="text-[11px] font-light text-[#a8a29e]">
-                                                {a.editionsCount} œuvre{a.editionsCount > 1 ? 's' : ''} certifiée{a.editionsCount > 1 ? 's' : ''}
-                                                {a.plan === 'free' && ` · ${a.freeQuotaUsed}/5 quota Découverte`}
-                                                {isAtelierActive && a.currentPeriodEnd && ` · expire le ${new Date(a.currentPeriodEnd).toLocaleDateString('fr-FR')}`}
-                                            </p>
-                                            <p className="text-[10px] font-light text-[#a8a29e]">
-                                                Inscrit le {new Date(a.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                            </p>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                    </div>
-                </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
 
                 {/* Footer mark */}
                 <div className="flex justify-center mt-20">
@@ -826,6 +1090,40 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     </div>
                 </div>
             </div>
+        </div>
+    );
+}
+
+/**
+ * Stat card used in the ops pilot dashboard top row.
+ * `accent="red"` switches the value color to red — used to flag the
+ * "à surveiller" count when it's >0.
+ */
+function PilotStatCard({
+    label,
+    value,
+    subtle,
+    accent = 'neutral',
+}: {
+    label: string;
+    value: number | string;
+    subtle?: string;
+    accent?: 'neutral' | 'red';
+}) {
+    const valueClass = accent === 'red' && Number(value) > 0
+        ? 'text-[#dc2626]'
+        : 'text-[#1c1917]';
+    return (
+        <div className="bg-[#fafaf8] p-5">
+            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-2">
+                {label}
+            </p>
+            <p className={`text-[clamp(24px,3vw,32px)] font-normal leading-none tracking-[-0.5px] ${valueClass}`}>
+                {value}
+            </p>
+            {subtle && (
+                <p className="text-[10px] font-light text-[#a8a29e] mt-2">{subtle}</p>
+            )}
         </div>
     );
 }
