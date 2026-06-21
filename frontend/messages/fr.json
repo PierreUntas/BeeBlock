@@ -164,7 +164,24 @@
       "remaining": "{n, plural, =0 {Aucun exemplaire restant} =1 {1 exemplaire restant} other {# exemplaires restants}}",
       "disabled": "Désactivée",
       "view": "Voir",
-      "edit": "Modifier"
+      "edit": "Modifier",
+      "checkingPermissions": "Vérification des permissions…",
+      "notConnected": "Connectez votre portefeuille pour voir vos œuvres.",
+      "notAuthorized": "Accès refusé : vous n'êtes pas autorisé comme artiste.",
+      "untitled": "Œuvre sans titre",
+      "lockedBadge": "Verrouillée",
+      "tokenIdLabel": "Œuvre n°{id}",
+      "subtitle": "{count, plural, =0 {Aucune œuvre publiée pour le moment} =1 {1 œuvre certifiée sur la blockchain Base} other {# œuvres certifiées sur la blockchain Base}}",
+      "claimRate": "{claimed} / {total} réclamés",
+      "viewPublicCta": "Voir la page publique",
+      "editCta": "Modifier les métadonnées",
+      "emptyTitle": "Aucune œuvre publiée",
+      "emptyBody": "Créez votre première édition pour commencer à certifier vos œuvres sur la blockchain.",
+      "emptyCta": "Créer ma première œuvre",
+      "trustTitle": "Vos œuvres, certifiées sur la blockchain Base",
+      "trustBody": "Chaque édition que vous publiez est enregistrée de manière permanente. L'authenticité et la chaîne de propriété sont vérifiables publiquement.",
+      "trustLinkAbout": "Comprendre la certification",
+      "trustLinkDashboard": "Retour au tableau de bord"
     }
   },
   "SubscriptionGate": {

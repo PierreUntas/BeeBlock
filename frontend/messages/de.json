@@ -164,7 +164,24 @@
       "remaining": "{n, plural, =0 {Kein Exemplar verfügbar} =1 {1 Exemplar verfügbar} other {# Exemplare verfügbar}}",
       "disabled": "Deaktiviert",
       "view": "Ansehen",
-      "edit": "Bearbeiten"
+      "edit": "Bearbeiten",
+      "checkingPermissions": "Berechtigungen werden überprüft…",
+      "notConnected": "Verbinden Sie Ihr Wallet, um Ihre Werke zu sehen.",
+      "notAuthorized": "Zugriff verweigert: Sie sind nicht als Künstler autorisiert.",
+      "untitled": "Werk ohne Titel",
+      "lockedBadge": "Gesperrt",
+      "tokenIdLabel": "Werk Nr. {id}",
+      "subtitle": "{count, plural, =0 {Noch kein Werk veröffentlicht} =1 {1 auf der Base-Blockchain zertifiziertes Werk} other {# auf der Base-Blockchain zertifizierte Werke}}",
+      "claimRate": "{claimed} / {total} beansprucht",
+      "viewPublicCta": "Öffentliche Seite ansehen",
+      "editCta": "Metadaten bearbeiten",
+      "emptyTitle": "Noch kein Werk veröffentlicht",
+      "emptyBody": "Erstellen Sie Ihre erste Edition, um Ihre Werke auf der Blockchain zu zertifizieren.",
+      "emptyCta": "Mein erstes Werk erstellen",
+      "trustTitle": "Ihre Werke, auf der Base-Blockchain zertifiziert",
+      "trustBody": "Jede von Ihnen veröffentlichte Edition wird dauerhaft registriert. Echtheit und Eigentumskette sind öffentlich überprüfbar.",
+      "trustLinkAbout": "Zertifizierung verstehen",
+      "trustLinkDashboard": "Zurück zum Dashboard"
     }
   },
   "SubscriptionGate": {

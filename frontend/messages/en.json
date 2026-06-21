@@ -173,7 +173,24 @@
       "remaining": "{n, plural, =0 {No copies remaining} =1 {1 copy remaining} other {# copies remaining}}",
       "disabled": "Disabled",
       "view": "View",
-      "edit": "Edit"
+      "edit": "Edit",
+      "checkingPermissions": "Checking permissions…",
+      "notConnected": "Connect your wallet to view your artworks.",
+      "notAuthorized": "Access denied: you are not authorized as an artist.",
+      "untitled": "Untitled work",
+      "lockedBadge": "Locked",
+      "tokenIdLabel": "Work no. {id}",
+      "subtitle": "{count, plural, =0 {No artwork published yet} =1 {1 work certified on the Base blockchain} other {# works certified on the Base blockchain}}",
+      "claimRate": "{claimed} / {total} claimed",
+      "viewPublicCta": "View public page",
+      "editCta": "Edit metadata",
+      "emptyTitle": "No artwork published yet",
+      "emptyBody": "Create your first edition to start certifying your works on the blockchain.",
+      "emptyCta": "Create my first work",
+      "trustTitle": "Your works, certified on the Base blockchain",
+      "trustBody": "Every edition you publish is recorded permanently. Authenticity and the chain of ownership are publicly verifiable.",
+      "trustLinkAbout": "Understand the certification",
+      "trustLinkDashboard": "Back to dashboard"
     }
   },
   "SubscriptionGate": {
