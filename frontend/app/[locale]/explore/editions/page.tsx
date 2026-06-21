@@ -75,23 +75,23 @@ function ExplorePageContent() {
                         publicClient.readContract({ address: ARTWORK_REGISTRY_ADDRESS, abi: ARTWORK_REGISTRY_ABI, functionName: 'getArtist', args: [artistAddress] }) as Promise<any>
                     ]);
 
-                    let artistName = 'Artiste anonyme';
-                    let artistLocation = 'Non spécifié';
+                    let artistName = t('anonymousArtist');
+                    let artistLocation = t('locationUnknown');
                     if (artistData.metadata?.trim()) {
                         try {
                             const artistIpfsData = await getFromIPFSGateway(artistData.metadata);
-                            artistName = artistIpfsData.name || 'Artiste anonyme';
-                            artistLocation = artistIpfsData.location || 'Non spécifié';
+                            artistName = artistIpfsData.name || t('anonymousArtist');
+                            artistLocation = artistIpfsData.location || t('locationUnknown');
                         } catch (e) {
                             console.error('Error loading artist IPFS data:', e);
                         }
                     }
 
-                    let artworkTitle = 'Œuvre sans titre';
+                    let artworkTitle = t('untitled');
                     if (editionMetadata?.trim()) {
                         try {
                             const editionIpfsData = await getFromIPFSGateway(editionMetadata);
-                            artworkTitle = editionIpfsData.title || 'Œuvre sans titre';
+                            artworkTitle = editionIpfsData.title || t('untitled');
                         } catch (e) {
                             console.error('Error loading edition IPFS data:', e);
                         }
@@ -254,7 +254,7 @@ function ExplorePageContent() {
                                             </h3>
                                         </div>
                                         <span className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#4a5240] border border-[#4a5240] px-1.5 py-0.5 flex-shrink-0 mt-1">
-                                            Certifié
+                                            {t('certifiedBadge')}
                                         </span>
                                     </div>
 
@@ -271,7 +271,7 @@ function ExplorePageContent() {
 
                                     {edition.commentsCount !== undefined && edition.commentsCount > 0 && edition.averageRating !== undefined && !isNaN(edition.averageRating) && (
                                         <p className="text-[12px] font-light text-[#78716c]">
-                                            {edition.averageRating.toFixed(1)} · {edition.commentsCount} avis vérifié{edition.commentsCount > 1 ? 's' : ''}
+                                            {edition.averageRating.toFixed(1)} · {t('verifiedReviews', { count: edition.commentsCount })}
                                         </p>
                                     )}
                                 </div>
@@ -279,11 +279,11 @@ function ExplorePageContent() {
                                 {/* Footer */}
                                 <div className="border-t border-[#e7e3dc] pt-4 flex items-end justify-between">
                                     <div>
-                                        <p className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] mb-0.5">Artiste</p>
+                                        <p className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] mb-0.5">{t('artistLabel')}</p>
                                         <p className="text-[13px] font-light text-[#1c1917]">{artists.get(edition.artist)?.name}</p>
                                     </div>
                                     <div className="text-right">
-                                        <p className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] mb-0.5">Édition</p>
+                                        <p className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] mb-0.5">{t('editionLabel')}</p>
                                         <p className="text-[13px] font-light text-[#78716c] font-mono">
                                             {edition.remainingTokens.toString()}
                                             {edition.ipfsData?.editionSize ? ` / ${edition.ipfsData.editionSize}` : ''}
@@ -295,11 +295,35 @@ function ExplorePageContent() {
                     </div>
                 )}
 
-                {/* Footer mark */}
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                {/* Trust footer — same pattern as artist/edition/collector pages */}
+                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                    <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
+                        <img
+                            src="/logo-mona.svg"
+                            alt="Mona Editions"
+                            className="w-24 h-12 object-contain opacity-60"
+                        />
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            {t('trustTitle')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                            {t('trustBody')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
+                            <Link
+                                href="/about"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkAbout')}
+                            </Link>
+                            <span className="text-[#d6d0c8]">·</span>
+                            <Link
+                                href="/explore/artists"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustLinkArtists')}
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>

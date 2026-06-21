@@ -450,7 +450,18 @@
       "ipfsLoading": "Loading IPFS data…",
       "filterAll": "All",
       "certifiedSuffix": "certified artworks",
-      "by": "by"
+      "by": "by",
+      "untitled": "Untitled work",
+      "anonymousArtist": "Anonymous artist",
+      "locationUnknown": "Location not specified",
+      "certifiedBadge": "Certified",
+      "artistLabel": "Artist",
+      "editionLabel": "Edition",
+      "verifiedReviews": "{count, plural, =0 {no review} =1 {1 verified review} other {# verified reviews}}",
+      "trustTitle": "A gallery certified by Mona Editions",
+      "trustBody": "Every work shown here is recorded on the Base blockchain. Authenticity and provenance are publicly verifiable.",
+      "trustLinkAbout": "Understand the certification",
+      "trustLinkArtists": "Discover the artists"
     },
     "artists": {
       "title": "The",
@@ -459,7 +470,16 @@
       "empty": "No artist found",
       "filterAll": "All",
       "certifiedSuffix": "certified artists",
-      "viewProfile": "View profile →"
+      "viewProfile": "View profile →",
+      "anonymousArtist": "Anonymous artist",
+      "locationUnknown": "Location not specified",
+      "logoAlt": "Logo of {name}",
+      "certifiedWorks": "{count, plural, =0 {no certified work} =1 {1 certified work} other {# certified works}}",
+      "portfolioPhotos": "{count, plural, =1 {1 photo} other {# photos}}",
+      "trustTitle": "The certified Mona Editions artists",
+      "trustBody": "Every artist shown here is validated by our team. Their works are recorded on the Base blockchain and publicly verifiable.",
+      "trustLinkAbout": "Understand the certification",
+      "trustLinkEditions": "View all works"
     },
     "edition": {
       "loading": "Loading artwork details…",

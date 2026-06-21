@@ -441,7 +441,18 @@
       "ipfsLoading": "IPFS-Daten werden geladen…",
       "filterAll": "Alle",
       "certifiedSuffix": "zertifizierte Werke",
-      "by": "von"
+      "by": "von",
+      "untitled": "Werk ohne Titel",
+      "anonymousArtist": "Anonymer Künstler",
+      "locationUnknown": "Ort nicht angegeben",
+      "certifiedBadge": "Zertifiziert",
+      "artistLabel": "Künstler",
+      "editionLabel": "Auflage",
+      "verifiedReviews": "{count, plural, =0 {keine Bewertung} =1 {1 verifizierte Bewertung} other {# verifizierte Bewertungen}}",
+      "trustTitle": "Eine von Mona Editions zertifizierte Galerie",
+      "trustBody": "Jedes hier präsentierte Werk ist auf der Base-Blockchain registriert. Echtheit und Herkunft sind öffentlich überprüfbar.",
+      "trustLinkAbout": "Zertifizierung verstehen",
+      "trustLinkArtists": "Künstler entdecken"
     },
     "artists": {
       "title": "Die",
@@ -450,7 +461,16 @@
       "empty": "Kein Künstler gefunden",
       "filterAll": "Alle",
       "certifiedSuffix": "zertifizierte Künstler",
-      "viewProfile": "Profil ansehen →"
+      "viewProfile": "Profil ansehen →",
+      "anonymousArtist": "Anonymer Künstler",
+      "locationUnknown": "Ort nicht angegeben",
+      "logoAlt": "Logo von {name}",
+      "certifiedWorks": "{count, plural, =0 {kein zertifiziertes Werk} =1 {1 zertifiziertes Werk} other {# zertifizierte Werke}}",
+      "portfolioPhotos": "{count, plural, =1 {1 Foto} other {# Fotos}}",
+      "trustTitle": "Die zertifizierten Mona-Editions-Künstler",
+      "trustBody": "Alle hier präsentierten Künstler sind von unserem Team validiert. Ihre Werke sind auf der Base-Blockchain registriert und öffentlich überprüfbar.",
+      "trustLinkAbout": "Zertifizierung verstehen",
+      "trustLinkEditions": "Alle Werke ansehen"
     },
     "edition": {
       "loading": "Werkdetails werden geladen…",
