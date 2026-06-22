@@ -76,6 +76,11 @@
     "saveSuccess": "Informations enregistrées avec succès. La transaction est en cours de confirmation sur la blockchain.",
     "transactionPending": "Transaction en cours…"
   },
+  "CookieNotice": {
+    "message": "Mona Editions utilise uniquement des cookies techniques strictement nécessaires au fonctionnement du service (authentification, connexion portefeuille, préférences linguistiques). Aucun cookie de traçage publicitaire.",
+    "learnMore": "En savoir plus",
+    "acknowledge": "J'ai compris"
+  },
   "Artist": {
     "title": "Modifier mes",
     "titleAccent": "informations",
@@ -263,6 +268,17 @@
       "manage": "Gérer mon abonnement (Stripe)",
       "manageLoading": "Redirection…",
       "renew": "Renouveler maintenant (nouvelle période)"
+    },
+    "withdrawalConsent": {
+      "title": "Avant de continuer",
+      "intro": "Le service Atelier est un service numérique dont l'exécution commence dès la souscription. Conformément à l'article L.221-28 §13° du Code de la consommation, nous avons besoin de votre consentement explicite avant de vous rediriger vers Stripe.",
+      "checkboxLabel": "J'accepte que l'exécution du service Atelier commence immédiatement et je renonce expressément à mon droit de rétractation pour la partie du service déjà exécutée.",
+      "rightsReminder": "Vous conservez le droit de résilier votre abonnement à tout moment depuis votre espace personnel — la résiliation prend effet à la fin de la période en cours.",
+      "termsLink": "Consulter les conditions générales",
+      "cancel": "Annuler",
+      "confirm": "Continuer vers le paiement",
+      "confirmLoading": "Redirection vers Stripe…",
+      "error": "Erreur lors de la redirection. Réessayez dans un instant."
     },
     "plans": {
       "title": "Les deux paliers",

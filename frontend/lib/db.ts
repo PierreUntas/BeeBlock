@@ -30,6 +30,7 @@ export interface ArtistSubscription {
     cancelAtPeriodEnd: boolean;
     freeQuotaUsed: number;
     privacyAcceptedAt: Date | null;
+    withdrawalWaiverAcceptedAt: Date | null;
     preferredLocale: Locale;
     createdAt: Date;
     updatedAt: Date;
@@ -79,10 +80,31 @@ function rowToSubscription(row: any): ArtistSubscription | null {
         cancelAtPeriodEnd: row.cancel_at_period_end,
         freeQuotaUsed: row.free_quota_used,
         privacyAcceptedAt: row.privacy_accepted_at ? new Date(row.privacy_accepted_at) : null,
+        withdrawalWaiverAcceptedAt: row.withdrawal_waiver_accepted_at ? new Date(row.withdrawal_waiver_accepted_at) : null,
         preferredLocale: (row.preferred_locale || 'fr') as Locale,
         createdAt: new Date(row.created_at),
         updatedAt: new Date(row.updated_at),
     };
+}
+
+/**
+ * Record the artist's explicit waiver of their 14-day withdrawal right
+ * (Code de la consommation, art. L.221-28 §13°).
+ *
+ * Must be called BEFORE creating the Stripe Checkout Session. The waiver
+ * is timestamped at the moment of the user's checkbox confirmation.
+ *
+ * Idempotent: re-calling for the same wallet just refreshes the timestamp
+ * (which is harmless — the latest waiver is the binding one for the
+ * current subscription attempt).
+ */
+export async function recordWithdrawalWaiver(walletAddress: string): Promise<void> {
+    const wallet = normalizeWallet(walletAddress);
+    await sql`
+        UPDATE artist_subscriptions
+        SET withdrawal_waiver_accepted_at = NOW()
+        WHERE wallet_address = ${wallet}
+    `;
 }
 
 /**

@@ -85,6 +85,11 @@
     "saveSuccess": "Information saved successfully. The transaction is being confirmed on the blockchain.",
     "transactionPending": "Transaction in progress…"
   },
+  "CookieNotice": {
+    "message": "Mona Editions uses only strictly necessary technical cookies for the service to work (authentication, wallet connection, language preferences). No advertising or tracking cookies.",
+    "learnMore": "Learn more",
+    "acknowledge": "Got it"
+  },
   "Artist": {
     "title": "Edit my",
     "titleAccent": "information",
@@ -272,6 +277,17 @@
       "manage": "Manage my subscription (Stripe)",
       "manageLoading": "Redirecting…",
       "renew": "Renew now (new period)"
+    },
+    "withdrawalConsent": {
+      "title": "Before you continue",
+      "intro": "The Atelier service is a digital service whose execution starts at subscription. Under article L.221-28 §13° of the French Consumer Code, we need your explicit consent before redirecting you to Stripe.",
+      "checkboxLabel": "I accept that the Atelier service starts immediately and I expressly waive my right of withdrawal for the part of the service already performed.",
+      "rightsReminder": "You retain the right to cancel your subscription at any time from your personal space — cancellation takes effect at the end of the current period.",
+      "termsLink": "Read the Terms of Service",
+      "cancel": "Cancel",
+      "confirm": "Continue to payment",
+      "confirmLoading": "Redirecting to Stripe…",
+      "error": "Redirection error. Please try again in a moment."
     },
     "plans": {
       "title": "The two tiers",

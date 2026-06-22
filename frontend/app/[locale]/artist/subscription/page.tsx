@@ -11,6 +11,7 @@ import {
     openRenew,
     useSubscription,
 } from '@/app/hooks/useSubscription';
+import WithdrawalConsentModal from '@/components/shared/WithdrawalConsentModal';
 
 export default function ArtistSubscriptionPage() {
     const t = useTranslations('Subscription');
@@ -40,6 +41,7 @@ function ArtistSubscriptionPageInner() {
     const { snapshot, loading, error, refresh } = useSubscription();
     const params = useSearchParams();
     const [busy, setBusy] = useState(false);
+    const [consentOpen, setConsentOpen] = useState(false);
 
     const justSubscribed = params.get('success') === 'true';
     const justRenewed = params.get('renewed') === 'true';
@@ -87,10 +89,24 @@ function ArtistSubscriptionPageInner() {
           })
         : null;
 
-    async function handleSubscribe() {
+    // The subscribe button only opens the withdrawal consent modal. The
+    // actual Stripe redirect happens in handleConsentConfirm below, after
+    // the user has explicitly waived their 14-day right of withdrawal
+    // (Code conso L.221-28 §13°).
+    function handleSubscribeClick() {
+        setConsentOpen(true);
+    }
+
+    async function handleConsentConfirm() {
         setBusy(true);
-        try { await openCheckout(getAccessToken); }
-        catch { setBusy(false); }
+        try {
+            await openCheckout(getAccessToken, { withdrawalWaiver: true });
+        } catch (e) {
+            console.error(e);
+            setBusy(false);
+            setConsentOpen(false);
+            throw e;
+        }
     }
 
     async function handlePortal() {
@@ -188,7 +204,7 @@ function ArtistSubscriptionPageInner() {
 
                     {!isAtelier && (
                         <button
-                            onClick={handleSubscribe}
+                            onClick={handleSubscribeClick}
                             disabled={busy}
                             className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                         >
@@ -239,6 +255,14 @@ function ArtistSubscriptionPageInner() {
                         {t('backToProfile')}
                     </Link>
                 </div>
+
+                {/* Withdrawal consent modal — mounted at root so it overlays
+                    the whole page when triggered by the subscribe button. */}
+                <WithdrawalConsentModal
+                    open={consentOpen}
+                    onConfirm={handleConsentConfirm}
+                    onCancel={() => setConsentOpen(false)}
+                />
             </div>
         </div>
     );

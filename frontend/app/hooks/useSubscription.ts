@@ -92,13 +92,25 @@ export function useSubscription(): UseSubscriptionState {
 
 /**
  * Helper: redirect to Stripe Checkout for a new Atelier subscription.
+ *
+ * The caller MUST first have collected the user's explicit waiver of the
+ * 14-day right of withdrawal (Code conso L.221-28 §13°) via a dedicated
+ * checkbox, and pass `withdrawalWaiver: true` here. The API returns
+ * `withdrawal_waiver_required` otherwise.
  */
-export async function openCheckout(getAccessToken: () => Promise<string | null>): Promise<void> {
+export async function openCheckout(
+    getAccessToken: () => Promise<string | null>,
+    options: { withdrawalWaiver: true },
+): Promise<void> {
     const token = await getAccessToken();
     if (!token) throw new Error('no_token');
     const res = await fetch('/api/subscription/checkout', {
         method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
+        headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ withdrawalWaiver: options.withdrawalWaiver }),
     });
     const data = await res.json();
     if (!res.ok || !data.url) throw new Error(data.error || 'checkout_failed');

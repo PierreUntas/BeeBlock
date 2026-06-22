@@ -16,6 +16,7 @@ import { usePrivy } from '@privy-io/react-auth';
 import { useTranslations, useLocale } from 'next-intl';
 import { Link } from '@/i18n/navigation';
 import { openCheckout, openRenew, SubscriptionSnapshot } from '@/app/hooks/useSubscription';
+import WithdrawalConsentModal from './WithdrawalConsentModal';
 
 interface Props {
     snapshot: SubscriptionSnapshot;
@@ -26,6 +27,7 @@ export default function SubscriptionGate({ snapshot }: Props) {
     const locale = useLocale();
     const { getAccessToken } = usePrivy();
     const [busy, setBusy] = useState(false);
+    const [consentOpen, setConsentOpen] = useState(false);
 
     const isAtelier = snapshot.plan === 'atelier' && snapshot.status === 'active';
     const isFreeExhausted = snapshot.plan === 'free' && snapshot.remainingQuota === 0;
@@ -39,13 +41,22 @@ export default function SubscriptionGate({ snapshot }: Props) {
           })
         : null;
 
-    async function handleSubscribe() {
+    // The actual subscribe click only opens the consent modal; the real
+    // Stripe redirect happens after the user explicitly waives their
+    // 14-day right of withdrawal (Code conso L.221-28 §13°).
+    function handleSubscribeClick() {
+        setConsentOpen(true);
+    }
+
+    async function handleConsentConfirm() {
         setBusy(true);
         try {
-            await openCheckout(getAccessToken);
+            await openCheckout(getAccessToken, { withdrawalWaiver: true });
         } catch (e) {
             console.error(e);
             setBusy(false);
+            setConsentOpen(false);
+            throw e;
         }
     }
 
@@ -75,7 +86,7 @@ export default function SubscriptionGate({ snapshot }: Props) {
                     {t('freeExhausted.descriptionEnd')}
                 </p>
                 <button
-                    onClick={handleSubscribe}
+                    onClick={handleSubscribeClick}
                     disabled={busy}
                     className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
                 >
@@ -84,6 +95,11 @@ export default function SubscriptionGate({ snapshot }: Props) {
                 <p className="text-[11px] text-[#a8a29e] mt-4">
                     {t('freeExhausted.secured')}
                 </p>
+                <WithdrawalConsentModal
+                    open={consentOpen}
+                    onConfirm={handleConsentConfirm}
+                    onCancel={() => setConsentOpen(false)}
+                />
             </div>
         );
     }

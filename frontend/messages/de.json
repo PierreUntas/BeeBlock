@@ -76,6 +76,11 @@
     "saveSuccess": "Informationen erfolgreich gespeichert. Die Transaktion wird auf der Blockchain bestätigt.",
     "transactionPending": "Transaktion läuft…"
   },
+  "CookieNotice": {
+    "message": "Mona Editions verwendet ausschließlich strikt notwendige technische Cookies für die Funktion des Dienstes (Authentifizierung, Wallet-Verbindung, Spracheinstellungen). Keine Tracking-Cookies für Werbezwecke.",
+    "learnMore": "Mehr erfahren",
+    "acknowledge": "Verstanden"
+  },
   "Artist": {
     "title": "Meine",
     "titleAccent": "Informationen ändern",
@@ -263,6 +268,17 @@
       "manage": "Mein Abonnement verwalten (Stripe)",
       "manageLoading": "Weiterleitung…",
       "renew": "Jetzt erneuern (neuer Zeitraum)"
+    },
+    "withdrawalConsent": {
+      "title": "Bevor Sie fortfahren",
+      "intro": "Der Atelier-Dienst ist ein digitaler Dienst, dessen Ausführung mit dem Abonnement beginnt. Gemäß Artikel L.221-28 §13° des französischen Verbraucherschutzgesetzes benötigen wir Ihre ausdrückliche Zustimmung, bevor wir Sie zu Stripe weiterleiten.",
+      "checkboxLabel": "Ich akzeptiere, dass die Ausführung des Atelier-Dienstes sofort beginnt, und verzichte ausdrücklich auf mein Widerrufsrecht für den bereits ausgeführten Teil des Dienstes.",
+      "rightsReminder": "Sie behalten das Recht, Ihr Abonnement jederzeit über Ihren persönlichen Bereich zu kündigen — die Kündigung tritt am Ende des aktuellen Zeitraums in Kraft.",
+      "termsLink": "Allgemeine Geschäftsbedingungen einsehen",
+      "cancel": "Abbrechen",
+      "confirm": "Weiter zur Zahlung",
+      "confirmLoading": "Weiterleitung zu Stripe…",
+      "error": "Fehler bei der Weiterleitung. Bitte versuchen Sie es erneut."
     },
     "plans": {
       "title": "Die beiden Tarife",

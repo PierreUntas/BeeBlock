@@ -14,6 +14,7 @@ import {
     getOrCreateSubscription,
     updateSubscription,
     setPreferredLocale,
+    recordWithdrawalWaiver,
     type Locale,
 } from '@/lib/db';
 import { APP_URL, STRIPE_PRICE_ID, getStripe } from '@/lib/stripe';
@@ -34,8 +35,33 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: 'price_not_configured' }, { status: 500 });
         }
 
+        // Parse the body: the frontend MUST send `{ withdrawalWaiver: true }`
+        // to confirm the user has explicitly accepted to start service
+        // immediately and waive their 14-day right of withdrawal.
+        // Without this, we reject the request — the alternative is to leave
+        // the subscription rescindable for 14 days, which would expose us to
+        // refund requests after service consumption.
+        let body: { withdrawalWaiver?: boolean } = {};
+        try {
+            body = await req.json();
+        } catch {
+            // body parsing failed — treat as missing
+        }
+        if (body?.withdrawalWaiver !== true) {
+            return NextResponse.json(
+                { error: 'withdrawal_waiver_required' },
+                { status: 400 },
+            );
+        }
+
         const stripe = getStripe();
         const sub = await getOrCreateSubscription(auth.walletAddress, auth.email);
+
+        // Record the waiver timestamp BEFORE creating the Checkout Session.
+        // If the user abandons Stripe, we still have proof of their consent
+        // at the moment of the click (CGV art. 5 enforcement).
+        await recordWithdrawalWaiver(auth.walletAddress);
+
         // Capture the user's current locale so the welcome email is in their language.
         await setPreferredLocale(auth.walletAddress, detectLocale(req));
 
