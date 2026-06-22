@@ -542,6 +542,7 @@
   },
   "Explore": {
     "editions": {
+      "eyebrow": "Galerie",
       "title": "Die",
       "titleAccent": "Galerie",
       "loading": "Werke werden geladen…",
@@ -563,6 +564,7 @@
       "trustLinkArtists": "Künstler entdecken"
     },
     "artists": {
+      "eyebrow": "Künstler",
       "title": "Die",
       "titleAccent": "Künstler",
       "loading": "Künstler werden geladen…",

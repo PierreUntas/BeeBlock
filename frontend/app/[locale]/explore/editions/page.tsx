@@ -175,7 +175,7 @@ function ExplorePageContent() {
                 <div className="mb-16">
                     <div className="flex items-center gap-3 mb-6">
                         <div className="w-8 h-px bg-[#d6d0c8]" />
-                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">{t('title')}</span>
+                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">{t('eyebrow')}</span>
                     </div>
                     <div className="flex items-end justify-between border-b border-[#d6d0c8] pb-8">
                         <div>

@@ -551,6 +551,7 @@
   },
   "Explore": {
     "editions": {
+      "eyebrow": "Gallery",
       "title": "The",
       "titleAccent": "gallery",
       "loading": "Loading artworks…",
@@ -572,6 +573,7 @@
       "trustLinkArtists": "Discover the artists"
     },
     "artists": {
+      "eyebrow": "Artists",
       "title": "The",
       "titleAccent": "artists",
       "loading": "Loading artists…",
