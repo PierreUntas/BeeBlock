@@ -131,6 +131,12 @@
       "ctaFirstEdition": "Create my first edition",
       "disabled": "Disabled"
     },
+    "profileTrust": {
+      "title": "Your public Mona Editions profile",
+      "body": "The information you enter here is visible on your public page and appears on the certificates you issue. Keep it up to date.",
+      "linkPublicProfile": "View my public profile",
+      "linkDashboard": "Back to dashboard"
+    },
     "qrTitle": "QR Code for your artist page",
     "qrDescription": "Download your QR code to share it with your collectors. It points to your artist page.",
     "qrGenerating": "Generating…",
@@ -419,6 +425,12 @@
       "createError": "Error while creating the artwork.",
       "createSuccess": "Artwork created successfully. ID: {id}",
       "createSuccessNoId": "Transaction confirmed but unable to retrieve the artwork ID. Check the console."
+    },
+    "trustFooter": {
+      "title": "A certification guaranteed by Mona Editions",
+      "body": "Every edition you publish is recorded permanently on the Base blockchain. Authenticity and the chain of ownership are publicly verifiable, without intermediary.",
+      "linkEditions": "View my artworks",
+      "linkDashboard": "Back to dashboard"
     }
   },
   "Collector": {

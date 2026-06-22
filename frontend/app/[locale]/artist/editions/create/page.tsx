@@ -15,6 +15,7 @@ import { useSubscription, incrementEdition } from '@/app/hooks/useSubscription';
 import SubscriptionGate, { QuotaBadge } from '@/components/shared/SubscriptionGate';
 import QRCode from 'qrcode';
 import * as XLSX from 'xlsx';
+import Link from 'next/link';
 import { useTranslations } from 'next-intl';
 
 // Utility function
@@ -792,11 +793,35 @@ export default function CreateEditionPage() {
                     </div>
                 )}
 
-                {/* Footer mark */}
-                <div className="flex justify-center mt-20">
-                    <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                {/* Trust footer — cohérent avec /artist/editions et /artist/editions/[id]/edit */}
+                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                    <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
+                        <img
+                            src="/logo-mona.svg"
+                            alt="Mona Editions"
+                            className="w-24 h-12 object-contain opacity-60"
+                        />
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            {t('trustFooter.title')}
+                        </p>
+                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                            {t('trustFooter.body')}
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
+                            <Link
+                                href="/artist/editions"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustFooter.linkEditions')}
+                            </Link>
+                            <span className="text-[#d6d0c8]">·</span>
+                            <Link
+                                href="/artist"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            >
+                                {t('trustFooter.linkDashboard')}
+                            </Link>
+                        </div>
                     </div>
                 </div>
             </div>
