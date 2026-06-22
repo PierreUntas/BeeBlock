@@ -47,7 +47,11 @@ Au stade actuel du projet, l'éditeur n'a pas désigné de Délégué à la Prot
 
 ### 2.4 Lors de la réclamation d'un certificat (collectionneur)
 
-Aucune donnée personnelle n'est collectée par Mona Editions sur le collectionneur. La réclamation se fait en signant une transaction blockchain depuis un portefeuille — seule l'adresse de ce portefeuille (publique par nature) apparaît dans l'historique du certificat.
+Mona Editions **ne collecte aucune donnée nominative** auprès du collectionneur. La réclamation se fait en signant une transaction blockchain depuis un portefeuille personnel.
+
+Seule **l'adresse publique de ce portefeuille** apparaît dans l'historique du certificat. Cette adresse, bien que constituant une **donnée pseudonyme** au sens du RGPD (considérant 26), n'est pas rattachable par Mona Editions à une personne physique identifiée — sauf si le collectionneur, par un acte ultérieur (revendication publique, lien depuis un compte artiste, etc.), choisit lui-même de l'associer à son identité.
+
+Lorsqu'un collectionneur rédige un avis sur une œuvre certifiée, sa **note numérique (0 à 5)** est également inscrite on-chain en clair (le texte du commentaire vit sur IPFS). Le régime de cette inscription est régi par le paragraphe 8 ci-dessous.
 
 ## 3. Bases légales du traitement
 
@@ -91,7 +95,7 @@ Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des 
 - **Droit d'opposition** : refuser certains traitements
 - **Droit de limitation** : geler temporairement certains traitements
 
-Pour exercer ces droits, écrivez à : **pierre.untas@gmail.com**. Une réponse vous sera apportée sous 30 jours maximum.
+Pour exercer ces droits, écrivez à : **pierre.untas@gmail.com**. Conformément à l'article 12 §3 du RGPD, une réponse vous sera apportée dans un délai d'**un mois à compter de la réception de votre demande**. Ce délai peut être prolongé de deux mois supplémentaires si la complexité ou le nombre de demandes le justifie ; vous en serez alors informé dans le délai initial d'un mois.
 
 Si vous estimez vos droits non respectés, vous pouvez introduire une réclamation auprès de la **CNIL** : https://www.cnil.fr/fr/plaintes
 
@@ -119,15 +123,19 @@ Les métadonnées IPFS elles-mêmes (titres, descriptions, images) sont égaleme
 
 **Avant toute inscription**, l'utilisateur est invité à prendre conscience de cette irréversibilité. Le droit à l'effacement ne peut pas s'appliquer à ces données. Il s'applique en revanche à toutes les autres données détenues par Mona Editions hors blockchain (compte, email, données de facturation).
 
-## 9. Cookies
+## 9. Cookies et stockage local
 
-Mona Editions utilise uniquement des cookies techniques strictement nécessaires au fonctionnement :
+Mona Editions utilise uniquement des cookies et technologies de stockage local **strictement nécessaires** au fonctionnement du service. Conformément à la délibération CNIL n° 2020-091 du 17 septembre 2020, le consentement explicite n'est donc pas requis pour leur dépôt.
 
-- Cookies de session Privy pour maintenir l'authentification
-- Cookies WalletConnect pour la connexion de portefeuilles externes
-- Cookies de préférences (langue, etc.)
+**Cookies et identifiants techniques utilisés :**
 
-Aucun cookie de traçage publicitaire, de profilage marketing, ou de mesure d'audience tiers n'est utilisé. Le consentement explicite n'est donc pas requis (CNIL, recommandation cookies).
+- **Privy** : maintien de la session d'authentification après votre connexion
+- **WalletConnect** : connexion à un portefeuille externe (MetaMask, Coinbase Wallet, etc.) — ouvre des canaux de communication chiffrés via des serveurs relays opérés par la WalletConnect Foundation, sans transmission d'identifiant personnel
+- **next-intl** : mémorisation de votre préférence linguistique (FR / DE / EN)
+
+Conformément à l'obligation d'information de l'**article 82 de la loi Informatique et Libertés**, vous êtes informé du dépôt de ces cookies par la présente politique et par une note discrète présentée lors de votre première visite.
+
+Aucun cookie de traçage publicitaire, de profilage marketing ou de mesure d'audience tiers n'est utilisé.
 
 ## 10. Modifications de la politique
 

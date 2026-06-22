@@ -1,134 +1,313 @@
-# Brief de revue juridique — Mona Editions
+# Journal des décisions juridiques — Mona Editions
 
-**Pour :** Maître Untas
-**Préparé par :** Pierre, le 20 juin 2026
-**Documents à relire :**
+**Pour :** Pierre (référence interne) et Maître Untas (revue ultérieure)
+**Date des décisions :** 20 juin 2026
+**Documents finalisés :**
 - [01-mentions-legales.md](./01-mentions-legales.md)
 - [02-politique-confidentialite.md](./02-politique-confidentialite.md)
 - [03-conditions-generales-abonnement.md](./03-conditions-generales-abonnement.md)
 
-**Contexte rapide.** Mona Editions est une plateforme web sur laquelle des artistes peuvent enregistrer leurs œuvres et émettre un certificat numérique (jeton ERC-1155 sur la blockchain Base). Les collectionneurs réclament ces certificats via un QR code. Il y a un abonnement Atelier à 14,90 €/mois (Stripe), et un palier gratuit limité à 5 œuvres à vie. Statut éditeur : auto-entreprise en cours d'immatriculation (Pierre Untas). Cible B2C grand public côté artistes, B2C côté collectionneurs.
+---
+
+## Contexte
+
+Ma femme avocate étant indisponible pour relire avant une semaine, j'ai pris la décision de **finaliser moi-même les 3 documents juridiques** en appliquant les positions que je jugeais les plus défendables au regard des références juridiques mobilisables (CNIL 2018-352, Code de la consommation, RGPD).
+
+Ce document a deux objectifs :
+
+1. **Documenter mes choix** pour que je puisse les défendre si on m'interroge avant la revue de Maître Untas.
+2. **Faciliter la revue ultérieure** : ma femme pourra prendre les décisions une par une, valider ou contester, sans tout relire à froid.
+
+**Statut des documents** : les 3 fichiers Markdown peuvent être **publiés en l'état** sur les pages publiques du site (`/legal/mentions`, `/legal/privacy`, `/legal/terms`). Si la revue ultérieure remet en cause des positions importantes, on republiera la version corrigée.
 
 ---
 
-## A. Erreurs factuelles à corriger AVANT la revue
+## Architecture technique rappelée (pour ancrer les décisions)
 
-Ces points ne nécessitent pas ton expertise — je les rectifie cette semaine. Je les liste pour transparence et pour que tu ne perdes pas de temps à les remettre en cause.
+**Sont publiés on-chain (Base mainnet, permanents et publics) :**
+- Adresses de portefeuille (artistes, collectionneurs, admins) — données pseudonymes au sens du RGPD (considérant 26)
+- Hashes IPFS (CID) des métadonnées d'œuvres et d'avis — pointent vers du contenu en clair stocké hors chaîne
+- Notes numériques des avis (entiers 0-5)
+- Identifiants techniques : tokenId, editionId, taille édition, merkleRoot
+- Booléens (artiste autorisé, édition désactivée), timestamps de bloc
 
-1. **Code APE.** Les documents indiquent **62.01Z (Programmation informatique)**. À mon inscription INPI hier, l'arborescence m'a fait sélectionner **63.11Z (Traitement de données, hébergement et activités connexes)** car « Services d'information » → « 62.01 Programmation » n'était pas proposé à cet endroit. À harmoniser dans les 3 documents dès réception du code définitif INSEE.
-
-2. **Médicys (médiateur de consommation).** L'article 13 des CGA présente Médicys comme « le médiateur de la consommation dont l'Éditeur relève ». **Je n'ai pas encore adhéré** (cotisation ~120 € HT/an). Il faut soit reformuler en « l'Éditeur procède actuellement à son adhésion auprès de Médicys », soit publier après adhésion effective. Légalement, l'obligation d'avoir un médiateur opérationnel est immédiate dès activité B2C.
-
-3. **URL du site.** Le code utilise `https://monaeditions.com` (sans www) comme URL canonique, mais les CGA mentionnent `https://www.monaeditions.com` (avec www). Harmoniser sur la version sans www, qui est celle déclarée dans les meta tags HTML et utilisée pour les certificats blockchain.
-
----
-
-## B. Points sensibles à examiner en priorité (risque juridique)
-
-### B1. Article 8 CGA — Irrévocabilité blockchain et droit à l'effacement RGPD
-*Document : [CGA](./03-conditions-generales-abonnement.md), Article 8*
-
-C'est le sujet le plus structurant du dossier. La rédaction s'appuie sur la **délibération CNIL n°2018-352 du 24 septembre 2018** pour justifier une limitation au droit à l'effacement (art. 17 RGPD) sur les données on-chain (adresses de portefeuille, hash IPFS) et IPFS (métadonnées et images).
-
-**Points à valider :**
-- La délibération 2018-352 est-elle toujours la référence pertinente, ou y a-t-il eu des décisions plus récentes de la CNIL ou du Conseil d'État (notamment 2023-2025) qui affineraient la position ?
-- La distinction « données en clair stockées hors blockchain (effaçables) » vs « hash et adresses sur blockchain (non effaçables) » est-elle juridiquement bien posée ? Notre architecture ne publie jamais d'identifiant direct on-chain — uniquement le hash IPFS — ce qui devrait satisfaire le principe de minimisation.
-- La rédaction de l'article 8.4 « impossibilité technique d'effacement » est-elle suffisamment précise pour résister à une plainte CNIL, ou faut-il ajouter la mention explicite que l'utilisateur **consent en connaissance de cause** à cette limitation avant souscription ?
-- Côté IPFS, on s'engage à « dépinner » sur demande mais on prévient qu'on ne peut pas garantir la purge si d'autres nœuds ont répliqué. Est-ce une formulation acceptable ?
-
-### B2. Article 5 CGA — Rétractation et renoncement
-*Document : [CGA](./03-conditions-generales-abonnement.md), Article 5*
-
-La rédaction prévoit que l'Artiste consommateur renonce à son droit de rétractation s'il coche « j'accepte de commencer immédiatement le service » **OU** s'il certifie une première œuvre avant la fin des 14 jours.
-
-**Points à valider :**
-- La formule « le cas échéant » concernant la case à cocher m'inquiète. D'après ma compréhension de l'art. L.221-25 du Code de la consommation, le **renoncement exprès** par case dédiée est obligatoire. Si je l'omets parfois, le renoncement est-il opposable ?
-- Le fait que la certification d'une œuvre vaille demande d'exécution immédiate (interprétation par comportement) est-il valable, ou faut-il que la case soit cochée **avant** toute action ?
-- Aujourd'hui, le tunnel Stripe Checkout n'affiche pas de case dédiée (cf. note du dossier interne). On a une option `consent_collection.terms_of_service` que je peux activer côté Stripe, mais elle pointe juste vers les CGA — elle ne dit pas « j'accepte l'exécution immédiate ». Faut-il un écran intermédiaire dédié dans notre interface pour recueillir ce consentement explicite ?
-
-### B3. Article 6.2 CGA — Résiliation par l'Éditeur
-*Document : [CGA](./03-conditions-generales-abonnement.md), Article 6.2*
-
-La liste des motifs inclut « tout comportement de nature à porter atteinte à la réputation ou à l'intégrité de la plateforme ou de ses utilisateurs ».
-
-**Question :** ce motif générique présente-t-il un risque de qualification en **clause abusive** au sens de l'article L.212-1 du Code de la consommation (déséquilibre significatif au détriment du consommateur) ? Faut-il restreindre à une liste exhaustive ou ajouter une condition de proportionnalité / contradictoire ?
-
-### B4. Article 9.3 CGA — Cessation d'autorisation après résiliation
-*Document : [CGA](./03-conditions-generales-abonnement.md), Article 9.3*
-
-L'article dit que l'autorisation d'affichage **cesse à la résiliation de l'abonnement**, MAIS l'article 8 dit que les certificats sur blockchain sont **permanents**.
-
-**Tension à résoudre :** si un artiste résilie, doit-on supprimer sa page publique `/explore/artist/[adresse]` ? Si oui, comment justifier qu'on continue d'afficher les certificats émis (qui contiennent son nom dans les métadonnées IPFS) au profit des collectionneurs ayant payé pour leur œuvre ? Il faut probablement préciser que :
-- Le profil artiste est retiré
-- Les œuvres déjà émises restent visibles (intérêt légitime des collectionneurs détenteurs)
-- L'artiste accepte cette dissymétrie au moment de l'inscription
-
-Ta vision sur la formulation appropriée ?
-
-### B5. Article 10.2 CGA — Plafond de responsabilité
-*Document : [CGA](./03-conditions-generales-abonnement.md), Article 10.2*
-
-Plafond fixé à **12 mois d'abonnement** (= 178,80 € au prix actuel).
-
-**Question :** acceptable en B2C, ou risque de clause abusive (le préjudice potentiel pour un artiste qui aurait certifié de fausses informations on-chain est manifestement supérieur) ? Faut-il distinguer les cas — par exemple, plafond classique pour les manquements légers, exclusion pour fraude/faute lourde de notre part ?
+**Ne sont PAS publiés on-chain :**
+- Aucun nom, prénom, email, adresse postale, téléphone
+- Aucun contenu en clair (titres, descriptions, images, biographies, textes d'avis) → IPFS uniquement via Pinata
 
 ---
 
-## C. Conformité RGPD — points à valider
+## §1 — Corrections factuelles appliquées (faible enjeu)
 
-### C1. Politique de confidentialité, paragraphe 2.4 — Collectionneur
-*Document : [Confidentialité](./02-politique-confidentialite.md), §2.4*
+| Document | Avant | Après | Justification |
+|---|---|---|---|
+| Mentions légales, identité éditeur | APE 62.01Z (Programmation) | APE **63.11Z** (Traitement de données, hébergement) | Code assigné par l'INPI à l'inscription |
+| CGV Article 13 | « Médicys, médiateur dont l'Éditeur relève » | « L'Éditeur procède à son adhésion auprès de Médicys » | Adhésion non encore effective (cotisation ~120 €/an), évite l'affirmation fausse |
+| CGV — URL canonique | `https://www.monaeditions.com` | `https://monaeditions.com` | Cohérence avec le canonical des meta HTML et les contrats blockchain |
 
-Affirmation : « Aucune donnée personnelle n'est collectée par Mona Editions sur le collectionneur. » Or l'adresse blockchain du collectionneur **est** publiée on-chain, et **est** une donnée pseudonyme au sens du RGPD (CNIL le confirme dans sa délibération 2018-352).
-
-Faut-il :
-- Reformuler : « Mona Editions ne collecte aucune donnée nominative auprès du collectionneur. L'adresse de portefeuille (donnée pseudonyme) est publiée sur la blockchain Base, conformément au paragraphe 8 ci-après » ?
-- Ou la rédaction actuelle suffit-elle ?
-
-### C2. Politique de confidentialité, paragraphe 9 — Cookies sans consentement
-*Document : [Confidentialité](./02-politique-confidentialite.md), §9*
-
-J'invoque l'exception « cookies strictement nécessaires » de la recommandation CNIL pour ne pas demander de consentement explicite. Les cookies utilisés sont :
-- Session Privy (authentification)
-- WalletConnect (connexion portefeuille externe)
-- Préférences (langue)
-
-**Question :** WalletConnect ouvre des connexions vers des serveurs tiers (relays) pour la communication portefeuille. Cette communication est-elle bien couverte par l'exception « strictement nécessaire » au service demandé, ou pourrait-on argumenter qu'il s'agit d'un service tiers nécessitant consentement ?
-
-### C3. Mentions légales — Cookies « implicite »
-*Document : [Mentions légales](./01-mentions-legales.md), section « Cookies »*
-
-La phrase « L'utilisation de ces cookies est implicite à la consultation du site » est-elle juridiquement valide ? La CNIL préconise au minimum une **information explicite** (bandeau ou note) même pour les cookies sans consentement requis.
-
-### C4. Politique de confidentialité, paragraphe 6 — Délai de réponse
-*Document : [Confidentialité](./02-politique-confidentialite.md), §6*
-
-Annonce « réponse sous 30 jours ». Le RGPD prévoit en réalité **1 mois renouvelable jusqu'à 3 mois** pour les demandes complexes. Faut-il être plus précis pour ne pas se retrouver en défaut sur un cas compliqué ?
+**Pas de validation nécessaire** — fixes mécaniques.
 
 ---
 
-## D. Points secondaires (bon réflexe, pas bloquant)
+## §2 — Décisions de fond (5 points sensibles)
 
-1. **Sous-traitants (politique confidentialité §4)** : tous américains sauf Neon (Allemagne). DPF + clauses contractuelles types mentionnés. À vérifier que j'ai bien signé les DPA Stripe / Privy / Vercel / Pinata / Resend. Y a-t-il une obligation de **registre des sous-traitants** que je dois tenir formellement à côté ?
+Pour chaque point : extrait du texte tel qu'il est désormais publié + raisonnement + références mobilisées + niveau de risque résiduel.
 
-2. **Durée de conservation des données comptables** (§5) : 10 ans annoncés. C'est l'obligation Code de commerce. Toujours d'actualité en 2026 ?
+### 2.1 — Rétractation et exécution immédiate (CGV Article 5)
 
-3. **Garantie de l'Artiste sur les droits (CGA art. 9.2)** : l'Artiste garantit Mona Editions contre toute revendication tiers. C'est large. Est-ce que ça tient devant les yeux d'un juge si un Artiste de bonne foi a certifié une œuvre dont il ignorait qu'elle contenait un emprunt non autorisé ?
+**Décision prise :**
+Réécrire l'article 5 pour rendre la case **obligatoire et distincte** des CGV (au lieu de « le cas échéant »). Texte de la case adopté :
 
-4. **Inscription RCS / mention « Entrepreneur Individuel »** : depuis la réforme du statut d'entrepreneur individuel (loi 2022), la mention « EI » ou « entrepreneur individuel » doit-elle apparaître à côté de mon nom dans les mentions légales et factures ?
+> « J'accepte que l'exécution du service Atelier commence immédiatement et je renonce expressément à mon droit de rétractation pour la partie du service déjà exécutée. »
+
+Le moment de l'acceptation est horodaté côté serveur et confirmé par email.
+
+**Raisonnement :**
+L'article L.221-28 §13° du Code de la consommation autorise le renoncement à la rétractation pour un service numérique uniquement si le consommateur consent **expressément** ET **reconnaît qu'il perd son droit**. Une case présentée « le cas échéant » risque d'être inopposable. La nouvelle formulation force le double consentement (CGV + renoncement explicite).
+
+**Implication technique (côté code) :**
+Je dois ajouter un **écran intermédiaire** dans le tunnel de souscription, AVANT la redirection Stripe, avec cette case obligatoire. Loggué en base avec timestamp. Le `consent_collection.terms_of_service: 'required'` de Stripe seul ne suffit pas — il valide l'acceptation des CGV mais pas le renoncement.
+
+**Risque résiduel :** faible. La rédaction est conservative.
+
+**Question pour Maître Untas :**
+- [ ] La formulation de la case te paraît-elle suffisante ? Faut-il l'enrichir (« je reconnais que la prestation a commencé », mention explicite de la durée de rétractation, etc.) ?
 
 ---
 
-## E. Ton point central, à valider en deux mots
+### 2.2 — Résiliation par l'Éditeur (CGV Article 6.2)
 
-> **La rédaction de l'article 8 des CGA (irrévocabilité blockchain + limitation du droit à l'effacement) suffit-elle à protéger Mona Editions face à une plainte CNIL d'un artiste ou d'un collectionneur, étant entendu que :**
-> - aucune donnée nominative en clair n'est jamais publiée on-chain,
-> - seuls les hashes IPFS et les adresses de portefeuille (pseudonymes) sont sur la blockchain,
-> - l'utilisateur est informé avant souscription,
-> - on s'engage à dépinner IPFS et à anonymiser les bases off-chain à la demande ?
+**Décision prise :**
+Refondre en deux catégories au lieu d'une liste fourre-tout :
 
-Si oui : feu vert pour publier (sous réserve des corrections factuelles et tes annotations sur les articles B2-B5). Si non : qu'est-ce qu'il faut changer en priorité ?
+- **(a) Avec préavis 30 jours + mise en demeure** : manquement substantiel, atteinte aux droits d'autres utilisateurs
+- **(b) Effet immédiat sans préavis** : activités illégales manifestes (contrefaçon, blanchiment, terrorisme), fraude avérée, injonction d'autorité
 
-Merci ❤️
+Dans les deux cas, **droit d'observation de 7 jours** ouvert à l'Artiste.
 
-— Pierre
+J'ai **supprimé** la formule fourre-tout « tout comportement de nature à porter atteinte à la réputation ou à l'intégrité de la plateforme » qui était la plus exposée au reproche de clause abusive.
+
+**Raisonnement :**
+L'article L.212-1 du Code de la consommation interdit les clauses créant un déséquilibre significatif au détriment du consommateur. Une faculté de résiliation discrétionnaire et large est l'archétype de la clause abusive en B2C. La nouvelle rédaction :
+- Restreint à des motifs **objectifs et énumérés**
+- Introduit un **préavis** pour les cas non-graves
+- Garantit le **principe du contradictoire** (droit d'observation)
+
+**Risque résiduel :** faible. La liste reste suffisamment large pour mes cas opérationnels mais protège contre l'arbitraire.
+
+**Question pour Maître Untas :**
+- [ ] La distinction (a) / (b) te paraît-elle équilibrée ? Le préavis de 30 jours et le droit d'observation de 7 jours sont-ils des durées standard ou faut-il les ajuster ?
+
+---
+
+### 2.3 — Blockchain et droit à l'effacement (CGV Article 8) — **LE point central**
+
+**Décisions prises :**
+
+**§8.2** — La liste des données on-chain a été complétée pour inclure les **notes numériques des avis** (0-5) qui étaient oubliées dans la version précédente, et pour distinguer clairement « donnée nominative au sens strict » (aucune) vs « donnée pseudonyme » (adresses).
+
+**§8.4** — Refondu pour :
+1. Poser l'**information préalable** explicite avant souscription (article 13 RGPD)
+2. Énumérer les **mesures alternatives compensatoires** (dépinnage IPFS, suppression off-chain, cessation d'affichage) — alignées sur la délibération CNIL 2018-352
+3. Affirmer que ces mesures rendent les données on-chain restantes **non rattachables** par Mona Editions à une personne identifiée
+4. Reconnaître que le caractère pseudonyme persiste sur la blockchain publique indépendamment de la volonté de l'Éditeur
+
+**Raisonnement :**
+La position de la CNIL sur la blockchain (délibération 2018-352, complétée par la note 2022) est claire :
+- Le droit à l'effacement on-chain n'est pas techniquement applicable
+- L'éditeur peut **compenser** par des mesures hors chaîne qui rendent les données restantes effectivement anonymes pour lui
+- La condition est que l'utilisateur ait été **informé et consente** en connaissance de cause
+
+J'ai choisi de :
+1. **Citer explicitement** la délibération 2018-352 dans le texte (référence opposable)
+2. **Lister les mesures compensatoires** de manière concrète et engageante
+3. **Ne pas surpromettre** : je reconnais que le pseudonyme persiste sur la blockchain — c'est une honnêteté qui me protège
+
+**Risque résiduel :** moyen. C'est le point le plus original juridiquement et celui qui pourrait faire l'objet d'une plainte CNIL si un artiste se sentait lésé. Mais ma rédaction est alignée sur la doctrine actuelle et je n'ai vu aucune décision plus récente qui remettrait en cause cette approche.
+
+**Questions pour Maître Untas (les plus importantes) :**
+- [ ] La référence à la délibération 2018-352 est-elle toujours la bonne, ou y a-t-il eu des décisions plus récentes (post-MICA, 2023-2025) à intégrer ?
+- [ ] La formulation « rendent les données on-chain restantes non rattachables par Mona Editions à une personne physique identifiée » est-elle juridiquement défendable ?
+- [ ] Faut-il ajouter une **case dédiée à cocher** au moment de la souscription artiste (« J'ai compris que mes données blockchain seront permanentes ») en plus du clic général d'acceptation des CGV ?
+
+---
+
+### 2.4 — Affichage post-résiliation (CGV Article 9.3)
+
+**Décision prise :**
+Distinguer ce qui est retiré et ce qui demeure :
+
+- **Retiré sous 7 jours ouvrés** : profil public de l'artiste (page, bio, photos, logo, liens sociaux)
+- **Maintenu au titre de l'intérêt légitime des Collectionneurs** : pages individuelles des œuvres déjà certifiées et réclamées, métadonnées on-chain et IPFS
+
+J'invoque l'**article 6 §1 f) du RGPD** (intérêt légitime des tiers — les collectionneurs détenteurs).
+
+**Raisonnement :**
+Il y a une tension réelle : l'artiste résilie son abonnement et a le droit de voir sa visibilité cesser, mais des collectionneurs ont payé pour des œuvres avec son nom dessus. La solution standard en doctrine RGPD est de fonder le maintien sur l'intérêt légitime des tiers concernés, qui prime sur le droit à l'opposition de la personne dans ce cas spécifique.
+
+**Risque résiduel :** faible si la dissymétrie est bien acceptée à la souscription (ce que dit le nouveau texte). Risque modéré si un artiste « cancel » conteste : il faudra défendre la balance des intérêts.
+
+**Question pour Maître Untas :**
+- [ ] Cette dissymétrie te paraît-elle solide juridiquement ? Faut-il fournir un mécanisme supplémentaire (ex. : possibilité pour l'artiste de remplacer son nom par un pseudonyme sur les pages d'œuvres post-résiliation, sans casser la chaîne de propriété) ?
+
+---
+
+### 2.5 — Plafond de responsabilité (CGV Article 10.2)
+
+**Décision prise :**
+Rédaction tripartite :
+
+- **(a) Dommages directs** : plafond aux sommes versées sur les 12 derniers mois
+- **(b) Dommages indirects** : exclus (pertes de profits, image, opportunités)
+- **(c) Exceptions au plafond** : faute lourde, dol, manquement à une obligation essentielle, atteinte à l'intégrité physique, cas où la loi prohibe la limitation
+
+Plus une section **(d) cas exclus** : force majeure, défaillance services tiers, perte de clés par l'utilisateur.
+
+**Raisonnement :**
+L'article R.212-1 du Code de la consommation interdit certaines limitations de responsabilité en B2C. La rédaction antérieure (plafond brut à 12 mois = 178,80 € sans exception) était dans la zone grise. La nouvelle :
+- **Pose un plafond** (acceptable juridiquement avec exceptions)
+- **Réserve explicitement** les cas où la loi prohibe la limitation (clause de sauvegarde)
+- **Distingue** dommages directs / indirects (cohérent avec la jurisprudence)
+- **Liste** les exceptions classiques (faute lourde, obligation essentielle)
+
+**Risque résiduel :** faible. C'est la rédaction standard SaaS B2C française.
+
+**Question pour Maître Untas :**
+- [ ] La rédaction tripartite te paraît-elle équilibrée ? Le plafond 12 mois sur les dommages directs est-il acceptable, ou faut-il un montant plancher (ex. : 500 € minimum) pour ne pas tomber sous le seuil du dérisoire ?
+
+---
+
+## §3 — Décisions RGPD (Politique de confidentialité)
+
+### 3.1 — Adresse de portefeuille du Collectionneur (§2.4)
+
+**Décision prise :**
+Reformulation pour reconnaître que l'adresse wallet **est** une donnée pseudonyme au sens du RGPD (et non « aucune donnée personnelle »), et préciser que les notes numériques d'avis sont également on-chain en clair.
+
+**Raisonnement :**
+L'affirmation antérieure « aucune donnée personnelle n'est collectée sur le collectionneur » était techniquement fausse (la CNIL a tranché : les adresses publiques de portefeuille sont des données pseudonymes au sens du considérant 26 du RGPD). Mieux vaut être précis et défendre une qualification correcte que d'être attaqué sur une affirmation maladroite.
+
+**Question pour Maître Untas :**
+- [ ] La nouvelle rédaction est-elle assez précise sans être anxiogène pour les collectionneurs ?
+
+---
+
+### 3.2 — Délai de réponse aux demandes d'exercice de droits (§6)
+
+**Décision prise :**
+« Une réponse vous sera apportée sous 30 jours maximum » → « Conformément à l'article 12 §3 du RGPD, une réponse vous sera apportée dans un délai d'**un mois** à compter de la réception de votre demande. Ce délai peut être prolongé de deux mois supplémentaires si la complexité ou le nombre de demandes le justifie ; vous en serez alors informé dans le délai initial d'un mois. »
+
+**Raisonnement :**
+Le RGPD impose 1 mois renouvelable à 3 mois. La formulation « 30 jours maximum » était techniquement plus restrictive que ce que la loi exige. Sans valeur ajoutée et risque de se retrouver hors délai sur un cas complexe. La nouvelle formulation est la rédaction RGPD-standard.
+
+**Risque résiduel :** nul.
+
+---
+
+### 3.3 — Cookies et stockage local (§9)
+
+**Décision prise :**
+Reformulation pour :
+1. Citer explicitement la délibération CNIL 2020-091 (cookies)
+2. Détailler chaque cookie utilisé (Privy, WalletConnect, next-intl) et sa fonction
+3. Mentionner les **relays WalletConnect** comme service tiers (transparence) tout en argumentant qu'ils restent dans le champ de l'exception « strictement nécessaire »
+4. Citer l'**article 82 de la loi Informatique et Libertés** comme base de l'obligation d'information
+5. Mentionner une **note discrète** lors de la première visite (à implémenter côté code)
+
+**Raisonnement :**
+La doctrine CNIL post-2020 exige une **information de l'utilisateur** même pour les cookies strictement nécessaires (pas de consentement, mais notification). La formulation antérieure « le consentement explicite n'est donc pas requis » occultait l'obligation d'info. La nouvelle est conforme et plus transparente.
+
+**Implication technique (côté code) :**
+Je dois ajouter un **bandeau discret** (pas une modal bloquante) lors de la première visite, accessible ensuite depuis le footer.
+
+**Question pour Maître Untas :**
+- [ ] Le bandeau discret est-il suffisant, ou faut-il une notification plus visible ? L'argumentation sur les relays WalletConnect comme « strictement nécessaires » te paraît-elle tenable ?
+
+---
+
+## §4 — Points où je n'ai pas modifié, mais qui méritent vérification
+
+### 4.1 — Déclaration TRACFIN ?
+
+**État actuel :** aucune mention dans les documents.
+**Ma position par défaut :** non requise, car Mona Editions :
+- N'achète, ne vend, n'est pas intermédiaire dans une transaction d'œuvre
+- N'émet pas de cryptoactif au sens MICA (les ERC-1155 ne sont pas fongibles)
+
+**Question pour Maître Untas :**
+- [ ] Confirmer ma position. Si je me trompe, identifier les démarches.
+
+### 4.2 — Mention « Entrepreneur Individuel »
+
+**État actuel :** mention « Entrepreneur individuel — auto-entreprise en cours d'immatriculation » dans Mentions légales et Politique conf. Pas dans les CGV.
+
+**Question pour Maître Untas :**
+- [ ] Faut-il harmoniser : ajouter « Pierre Untas, EI » ou « Pierre Untas, entrepreneur individuel » systématiquement (CGV, factures, emails) ?
+
+### 4.3 — Garantie de l'Artiste (CGV Article 9.2)
+
+**État actuel :** garantie large et inchangée. *« L'Artiste garantit Mona Editions contre toute revendication d'un tiers en lien avec une œuvre certifiée. »*
+
+**Question pour Maître Untas :**
+- [ ] Faut-il limiter cette garantie aux droits que l'Artiste « connaissait ou aurait dû raisonnablement connaître » au moment de la certification ? Ou la garantie large est-elle préférable pour protéger Mona Editions ?
+
+---
+
+## §5 — Pile d'actions techniques à faire côté code (conséquences des choix)
+
+Décisions juridiques qui impliquent du code à modifier :
+
+1. **Tunnel de souscription Atelier** — Ajouter un écran intermédiaire AVANT la redirection Stripe avec la case obligatoire de renoncement à la rétractation (§2.1). Logguer le timestamp en base.
+2. **Bandeau cookies** — Ajouter une note discrète première visite, accessible depuis le footer (§3.3).
+3. **Stripe Checkout** — Réactiver `consent_collection.terms_of_service: 'required'` dans `app/api/subscription/checkout/route.ts` (la ligne commentée actuellement).
+4. **Stripe Dashboard** — Renseigner les URLs CGV et Politique de confidentialité dans Settings → Public details → Terms of service URL + Privacy policy URL.
+5. **Adhésion Médicys** — Souscrire (~120 € HT/an) sur medicys.fr, puis mettre à jour CGV Article 13 (passer de « procède à son adhésion » à coordonnées définitives).
+6. **Profil artiste résilié** — Côté frontend, prévoir le retrait sous 7 jours du profil public lors d'une résiliation (§2.4). Maintenir les pages d'œuvres réclamées.
+
+---
+
+## §6 — Workflow de revue ultérieure
+
+Quand Maître Untas aura le temps (dans la semaine ou plus tard) :
+
+1. Elle ouvre ce journal (`00-brief-revue-juridique.md`).
+2. Pour chaque section §2.1 à §2.5 et §3.1 à §3.3 : elle valide / rejette / propose une nuance via les checkboxes.
+3. Elle me répond ses 4 questions ouvertes §4.1, §4.2, §4.3.
+4. Je modifie les documents juridiques en fonction de ses retours.
+5. Je republie les pages `/legal/*` mises à jour.
+
+Si une de ses décisions implique un changement de comportement utilisateur substantiel (par exemple : ajouter la case dédiée pour la blockchain), j'en informe les utilisateurs déjà inscrits par email avec un préavis de 30 jours (conformément à l'article 11 des CGV).
+
+---
+
+## Annexe — Références juridiques mobilisées
+
+### Blockchain et RGPD
+- [Délibération CNIL n° 2018-352 du 24 septembre 2018](https://www.cnil.fr/fr/blockchain-et-rgpd-quelles-solutions-pour-un-usage-responsable-en-presence-de-donnees-personnelles)
+- Note CNIL 2022 « Solutions pour un usage responsable de la blockchain »
+- Considérant 26 du RGPD (données anonymes vs pseudonymes)
+- Article 17 §3 RGPD (exceptions au droit à l'effacement)
+
+### Droit de la consommation
+- [Article L.221-25 Code de la consommation (modalités du renoncement à rétractation)](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000032227230/)
+- [Article L.221-28 §13° (exception pour services numériques)](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000045312631)
+- [Article L.212-1 Code de la consommation (clauses abusives)](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000032227167/)
+- [Article R.212-1 (clauses abusives de plein droit)](https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000032808997)
+- Articles L.612-1 et suivants (médiation de la consommation)
+
+### RGPD général
+- [Article 12 §3 RGPD (délai de réponse)](https://gdpr-info.eu/art-12-gdpr/)
+- [Article 13 RGPD (information préalable)](https://gdpr-info.eu/art-13-gdpr/)
+- [Article 6 §1 f) RGPD (intérêt légitime)](https://gdpr-info.eu/art-6-gdpr/)
+- [Article 30 RGPD (registre des traitements)](https://gdpr-info.eu/art-30-gdpr/)
+- [Délibération CNIL 2020-091 (cookies)](https://www.cnil.fr/fr/sites/default/files/atoms/files/recommandation-cookies-et-autres-traceurs.pdf)
+
+### Droit français spécifique
+- Article 82 Loi 78-17 (Informatique et Libertés — cookies)
+- Code de commerce L.123-22 (conservation comptable 10 ans)
+- [Loi 2022-172 (statut entrepreneur individuel)](https://www.legifrance.gouv.fr/jorf/id/JORFTEXT000045167459)
+- Articles 1170, 1231-3 Code civil (limitations contractuelles de responsabilité)
+
+---
+
+*Date du journal : 20 juin 2026. Si une décision est ultérieurement modifiée par Maître Untas, mettre à jour cette section avec la date et la nature du changement.*

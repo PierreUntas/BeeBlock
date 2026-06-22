@@ -6,7 +6,7 @@
 
 **Nom** : Pierre Untas
 **Statut** : Entrepreneur individuel — auto-entreprise en cours d'immatriculation auprès de l'URSSAF (SIRET à venir)
-**Activité principale** : Programmation informatique (code APE 62.01Z — sous réserve de classement définitif par l'INSEE)
+**Activité principale** : Traitement de données, hébergement et activités connexes (code APE 63.11Z — sous réserve de classement définitif par l'INSEE)
 **Adresse postale** : 88 rue Lagrange, 33000 Bordeaux, France
 **Téléphone** : 06 42 48 03 57
 **Email de contact** : pierre.untas@gmail.com
