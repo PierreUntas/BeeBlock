@@ -47,7 +47,19 @@ interface ShareMenuProps {
 export default function ShareMenu({ data, labels, variant = 'default' }: ShareMenuProps) {
     const [open, setOpen] = useState(false);
     const [copied, setCopied] = useState(false);
+    /**
+     * Popover alignment relative to the button. Defaults to right-aligned
+     * (popover extends LEFT from the button's right edge) — the historical
+     * behaviour, which works when the button sits on the right side of the
+     * viewport (e.g. artist profile header).
+     *
+     * Recomputed on open: if the button is close to the left edge and the
+     * popover would clip off-screen, we switch to left-aligned (popover
+     * extends RIGHT from the button's left edge).
+     */
+    const [align, setAlign] = useState<'left' | 'right'>('right');
     const ref = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLButtonElement>(null);
 
     // Close on outside click.
     useEffect(() => {
@@ -59,6 +71,18 @@ export default function ShareMenu({ data, labels, variant = 'default' }: ShareMe
         };
         document.addEventListener('mousedown', onClick);
         return () => document.removeEventListener('mousedown', onClick);
+    }, [open]);
+
+    // Choose alignment when opening so the popover always fits on screen.
+    useEffect(() => {
+        if (!open || !buttonRef.current) return;
+        const rect = buttonRef.current.getBoundingClientRect();
+        const POPOVER_MIN_WIDTH = 200; // matches min-w-[200px] below
+        const SAFE_MARGIN = 8;
+        // Does the popover fit to the right of the button's left edge?
+        const fitsLeftAligned =
+            rect.left + POPOVER_MIN_WIDTH + SAFE_MARGIN <= window.innerWidth;
+        setAlign(fitsLeftAligned ? 'left' : 'right');
     }, [open]);
 
     const copyLink = async () => {
@@ -84,6 +108,7 @@ export default function ShareMenu({ data, labels, variant = 'default' }: ShareMe
     return (
         <div className="relative" ref={ref}>
             <button
+                ref={buttonRef}
                 type="button"
                 onClick={() => setOpen(o => !o)}
                 aria-label={labels.share}
@@ -98,7 +123,7 @@ export default function ShareMenu({ data, labels, variant = 'default' }: ShareMe
             {open && (
                 <div
                     role="menu"
-                    className="absolute right-0 top-full mt-2 z-50 min-w-[200px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm"
+                    className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full mt-2 z-50 min-w-[200px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm`}
                 >
                     <MenuItem onClick={copyLink}>
                         {copied ? `${labels.shareCopied} ✓` : labels.shareCopyLink}

@@ -48,6 +48,18 @@ export default function EditEditionPage() {
         category: '',
     });
 
+    // Auto-resize the Technique textarea to match its content. Keeps it
+    // compact at rest (rows=1) but grows as needed — important on the edit
+    // page where the field is pre-filled from IPFS, so the resize has to
+    // run on the initial mount as well as on every keystroke.
+    const techniqueRef = useRef<HTMLTextAreaElement>(null);
+    useEffect(() => {
+        const el = techniqueRef.current;
+        if (!el) return;
+        el.style.height = 'auto';
+        el.style.height = `${el.scrollHeight}px`;
+    }, [editionData.technique]);
+
     const [isLoading, setIsLoading] = useState(true);
     const [isAuthorized, setIsAuthorized] = useState(false);
     const [loadingStates, setLoadingStates] = useState({
@@ -318,12 +330,13 @@ export default function EditEditionPage() {
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
                                 {t('form.techniqueLabel')}
                             </label>
-                            <input
-                                type="text"
+                            <textarea
+                                ref={techniqueRef}
                                 value={editionData.technique}
                                 onChange={(e) => setEditionData({ ...editionData, technique: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors resize-none overflow-hidden min-h-[60px]"
                                 placeholder={t('form.techniquePlaceholder')}
+                                rows={2}
                             />
                         </div>
 
