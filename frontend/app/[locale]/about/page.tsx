@@ -1,6 +1,8 @@
 "use client"
 
 import { useTranslations } from 'next-intl';
+import { Link } from '@/i18n/navigation';
+import { usePrivy } from '@privy-io/react-auth';
 
 const sectors = [
   {
@@ -29,9 +31,29 @@ const sectors = [
     svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="currentColor"><path d="M64 0C28.7 0 0 28.7 0 64V352c0 35.3 28.7 64 64 64H240l-10.7 32H160c-17.7 0-32 14.3-32 32s14.3 32 32 32H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H346.7L336 416H512c35.3 0 64-28.7 64-64V64c0-35.3-28.7-64-64-64H64zM512 64V288H64V64H512z" /></svg>
   },
   {
-    labelKey: 'engraving',
+    labelKey: 'print',
     category: 'Print',
     svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="currentColor"><path d="M160 96C160 78.3 145.7 64 128 64S96 78.3 96 96V416c0 17.7 14.3 32 32 32s32-14.3 32-32V96zM256 96c0-17.7-14.3-32-32-32s-32 14.3-32 32V416c0 17.7 14.3 32 32 32s32-14.3 32-32V96zM192 416V96c0-17.7-14.3-32-32-32s-32 14.3-32 32V416c0 17.7 14.3 32 32 32s32-14.3 32-32zm160-64c0-17.7-14.3-32-32-32s-32 14.3-32 32v64c0 17.7 14.3 32 32 32s32-14.3 32-32V352zm64 64c0 17.7 14.3 32 32 32s32-14.3 32-32V96c0-17.7-14.3-32-32-32s-32 14.3-32 32V416z" /></svg>
+  },
+  {
+    labelKey: 'design',
+    category: 'Design',
+    svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a3 3 0 0 0-1.5 5.6L3.4 21.3l1.8.9 5.7-11.4a3 3 0 0 0 2.2 0l5.7 11.4 1.8-.9-7.1-13.7A3 3 0 0 0 12 2z"/></svg>
+  },
+  {
+    labelKey: 'furniture',
+    category: 'Furniture',
+    svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M5 8h14a2 2 0 0 1 2 2v4h-2v-2H5v2H3v-4a2 2 0 0 1 2-2zM3 16h18v3h-2v-1H5v1H3v-3z"/></svg>
+  },
+  {
+    labelKey: 'jewelry',
+    category: 'Jewelry',
+    svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10l4 6-9 14L3 8l4-6zm1.5 1.7L5.5 8h13l-3-4.3h-7zM12 19.5L18.5 9h-13L12 19.5z"/></svg>
+  },
+  {
+    labelKey: 'glass',
+    category: 'Glass',
+    svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 2h10v3a5 5 0 0 1-4 4.9V20h3v2H8v-2h3V9.9A5 5 0 0 1 7 5V2z"/></svg>
   },
   {
     labelKey: 'textile',
@@ -58,19 +80,15 @@ const sectors = [
     category: 'Video',
     svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512" fill="currentColor"><path d="M0 128C0 92.7 28.7 64 64 64H320c35.3 0 64 28.7 64 64V384c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V128zM559.1 99.8c10.4 5.6 16.9 16.4 16.9 28.2V384c0 11.8-6.5 22.6-16.9 28.2s-23 5-32.9-1.6l-96-64L416 337.1V320 192 174.9l14.2-9.5 96-64c9.8-6.5 22.4-7.2 32.9-1.6z" /></svg>
   },
-  {
-    labelKey: 'other',
-    category: 'Other',
-    svg: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" fill="currentColor"><path d="M8 256a56 56 0 1 1 112 0A56 56 0 1 1 8 256zm160 0a56 56 0 1 1 112 0 56 56 0 1 1 -112 0zm216-56a56 56 0 1 1 0 112 56 56 0 1 1 0-112z" /></svg>
-  },
 ];
 
 const techs = [
+  { name: 'Base', url: 'https://base.org' },
   { name: 'Ethereum', url: 'https://ethereum.org' },
   { name: 'Solidity', url: 'https://soliditylang.org' },
-  { name: 'IPFS', url: 'https://ipfs.tech' },
-  { name: 'Merkle Tree', url: 'https://en.wikipedia.org/wiki/Merkle_tree' },
   { name: 'ERC-1155', url: 'https://eips.ethereum.org/EIPS/eip-1155' },
+  { name: 'Merkle Tree', url: 'https://en.wikipedia.org/wiki/Merkle_tree' },
+  { name: 'IPFS', url: 'https://ipfs.tech' },
   { name: 'Next.js', url: 'https://nextjs.org' },
   { name: 'Privy', url: 'https://privy.io' },
   { name: 'Wagmi', url: 'https://wagmi.sh' },
@@ -78,65 +96,85 @@ const techs = [
 
 export default function AboutPage() {
   const t = useTranslations('About');
+  const { login, authenticated } = usePrivy();
+
   return (
     <div className="min-h-screen bg-[#f5f3ef] text-[#1c1917]">
       <div className="max-w-[860px] mx-auto px-6 pt-28 pb-20">
 
-        {/* Header */}
-        <div className="text-center mb-[72px]">
+        {/* ── Hero ─────────────────────────────────────────────────────── */}
+        <section className="text-center mb-24">
           <div className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-5 flex items-center justify-center gap-3">
             <span className="block w-8 h-px bg-[#d6d0c8]" />
             {t('eyebrow')}
             <span className="block w-8 h-px bg-[#d6d0c8]" />
           </div>
-          <h1 className=" text-[clamp(40px,6vw,64px)] font-normal tracking-[-1.5px] leading-[1.1] mb-5">
+          <h1 className="text-[clamp(40px,6vw,64px)] font-normal tracking-[-1.5px] leading-[1.1] mb-5">
             {t('heroTitleStart')}<br />
             <em className="italic text-[#78716c]">{t('heroTitleAccent')}</em>
           </h1>
           <p className="text-[15px] font-light leading-[1.8] text-[#78716c] max-w-[480px] mx-auto">
             {t('heroSubtitle')}
           </p>
-        </div>
+        </section>
 
-        {/* Main card */}
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px p-10">
-          <h2 className=" text-[22px] font-normal mb-5">
-            <em className="italic text-[#78716c]">{t('mainTitleAccent')}</em>{t('mainTitle')}
+        {/* ── Vision : 3 paragraphes courts ──────────────────────────── */}
+        <section className="mb-24">
+          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+            {t('visionEyebrow')}
+          </p>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-10 text-[#1c1917] text-center">
+            {t('visionTitleStart')} <em className="italic text-[#78716c]">{t('visionTitleAccent')}</em>
           </h2>
-          <div className="text-[14px] font-light leading-[1.85] text-[#78716c] space-y-4">
-            <p>{t('mainBody1')}</p>
-            <p>{t('mainBody2')}</p>
-            <p>{t('mainBody3')}</p>
-            <p>{t('mainBody4')}</p>
-            <p>{t('mainBody5')}</p>
-            <p>{t('mainBody6')}</p>
+          <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 space-y-5 text-[14px] font-light leading-[1.85] text-[#78716c]">
+            <p>{t('visionBody1')}</p>
+            <p>{t('visionBody2')}</p>
+            <p>{t('visionBody3')}</p>
           </div>
-        </div>
+        </section>
 
-        <div className="flex items-center gap-4 my-8">
-          <span className="flex-1 h-px bg-[#d6d0c8]" />
-          <span className=" italic text-[13px] text-[#a8a29e]">·</span>
-          <span className="flex-1 h-px bg-[#d6d0c8]" />
-        </div>
-
-        {/* Manifeste */}
-        <div className="border border-[#d6d0c8] bg-[#1c1917] p-10 mb-8">
+        {/* ── Manifeste ──────────────────────────────────────────────── */}
+        <section className="border border-[#d6d0c8] bg-[#1c1917] p-10 mb-24">
           <div className="text-[10px] font-normal tracking-[0.15em] uppercase text-white/30 mb-4">
             {t('manifestoEyebrow')}
           </div>
-          <div className=" text-[clamp(20px,3vw,28px)] font-normal text-white leading-[1.4]">
-            {t('manifestoBodyStart')} <em className="italic text-white/40">{t('manifestoBodyAccent')}</em>{t('manifestoBodyEnd')}<br />
-          </div>
-        </div>
+          <p className="text-[clamp(20px,3vw,28px)] font-normal text-white leading-[1.4]">
+            {t('manifestoBodyStart')} <em className="italic text-white/40">{t('manifestoBodyAccent')}</em>{t('manifestoBodyEnd')}
+          </p>
+        </section>
 
-        {/* Sectors */}
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 mb-8">
-          <h3 className=" text-[17px] font-normal mb-5 text-[#1c1917]">
+        {/* ── Pour qui : 3 cartes ────────────────────────────────────── */}
+        <section className="mb-24">
+          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+            {t('forwhoEyebrow')}
+          </p>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[#1c1917] text-center">
+            {t('forwhoTitleStart')} <em className="italic text-[#78716c]">{t('forwhoTitleAccent')}</em>
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+            <ForWhoCell
+              title={t('forwho.artists.title')}
+              description={t('forwho.artists.description')}
+            />
+            <ForWhoCell
+              title={t('forwho.collectors.title')}
+              description={t('forwho.collectors.description')}
+            />
+            <ForWhoCell
+              title={t('forwho.galleries.title')}
+              description={t('forwho.galleries.description')}
+            />
+          </div>
+        </section>
+
+        {/* ── Disciplines couvertes ──────────────────────────────────── */}
+        <section className="border border-[#d6d0c8] bg-[#fafaf8] p-10 mb-8">
+          <h3 className="text-[17px] font-normal mb-5 text-[#1c1917]">
             {t('sectorsTitle')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
             {sectors.map(({ svg, labelKey, category }) => (
-              <a
+              <Link
                 key={labelKey}
                 href={`/explore/editions?category=${encodeURIComponent(category)}`}
                 className="flex items-center gap-2.5 py-2.5 px-3 border border-[#d6d0c8] bg-[#f5f3ef] hover:bg-[#e7e3dc] hover:border-[#1c1917] transition-all duration-200 no-underline group"
@@ -145,14 +183,14 @@ export default function AboutPage() {
                   {svg}
                 </div>
                 <span className="text-[12px] font-light text-[#78716c] group-hover:text-[#1c1917] transition-colors">{t(`sectors.${labelKey}`)}</span>
-              </a>
+              </Link>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Tech */}
-        <div className="border border-[#d6d0c8] bg-[#ede9e3] p-10 mb-10">
-          <h3 className=" text-[17px] font-normal mb-1.5 text-[#1c1917]">
+        {/* ── Technologie ────────────────────────────────────────────── */}
+        <section className="border border-[#d6d0c8] bg-[#ede9e3] p-10 mb-24">
+          <h3 className="text-[17px] font-normal mb-1.5 text-[#1c1917]">
             {t('techTitle')}
           </h3>
           <p className="text-[13px] font-light text-[#78716c] mb-5 leading-[1.7]">
@@ -171,19 +209,63 @@ export default function AboutPage() {
               </a>
             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Back */}
-        <div className="text-center">
-          <a
-            href="/"
-            className="text-[12px] font-normal tracking-[0.06em] text-[#78716c] no-underline border border-[#d6d0c8] py-3 px-7 inline-block transition-all duration-200 hover:border-[#1c1917] hover:text-[#1c1917]"
-          >
-            {t('backToHome')}
-          </a>
-        </div>
+        {/* ── CTA final ──────────────────────────────────────────────── */}
+        {!authenticated ? (
+          <section className="border border-[#d6d0c8] bg-[#1c1917] py-16 px-10 text-center">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 mb-5">
+              {t('ctaEyebrow')}
+            </p>
+            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-white leading-[1.2] mb-4 tracking-[-0.5px]">
+              {t('ctaTitleStart')} <em className="italic text-white/40">{t('ctaTitleAccent')}</em>
+            </h2>
+            <p className="text-[14px] font-light text-white/50 max-w-[420px] mx-auto mb-7 leading-[1.7]">
+              {t('ctaSubtitle')}
+            </p>
+            <button
+              onClick={login}
+              className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] bg-white py-3.5 px-8 cursor-pointer hover:bg-[#f5f3ef] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
+            >
+              {t('ctaButton')}
+            </button>
+          </section>
+        ) : (
+          <section className="border border-[#d6d0c8] bg-[#1c1917] py-16 px-10 text-center">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 mb-5">
+              {t('ctaEyebrow')}
+            </p>
+            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-white leading-[1.2] mb-4 tracking-[-0.5px]">
+              {t('ctaTitleStart')} <em className="italic text-white/40">{t('ctaTitleAccent')}</em>
+            </h2>
+            <p className="text-[14px] font-light text-white/50 max-w-[420px] mx-auto mb-7 leading-[1.7]">
+              {t('ctaSubtitle')}
+            </p>
+            <Link
+              href="/artist"
+              className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] bg-white py-3.5 px-8 no-underline inline-block hover:bg-[#f5f3ef] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
+            >
+              {t('ctaButton')}
+            </Link>
+          </section>
+        )}
 
       </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────── Sub-components ────────────────────────── */
+
+function ForWhoCell({ title, description }: { title: string; description: string }) {
+  return (
+    <div className="bg-[#fafaf8] p-8">
+      <h3 className="text-[16px] font-medium text-[#1c1917] mb-3 leading-tight">
+        {title}
+      </h3>
+      <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+        {description}
+      </p>
     </div>
   );
 }
