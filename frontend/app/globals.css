@@ -34,4 +34,55 @@
     button:disabled {
         cursor: not-allowed;
     }
+
+    /*
+     * Page-level safety: prevent ANY content from causing horizontal scroll on
+     * the document. Fixed-position children (modals, banners) compute their
+     * width against the document, so a single overflowing element on a page
+     * was making `100vw` resolve to a larger value than the visual viewport
+     * on mobile — pushing modal content beyond the visible area.
+     */
+    html,
+    body {
+        overflow-x: hidden;
+        max-width: 100vw;
+    }
+}
+
+/*
+ * iOS Safari — disable auto-zoom on input focus.
+ *
+ * When an <input>, <select> or <textarea> has a computed `font-size` smaller
+ * than 16px, iOS Safari zooms in on focus and does NOT reliably zoom back
+ * out on blur. The page stays partially zoomed, which made the Privy
+ * transaction modal (rendered at `width: 100vw`) appear clipped on both
+ * sides because the visual viewport had shrunk relative to the layout.
+ *
+ * Fix: force a minimum of 16px on all form controls on small screens. The
+ * desktop design (text-[12px] / text-[13px] inputs) is preserved above the
+ * mobile breakpoint, where iOS auto-zoom doesn't apply anyway.
+ *
+ * This is safer than `maximum-scale: 1` on the viewport meta (which would
+ * disable user pinch-zoom and hurt accessibility).
+ */
+@media (max-width: 640px) {
+    input,
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+}
+
+/*
+ * Privy modal — defensive overflow clamp (kept as belt-and-braces after the
+ * iOS zoom fix above). Privy uses `width: 100vw` on its dialog wrapper, so
+ * any residual horizontal scroll on the document would still push the modal
+ * beyond the visual viewport. The body `overflow-x: hidden` above protects
+ * the page; these rules protect the modal itself in case Privy is rendered
+ * in a portal that bypasses our body clamp.
+ */
+#privy-dialog,
+#privy-modal-content {
+    max-width: 100vw;
+    overflow-x: hidden;
 }

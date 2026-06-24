@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -13,6 +13,23 @@ export const metadata: Metadata = {
         type: "website",
         images: [{ url: "/monaeditions-logo.png", width: 512, height: 512, alt: "Mona Editions" }],
     },
+};
+
+/**
+ * Mobile viewport configuration.
+ *
+ * Without this declaration, mobile browsers fall back to a virtual viewport of
+ * ~980px and zoom out to fit the screen. That broke the Privy modal (which
+ * sizes itself against the visual viewport), and was the root cause of a wide
+ * range of mobile responsive issues across the app.
+ *
+ * `maximumScale: 5` keeps user pinch-zoom available for accessibility while
+ * still ensuring the initial render uses the device width.
+ */
+export const viewport: Viewport = {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
 };
 
 /**
