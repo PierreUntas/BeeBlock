@@ -16,6 +16,7 @@ export default function Navbar() {
     const [isOpen, setIsOpen] = useState(false);
     const [copied, setCopied] = useState(false);
     const [scrolled, setScrolled] = useState(false);
+    const [langOpen, setLangOpen] = useState(false);
     const { login, logout, authenticated, user, exportWallet } = usePrivy();
     const { address, chain } = useAccount();
 
@@ -138,46 +139,59 @@ export default function Navbar() {
 
                 {/* Right */}
                 <div className="flex items-center gap-2.5">
-                    {/* Inline language switcher (always visible) */}
-                    <div className="flex items-center border border-[#d6d0c8] bg-[#fafaf8] h-8">
+                    {/* Language switcher — compact popover on all viewports.
+                        Shows the active locale as a button; popover lists the
+                        other available locales for one-click switch. */}
+                    <div className="relative">
                         <button
                             type="button"
-                            onClick={() => switchLocale('fr')}
-                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
-                                locale === 'fr'
-                                    ? 'bg-[#1c1917] text-[#fafaf8]'
-                                    : 'text-[#78716c] hover:text-[#1c1917]'
-                            }`}
-                            aria-label="Français"
+                            onClick={() => setLangOpen(o => !o)}
+                            aria-label="Language switcher"
+                            aria-haspopup="true"
+                            aria-expanded={langOpen}
+                            className="flex items-center gap-1 border border-[#d6d0c8] bg-[#fafaf8] h-8 px-2.5
+                                text-[10px] font-medium tracking-[0.08em] text-[#1c1917]
+                                hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
                         >
-                            FR
+                            {locale.toUpperCase()}
+                            <svg
+                                width="8"
+                                height="8"
+                                viewBox="0 0 10 6"
+                                fill="none"
+                                className={`transition-transform duration-200 ${langOpen ? 'rotate-180' : ''}`}
+                                aria-hidden="true"
+                            >
+                                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                         </button>
-                        <span className="w-px h-3 bg-[#d6d0c8]" />
-                        <button
-                            type="button"
-                            onClick={() => switchLocale('de')}
-                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
-                                locale === 'de'
-                                    ? 'bg-[#1c1917] text-[#fafaf8]'
-                                    : 'text-[#78716c] hover:text-[#1c1917]'
-                            }`}
-                            aria-label="Deutsch"
-                        >
-                            DE
-                        </button>
-                        <span className="w-px h-3 bg-[#d6d0c8]" />
-                        <button
-                            type="button"
-                            onClick={() => switchLocale('en')}
-                            className={`text-[10px] font-medium tracking-[0.08em] px-2.5 h-full transition-all ${
-                                locale === 'en'
-                                    ? 'bg-[#1c1917] text-[#fafaf8]'
-                                    : 'text-[#78716c] hover:text-[#1c1917]'
-                            }`}
-                            aria-label="English"
-                        >
-                            EN
-                        </button>
+                        {langOpen && (
+                            <>
+                                {/* Click-outside backdrop */}
+                                <div
+                                    className="fixed inset-0 z-40"
+                                    onClick={() => setLangOpen(false)}
+                                />
+                                <div
+                                    role="menu"
+                                    className="absolute right-0 top-full mt-1 z-50 min-w-[60px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm flex flex-col"
+                                >
+                                    {(['fr', 'de', 'en'] as const).filter(l => l !== locale).map(l => (
+                                        <button
+                                            key={l}
+                                            type="button"
+                                            onClick={() => { switchLocale(l); setLangOpen(false); }}
+                                            role="menuitem"
+                                            className="text-[10px] font-medium tracking-[0.08em] uppercase text-[#78716c]
+                                                px-3 py-2 hover:bg-[#f5f3ef] hover:text-[#1c1917] transition-colors cursor-pointer
+                                                border-b border-[#e7e3dc] last:border-b-0 text-left"
+                                        >
+                                            {l}
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        )}
                     </div>
                     {authenticated ? (
                         <div
