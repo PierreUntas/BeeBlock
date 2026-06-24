@@ -73,6 +73,7 @@ export default function ArtistProfilePage() {
     });
 
     const MAX_FILE_SIZE = 20 * 1024 * 1024;
+    const MAX_PHOTOS = 7;
 
     const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -90,24 +91,43 @@ export default function ArtistProfilePage() {
 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = Array.from(e.target.files || []);
-        if (files.length > 0) {
-            const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
-            if (oversized.length > 0) {
-                showAlert(t('form.photosTooLargeError', {
-                    count: oversized.length,
-                    names: oversized.map(f => f.name).join(', '),
-                }));
-                return;
-            }
-            setPhotoFiles(prev => [...prev, ...files]);
-            files.forEach(file => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    setPhotoPreviews(prev => [...prev, reader.result as string]);
-                };
-                reader.readAsDataURL(file);
-            });
+        // Reset the input value immediately so the user can re-select the same
+        // files after a rejection (browsers de-duplicate by reference otherwise).
+        e.target.value = '';
+
+        if (files.length === 0) return;
+
+        const oversized = files.filter(f => f.size > MAX_FILE_SIZE);
+        if (oversized.length > 0) {
+            showAlert(t('form.photosTooLargeError', {
+                count: oversized.length,
+                names: oversized.map(f => f.name).join(', '),
+            }));
+            return;
         }
+
+        // Enforce the MAX_PHOTOS cap. If the user picks more than the remaining
+        // slots, accept what fits and tell them how many were dropped.
+        const remainingSlots = Math.max(0, MAX_PHOTOS - photoFiles.length);
+        if (remainingSlots === 0) {
+            showAlert(t('form.photosTooManyError', { max: MAX_PHOTOS, dropped: files.length }));
+            return;
+        }
+
+        const accepted = files.slice(0, remainingSlots);
+        const dropped = files.length - accepted.length;
+        if (dropped > 0) {
+            showAlert(t('form.photosTooManyError', { max: MAX_PHOTOS, dropped }));
+        }
+
+        setPhotoFiles(prev => [...prev, ...accepted]);
+        accepted.forEach(file => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPhotoPreviews(prev => [...prev, reader.result as string]);
+            };
+            reader.readAsDataURL(file);
+        });
     };
 
     const removePhoto = (index: number) => {
@@ -479,7 +499,7 @@ export default function ArtistProfilePage() {
 
                         <div>
                             <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
-                                {t('form.photosLabel')}
+                                {t('form.photosLabel', { max: MAX_PHOTOS })}
                             </label>
                             <input
                                 ref={photosInputRef}
@@ -492,10 +512,11 @@ export default function ArtistProfilePage() {
                             <button
                                 type="button"
                                 onClick={() => photosInputRef.current?.click()}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left"
+                                disabled={photoFiles.length >= MAX_PHOTOS}
+                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#f5f3ef]"
                             >
                                 {photoFiles.length > 0
-                                    ? `${photoFiles.length} ${t('form.photosLabel')}`
+                                    ? t('form.photosSelected', { count: photoFiles.length, max: MAX_PHOTOS })
                                     : t('form.photosButton')}
                             </button>
                             {photoPreviews.length > 0 && (

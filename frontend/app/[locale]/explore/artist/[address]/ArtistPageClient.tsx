@@ -262,19 +262,55 @@ export default function ArtistPageClient() {
                 {/* Artist header */}
                 <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px">
 
-                    {/* Hero — first portfolio photo */}
+                    {/*
+                     * Hero — first portfolio photo, with the artist avatar
+                     * overlapping the bottom-left of the cover (Instagram/
+                     * Twitter pattern). The avatar is positioned outside the
+                     * cover's overflow-hidden container so the bottom half
+                     * actually extends into the content area below.
+                     */}
                     {portfolio?.[0] && (
-                        <div className="w-full aspect-[21/9] overflow-hidden bg-[#e7e3dc]">
-                            <img
-                                src={ipfsToHttp(portfolio[0])}
-                                alt={artist.name}
-                                className="w-full h-full object-cover"
-                            />
+                        <div className="relative">
+                            <div className="w-full aspect-[21/9] overflow-hidden bg-[#e7e3dc]">
+                                <img
+                                    src={ipfsToHttp(portfolio[0])}
+                                    alt={artist.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            {artistIPFSData?.logo && (
+                                <img
+                                    src={ipfsToHttp(artistIPFSData.logo)}
+                                    alt={t('logoAlt', { name: artist.name })}
+                                    className="absolute left-6 md:left-8 bottom-0 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover border-2 border-[#fafaf8] bg-[#f5f3ef] shadow-md z-10"
+                                />
+                            )}
                         </div>
                     )}
 
-                    <div className="p-8">
-                        {/* Name + logo + share */}
+                    <div
+                        className={
+                            // Reserve extra top padding when the avatar overlaps,
+                            // so the name doesn't sit underneath it.
+                            portfolio?.[0] && artistIPFSData?.logo
+                                ? 'p-6 pt-20 md:p-8 md:pt-24'
+                                : 'p-6 md:p-8'
+                        }
+                    >
+                        {/*
+                         * Fallback avatar when there's no hero cover to overlap.
+                         * Renders inline at the top of the content block so the
+                         * artist still has a portrait without floating in space.
+                         */}
+                        {!portfolio?.[0] && artistIPFSData?.logo && (
+                            <img
+                                src={ipfsToHttp(artistIPFSData.logo)}
+                                alt={t('logoAlt', { name: artist.name })}
+                                className="w-24 h-24 md:w-28 md:h-28 object-cover border border-[#e7e3dc] bg-[#f5f3ef] mb-6"
+                            />
+                        )}
+
+                        {/* Name + share */}
                         <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[#e7e3dc] flex-wrap">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
@@ -291,15 +327,8 @@ export default function ArtistPageClient() {
                                 )}
                             </div>
 
-                            <div className="flex items-start gap-4 flex-shrink-0">
+                            <div className="flex-shrink-0">
                                 <ArtistShareButton artistName={artist.name} />
-                                {artistIPFSData?.logo && (
-                                    <img
-                                        src={ipfsToHttp(artistIPFSData.logo)}
-                                        alt={t('logoAlt', { name: artist.name })}
-                                        className="w-20 h-20 object-contain border border-[#e7e3dc] bg-[#f5f3ef]"
-                                    />
-                                )}
                             </div>
                         </div>
 
