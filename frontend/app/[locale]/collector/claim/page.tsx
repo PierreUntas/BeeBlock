@@ -77,7 +77,7 @@ type ErrorCode =
 export default function ClaimTokenPage() {
     const t = useTranslations('Claim');
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <Suspense fallback={<LoadingShell label={t('artworkLoading')} />}>
                 <ClaimFlow />
             </Suspense>
@@ -482,21 +482,21 @@ function Shell({ children }: { children: React.ReactNode }) {
 function LoadingShell({ label }: { label: string }) {
     return (
         <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
-            <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-            <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{label}</p>
+            <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+            <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{label}</p>
         </div>
     );
 }
 
 function EmptyState({ message }: { message: string }) {
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
             <img
                 src="/logo-mona.svg"
                 alt=""
-                className="w-16 h-16 object-contain mx-auto mb-6 opacity-50"
+                className="w-16 h-16 object-contain mx-auto mb-6 opacity-50 dark:invert"
             />
-            <p className="italic text-[18px] text-[#1c1917] leading-[1.6] max-w-md mx-auto">
+            <p className="italic text-[18px] text-[var(--text-primary)] leading-[1.6] max-w-md mx-auto">
                 {message}
             </p>
         </div>
@@ -519,11 +519,11 @@ function ReadyView({
     const t = useTranslations('Claim');
 
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px overflow-hidden">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] mb-px overflow-hidden">
 
             {/* ---- Artwork hero ---- */}
             {artwork.image && (
-                <div className="w-full aspect-[4/3] bg-[#e7e3dc] overflow-hidden">
+                <div className="w-full aspect-[4/3] bg-[var(--border-soft)] overflow-hidden">
                     <img
                         src={artwork.image}
                         alt={artwork.title}
@@ -535,22 +535,22 @@ function ReadyView({
             {/* ---- Title + artist ---- */}
             <div className="p-8 text-center">
                 <div className="flex items-center justify-center gap-3 mb-3">
-                    <div className="w-6 h-px bg-[#d6d0c8]" />
-                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                    <div className="w-6 h-px bg-[var(--border)]" />
+                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                         {t('editionLabel', { id: artwork.editionId.toString() })}
                     </span>
-                    <div className="w-6 h-px bg-[#d6d0c8]" />
+                    <div className="w-6 h-px bg-[var(--border)]" />
                 </div>
-                <h1 className="text-[clamp(28px,4vw,42px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
+                <h1 className="text-[clamp(28px,4vw,42px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-2">
                     {artwork.title || '—'}
                 </h1>
                 {artwork.artistName && (
-                    <p className="text-[15px] italic text-[#78716c] mb-1">
+                    <p className="text-[15px] italic text-[var(--text-secondary)] mb-1">
                         {t('byArtist', { artist: artwork.artistName })}
                     </p>
                 )}
                 {(artwork.technique || artwork.dimensions || artwork.year) && (
-                    <p className="text-[12px] font-light text-[#a8a29e] mt-3">
+                    <p className="text-[12px] font-light text-[var(--text-muted)] mt-3">
                         {[artwork.technique, artwork.dimensions, artwork.year]
                             .filter(Boolean)
                             .join(' · ')}
@@ -559,22 +559,22 @@ function ReadyView({
             </div>
 
             {/* ---- CTA ---- */}
-            <div className="border-t border-[#e7e3dc] p-8 bg-[#ede9e3]">
+            <div className="border-t border-[var(--border-soft)] p-8 bg-[var(--bg-card-alt)]">
                 {walletConnected ? (
                     <>
                         <button
                             type="button"
                             onClick={onClaim}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[13px] tracking-[0.08em] py-4 px-8 border border-[#1c1917] uppercase hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[13px] tracking-[0.08em] py-4 px-8 border border-[var(--text-primary)] uppercase hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                         >
                             {t('claimCta')}
                         </button>
-                        <p className="text-[11px] font-light text-[#78716c] text-center mt-4 leading-[1.6]">
+                        <p className="text-[11px] font-light text-[var(--text-secondary)] text-center mt-4 leading-[1.6]">
                             {t('claimHint')}
                         </p>
                     </>
                 ) : (
-                    <p className="text-[13px] font-light text-[#78716c] text-center leading-[1.7]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] text-center leading-[1.7]">
                         {t('connectWallet')}
                     </p>
                 )}
@@ -590,19 +590,19 @@ function ReadyView({
 function ClaimingView({ artwork }: { artwork: ArtworkData }) {
     const t = useTranslations('Claim');
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
             {artwork.image && (
-                <div className="w-32 h-32 mx-auto mb-8 overflow-hidden bg-[#e7e3dc]">
+                <div className="w-32 h-32 mx-auto mb-8 overflow-hidden bg-[var(--border-soft)]">
                     <img src={artwork.image} alt="" className="w-full h-full object-cover opacity-60" />
                 </div>
             )}
             <div className="flex justify-center mb-6">
-                <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
             </div>
-            <h2 className="text-[clamp(22px,3vw,28px)] font-normal text-[#1c1917] mb-3 tracking-[-0.5px]">
+            <h2 className="text-[clamp(22px,3vw,28px)] font-normal text-[var(--text-primary)] mb-3 tracking-[-0.5px]">
                 {t('claimingTitle')}
             </h2>
-            <p className="text-[13px] font-light text-[#78716c] leading-[1.7] max-w-md mx-auto">
+            <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7] max-w-md mx-auto">
                 {t('claimingBody')}
             </p>
         </div>
@@ -638,10 +638,10 @@ function SuccessView({
     const successTitle = t('successTitle', { artist: artistName });
 
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px overflow-hidden">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] mb-px overflow-hidden">
 
             {artwork.image && (
-                <div className="w-full aspect-[4/3] bg-[#e7e3dc] overflow-hidden">
+                <div className="w-full aspect-[4/3] bg-[var(--border-soft)] overflow-hidden">
                     <img
                         src={artwork.image}
                         alt={artwork.title}
@@ -655,19 +655,19 @@ function SuccessView({
                     {t('successEyebrow')}
                 </span>
 
-                <h1 className="text-[clamp(26px,4vw,38px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-3">
+                <h1 className="text-[clamp(26px,4vw,38px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-3">
                     {successTitle}
                 </h1>
 
-                <p className="text-[15px] italic text-[#78716c] mb-6">
+                <p className="text-[15px] italic text-[var(--text-secondary)] mb-6">
                     « {artwork.title} »
                 </p>
 
-                <p className="text-[13px] font-light text-[#1c1917] leading-[1.7] max-w-md mx-auto mb-2">
+                <p className="text-[13px] font-light text-[var(--text-primary)] leading-[1.7] max-w-md mx-auto mb-2">
                     {t('successBody')}
                 </p>
 
-                <p className="text-[11px] font-mono text-[#a8a29e] mb-8">
+                <p className="text-[11px] font-mono text-[var(--text-muted)] mb-8">
                     {t('successCertNumber', { id: artwork.editionId.toString() })}
                 </p>
 
@@ -703,13 +703,13 @@ function SuccessView({
                     />
                     <Link
                         href={`/explore/edition/${artwork.editionId.toString()}`}
-                        className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                        className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] border border-[var(--border)] bg-[var(--bg-page)] px-4 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                     >
                         {t('viewArtworkCta')}
                     </Link>
                     <Link
                         href="/collector"
-                        className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                        className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] border border-[var(--border)] bg-[var(--bg-page)] px-4 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                     >
                         {t('viewCollectionCta')}
                     </Link>
@@ -722,7 +722,7 @@ function SuccessView({
                             href={`https://basescan.org/tx/${txHash}`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="font-light text-[#78716c] underline underline-offset-4 hover:text-[#1c1917] transition-colors"
+                            className="font-light text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)] transition-colors"
                         >
                             {t('viewOnBasescan')} <span aria-hidden>↗</span>
                         </a>
@@ -730,7 +730,7 @@ function SuccessView({
                     <button
                         type="button"
                         onClick={onClaimAnother}
-                        className="font-light text-[#78716c] underline underline-offset-4 hover:text-[#1c1917] transition-colors cursor-pointer"
+                        className="font-light text-[var(--text-secondary)] underline underline-offset-4 hover:text-[var(--text-primary)] transition-colors cursor-pointer"
                     >
                         {t('claimAnother')}
                     </button>
@@ -760,18 +760,18 @@ function ErrorView({ code, onRetry }: { code: ErrorCode; onRetry: () => void }) 
     const isTerminal = code === 'already-claimed' || code === 'disabled';
 
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
-            <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#a8a29e] mb-5">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
+            <p className="text-[10px] font-medium tracking-[0.2em] uppercase text-[var(--text-muted)] mb-5">
                 ●
             </p>
-            <p className="text-[14px] font-light text-[#1c1917] leading-[1.7] max-w-md mx-auto mb-8">
+            <p className="text-[14px] font-light text-[var(--text-primary)] leading-[1.7] max-w-md mx-auto mb-8">
                 {t(messageKey[code])}
             </p>
             {!isTerminal && (
                 <button
                     type="button"
                     onClick={onRetry}
-                    className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[#1c1917] uppercase hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                    className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[var(--text-primary)] uppercase hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                 >
                     {t('retry')}
                 </button>
@@ -805,17 +805,17 @@ function AdvancedFields({
 }) {
     const t = useTranslations('Claim');
     return (
-        <div className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-6 mb-px">
+        <div className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-6 mb-px">
             <button
                 type="button"
                 onClick={onToggle}
-                className="text-[11px] font-normal tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] transition-colors underline cursor-pointer"
+                className="text-[11px] font-normal tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors underline cursor-pointer"
             >
                 {visible ? t('hideAdvanced') : t('showAdvanced')}
             </button>
 
             {visible && (
-                <div className="mt-6 space-y-5 pt-6 border-t border-[#e7e3dc]">
+                <div className="mt-6 space-y-5 pt-6 border-t border-[var(--border-soft)]">
                     <Field
                         label={t('editionIdLabel')}
                         value={editionId}
@@ -857,25 +857,25 @@ function Field({
 }) {
     return (
         <div>
-            <label className="block text-[11px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+            <label className="block text-[11px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                 {label}
             </label>
             {textarea ? (
                 <textarea
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[12px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors font-mono min-h-[80px]"
+                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors font-mono min-h-[80px]"
                 />
             ) : (
                 <input
                     type={type}
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[12px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[12px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                 />
             )}
             {hint && (
-                <p className="text-[11px] text-[#a8a29e] mt-2 font-light">{hint}</p>
+                <p className="text-[11px] text-[var(--text-muted)] mt-2 font-light">{hint}</p>
             )}
         </div>
     );
@@ -887,30 +887,30 @@ function Field({
 
 function TrustFooter({ t }: { t: ReturnType<typeof useTranslations> }) {
     return (
-        <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+        <div className="mt-20 border-t border-[var(--border)] pt-12">
             <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                 <img
                     src="/logo-mona.svg"
                     alt="Mona Editions"
-                    className="w-24 h-12 object-contain opacity-60"
+                    className="w-24 h-12 object-contain opacity-60 dark:invert"
                 />
-                <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                     {t('trustTitle')}
                 </p>
-                <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                     {t('trustBody')}
                 </p>
                 <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                     <Link
                         href="/about"
-                        className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                        className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                     >
                         {t('trustLinkAbout')}
                     </Link>
-                    <span className="text-[#d6d0c8]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <Link
                         href="/collector"
-                        className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                        className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                     >
                         {t('trustLinkCollection')}
                     </Link>

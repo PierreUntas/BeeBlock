@@ -79,7 +79,7 @@ export default function WithdrawalConsentModal({ open, onConfirm, onCancel }: Pr
 
     return (
         <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-[#1c1917]/60 backdrop-blur-sm p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-inverse)]/60 backdrop-blur-sm p-4"
             onClick={(e) => {
                 if (e.target === e.currentTarget && !busy) onCancel();
             }}
@@ -87,23 +87,23 @@ export default function WithdrawalConsentModal({ open, onConfirm, onCancel }: Pr
             aria-modal="true"
             aria-labelledby="withdrawal-consent-title"
         >
-            <div className="bg-[#fafaf8] border border-[#d6d0c8] max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div className="bg-[var(--bg-card)] border border-[var(--border)] max-w-lg w-full max-h-[90vh] overflow-y-auto">
 
                 {/* Header */}
                 <div className="px-8 pt-7 pb-5">
                     <div className="flex items-center gap-3 mb-5">
-                        <div className="w-5 h-px bg-[#d6d0c8]" />
-                        <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <div className="w-5 h-px bg-[var(--border)]" />
+                        <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             Mona Editions
                         </span>
                     </div>
                     <h2
                         id="withdrawal-consent-title"
-                        className="text-[24px] font-normal text-[#1c1917] leading-tight mb-4"
+                        className="text-[24px] font-normal text-[var(--text-primary)] leading-tight mb-4"
                     >
                         {t('title')}
                     </h2>
-                    <p className="text-[13px] font-light text-[#78716c] leading-[1.75]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.75]">
                         {t('intro')}
                     </p>
                 </div>
@@ -117,15 +117,15 @@ export default function WithdrawalConsentModal({ open, onConfirm, onCancel }: Pr
                             checked={accepted}
                             onChange={(e) => setAccepted(e.target.checked)}
                             disabled={busy}
-                            className="mt-1 w-4 h-4 accent-[#1c1917] cursor-pointer flex-shrink-0"
+                            className="mt-1 w-4 h-4 accent-[var(--text-primary)] cursor-pointer flex-shrink-0"
                         />
-                        <span className="text-[13px] font-medium text-[#1c1917] leading-[1.6]">
+                        <span className="text-[13px] font-medium text-[var(--text-primary)] leading-[1.6]">
                             {t('checkboxLabel')}
                         </span>
                     </label>
 
                     {/* Rights reminder */}
-                    <p className="text-[12px] font-light italic text-[#78716c] leading-[1.7] mt-5 pl-7">
+                    <p className="text-[12px] font-light italic text-[var(--text-secondary)] leading-[1.7] mt-5 pl-7">
                         {t('rightsReminder')}
                     </p>
 
@@ -150,12 +150,12 @@ export default function WithdrawalConsentModal({ open, onConfirm, onCancel }: Pr
                 </div>
 
                 {/* Footer — actions */}
-                <div className="border-t border-[#e7e3dc] px-8 py-5 flex gap-3 justify-end mt-5">
+                <div className="border-t border-[var(--border-soft)] px-8 py-5 flex gap-3 justify-end mt-5">
                     <button
                         type="button"
                         onClick={onCancel}
                         disabled={busy}
-                        className="text-[11px] font-medium tracking-[0.08em] uppercase px-5 py-2 border border-[#d6d0c8] text-[#78716c] hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                        className="text-[11px] font-medium tracking-[0.08em] uppercase px-5 py-2 border border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200 disabled:opacity-50 cursor-pointer"
                     >
                         {t('cancel')}
                     </button>
@@ -163,7 +163,7 @@ export default function WithdrawalConsentModal({ open, onConfirm, onCancel }: Pr
                         type="button"
                         onClick={handleConfirm}
                         disabled={!accepted || busy}
-                        className="text-[11px] font-medium tracking-[0.08em] uppercase px-5 py-2 bg-[#1c1917] text-[#fafaf8] border border-[#1c1917] hover:bg-[#292524] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                        className="text-[11px] font-medium tracking-[0.08em] uppercase px-5 py-2 bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] border border-[var(--text-primary)] hover:bg-[var(--accent-hover)] transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
                     >
                         {busy ? t('confirmLoading') : t('confirm')}
                     </button>

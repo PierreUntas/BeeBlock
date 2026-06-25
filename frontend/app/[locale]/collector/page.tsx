@@ -319,7 +319,7 @@ export default function CollectorPage() {
         address && token.artist.toLowerCase() === address.toLowerCase();
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-4xl mx-auto px-6 pt-24 pb-20">
 
                 {/* ============================================================ */}
@@ -327,17 +327,17 @@ export default function CollectorPage() {
                 {/* ============================================================ */}
                 <header className="text-center mb-12">
                     <div className="flex items-center justify-center gap-3 mb-4">
-                        <div className="w-8 h-px bg-[#d6d0c8]" />
-                        <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#a8a29e]">
+                        <div className="w-8 h-px bg-[var(--border)]" />
+                        <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-[var(--text-muted)]">
                             Mona Editions
                         </span>
-                        <div className="w-8 h-px bg-[#d6d0c8]" />
+                        <div className="w-8 h-px bg-[var(--border)]" />
                     </div>
-                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-3">
-                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
+                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-3">
+                        {t('title')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent')}</em>
                     </h1>
                     {address && !loadingStates.fetchingTokens && (
-                        <p className="text-[13px] font-light text-[#78716c]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)]">
                             {t('heroSubtitle', { count: ownedTokens.length })}
                         </p>
                     )}
@@ -350,8 +350,8 @@ export default function CollectorPage() {
                     <EmptyShell message={t('notConnected')} />
                 ) : loadingStates.fetchingTokens ? (
                     <div className="flex flex-col items-center justify-center py-16 gap-4">
-                        <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
+                        <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                        <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">
                             {t('loading')}
                         </p>
                     </div>
@@ -375,30 +375,30 @@ export default function CollectorPage() {
                 {/* TRUST FOOTER                                                  */}
                 {/* ============================================================ */}
                 {address && (
-                    <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                    <div className="mt-20 border-t border-[var(--border)] pt-12">
                         <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                             <img
                                 src="/logo-mona.svg"
                                 alt="Mona Editions"
-                                className="w-24 h-12 object-contain opacity-60"
+                                className="w-24 h-12 object-contain opacity-60 dark:invert"
                             />
-                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                 {t('trustTitle')}
                             </p>
-                            <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                            <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                                 {t('trustBody')}
                             </p>
                             <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                                 <Link
                                     href="/about"
-                                    className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                    className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                                 >
                                     {t('trustLinkAbout')}
                                 </Link>
-                                <span className="text-[#d6d0c8]">·</span>
+                                <span className="text-[var(--border)]">·</span>
                                 <Link
                                     href="/explore/editions"
-                                    className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                    className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                                 >
                                     {t('trustLinkExplore')}
                                 </Link>
@@ -412,18 +412,18 @@ export default function CollectorPage() {
                 {/* ============================================================ */}
                 {selectedToken && (
                     <Modal onClose={() => setSelectedToken(null)}>
-                        <h3 className="text-[24px] font-normal text-[#1c1917] mb-6 leading-tight">
+                        <h3 className="text-[24px] font-normal text-[var(--text-primary)] mb-6 leading-tight">
                             {t('review.title')}
                         </h3>
                         <form onSubmit={handleAddComment} className="space-y-5">
                             <div>
-                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                     {t('review.ratingLabel')}
                                 </label>
                                 <select
                                     value={rating}
                                     onChange={e => setRating(Number(e.target.value))}
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors cursor-pointer"
+                                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors cursor-pointer"
                                     required
                                 >
                                     <option value={5}>{t('review.rating5')}</option>
@@ -435,7 +435,7 @@ export default function CollectorPage() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                     {t('review.commentLabel')}
                                 </label>
                                 <textarea
@@ -444,7 +444,7 @@ export default function CollectorPage() {
                                     minLength={5}
                                     maxLength={500}
                                     rows={4}
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
+                                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors min-h-[100px]"
                                     required
                                 />
                             </div>
@@ -452,14 +452,14 @@ export default function CollectorPage() {
                                 <button
                                     type="button"
                                     onClick={() => setSelectedToken(null)}
-                                    className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                                    className="flex-1 bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--border)] hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer"
                                 >
                                     {t('review.cancel')}
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loadingStates.commenting}
-                                    className="flex-1 bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                                    className="flex-1 bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                                 >
                                     {loadingStates.commenting ? t('review.submitting') : t('review.submit')}
                                 </button>
@@ -475,15 +475,15 @@ export default function CollectorPage() {
                     <Modal onClose={closeTransferModal}>
                         {transferStep === 'form' ? (
                             <>
-                                <h3 className="text-[24px] font-normal text-[#1c1917] mb-1 leading-tight">
+                                <h3 className="text-[24px] font-normal text-[var(--text-primary)] mb-1 leading-tight">
                                     {t('transfer.title')}
                                 </h3>
-                                <p className="text-[13px] font-light italic text-[#78716c] mb-6">
+                                <p className="text-[13px] font-light italic text-[var(--text-secondary)] mb-6">
                                     {transferToken.title}
                                 </p>
                                 <form onSubmit={handleTransferPreview} className="space-y-5">
                                     <div>
-                                        <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                        <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                             {t('transfer.recipientLabel')}
                                         </label>
                                         <input
@@ -494,7 +494,7 @@ export default function CollectorPage() {
                                                 setRecipientError('');
                                             }}
                                             placeholder={t('transfer.recipientPlaceholder')}
-                                            className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] font-mono text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                            className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] font-mono text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                             required
                                         />
                                         {recipientError && (
@@ -503,7 +503,7 @@ export default function CollectorPage() {
                                     </div>
                                     {transferToken.balance > 1n && (
                                         <div>
-                                            <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                                            <label className="block text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                                 {t('transfer.amountLabel')}
                                             </label>
                                             <input
@@ -512,10 +512,10 @@ export default function CollectorPage() {
                                                 onChange={e => setTransferAmount(Math.min(Number(e.target.value), Number(transferToken.balance)))}
                                                 min={1}
                                                 max={Number(transferToken.balance)}
-                                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                                 required
                                             />
-                                            <p className="mt-1.5 text-[11px] text-[#a8a29e]">
+                                            <p className="mt-1.5 text-[11px] text-[var(--text-muted)]">
                                                 {t('transfer.youHave', { count: Number(transferToken.balance) })}
                                             </p>
                                         </div>
@@ -524,13 +524,13 @@ export default function CollectorPage() {
                                         <button
                                             type="button"
                                             onClick={closeTransferModal}
-                                            className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                                            className="flex-1 bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--border)] hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer"
                                         >
                                             {t('transfer.cancel')}
                                         </button>
                                         <button
                                             type="submit"
-                                            className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                                            className="flex-[2] bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--text-primary)] hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                                         >
                                             {t('transfer.previewCta')} <span aria-hidden>→</span>
                                         </button>
@@ -539,29 +539,29 @@ export default function CollectorPage() {
                             </>
                         ) : (
                             <>
-                                <h3 className="text-[24px] font-normal text-[#1c1917] mb-6 leading-tight">
+                                <h3 className="text-[24px] font-normal text-[var(--text-primary)] mb-6 leading-tight">
                                     {t('transfer.confirmTitle')}
                                 </h3>
-                                <div className="border border-[#d6d0c8] bg-[#f5f3ef] p-5 space-y-3 mb-6">
+                                <div className="border border-[var(--border)] bg-[var(--bg-page)] p-5 space-y-3 mb-6">
                                     <div>
-                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-0.5">
                                             {t('transfer.labelArtwork')}
                                         </p>
-                                        <p className="text-[13px] text-[#1c1917]">
-                                            {transferToken.title} <span className="text-[#a8a29e]">#{transferToken.tokenId.toString()}</span>
+                                        <p className="text-[13px] text-[var(--text-primary)]">
+                                            {transferToken.title} <span className="text-[var(--text-muted)]">#{transferToken.tokenId.toString()}</span>
                                         </p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-0.5">
                                             {t('transfer.labelCopies')}
                                         </p>
-                                        <p className="text-[13px] text-[#1c1917]">{transferAmount}</p>
+                                        <p className="text-[13px] text-[var(--text-primary)]">{transferAmount}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-0.5">
+                                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-0.5">
                                             {t('transfer.labelRecipient')}
                                         </p>
-                                        <p className="text-[12px] font-mono text-[#1c1917] break-all">{recipientAddress}</p>
+                                        <p className="text-[12px] font-mono text-[var(--text-primary)] break-all">{recipientAddress}</p>
                                     </div>
                                 </div>
                                 <p className="text-[12px] font-medium text-[#dc2626] mb-6 leading-[1.6]">
@@ -571,14 +571,14 @@ export default function CollectorPage() {
                                     <button
                                         onClick={() => setTransferStep('form')}
                                         disabled={loadingStates.transferring}
-                                        className="flex-1 bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#d6d0c8] hover:border-[#1c1917] transition-all duration-200 disabled:opacity-50 cursor-pointer"
+                                        className="flex-1 bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--border)] hover:border-[var(--text-primary)] transition-all duration-200 disabled:opacity-50 cursor-pointer"
                                     >
                                         {t('transfer.back')}
                                     </button>
                                     <button
                                         onClick={handleTransferConfirm}
                                         disabled={loadingStates.transferring}
-                                        className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                                        className="flex-[2] bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-6 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                                     >
                                         {loadingStates.transferring ? t('transfer.submitting') : t('transfer.confirmCta')}
                                     </button>
@@ -617,12 +617,12 @@ function CollectionCard({
     }, [token.tokenId]);
 
     return (
-        <article className="border border-[#d6d0c8] bg-[#fafaf8] overflow-hidden">
+        <article className="border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
             <div className="flex flex-col md:flex-row">
                 {/* ---- Image ---- */}
                 <Link
                     href={`/explore/edition/${token.tokenId}`}
-                    className="block md:w-56 flex-shrink-0 bg-[#e7e3dc] aspect-[4/3] md:aspect-square overflow-hidden no-underline group"
+                    className="block md:w-56 flex-shrink-0 bg-[var(--border-soft)] aspect-[4/3] md:aspect-square overflow-hidden no-underline group"
                     aria-label={token.title}
                 >
                     {token.image ? (
@@ -633,7 +633,7 @@ function CollectionCard({
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                            <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-25" />
+                            <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-25 dark:invert" />
                         </div>
                     )}
                 </Link>
@@ -642,21 +642,21 @@ function CollectionCard({
                 <div className="flex-1 p-6 flex flex-col">
                     <div className="flex items-start justify-between gap-4 mb-3">
                         <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-1">
+                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-1">
                                 {t('edition', { id: token.tokenId.toString() })}
                             </p>
-                            <h2 className="text-[22px] font-normal text-[#1c1917] leading-tight mb-1">
+                            <h2 className="text-[22px] font-normal text-[var(--text-primary)] leading-tight mb-1">
                                 <Link
                                     href={`/explore/edition/${token.tokenId}`}
-                                    className="hover:text-[#78716c] no-underline transition-colors"
+                                    className="hover:text-[var(--text-secondary)] no-underline transition-colors"
                                 >
                                     {token.title}
                                 </Link>
                             </h2>
-                            <p className="text-[13px] italic text-[#78716c]">
+                            <p className="text-[13px] italic text-[var(--text-secondary)]">
                                 <Link
                                     href={`/explore/artist/${token.artist}`}
-                                    className="hover:text-[#1c1917] no-underline transition-colors"
+                                    className="hover:text-[var(--text-primary)] no-underline transition-colors"
                                 >
                                     {t('byArtist', { artist: token.artistName })}
                                 </Link>
@@ -669,7 +669,7 @@ function CollectionCard({
                         )}
                     </div>
 
-                    <p className="text-[12px] font-light text-[#78716c] mb-5">
+                    <p className="text-[12px] font-light text-[var(--text-secondary)] mb-5">
                         {t('copiesLabel', { count: Number(token.balance) })}
                     </p>
 
@@ -677,7 +677,7 @@ function CollectionCard({
                     <div className="mt-auto flex flex-wrap gap-2">
                         <Link
                             href={`/explore/edition/${token.tokenId}`}
-                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#1c1917] border border-[#1c1917] px-3.5 py-2 no-underline hover:bg-[#292524] transition-all duration-200"
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-on-inverse)] bg-[var(--bg-inverse)] border border-[var(--text-primary)] px-3.5 py-2 no-underline hover:bg-[var(--accent-hover)] transition-all duration-200"
                         >
                             {t('viewDetailsCta')}
                         </Link>
@@ -685,7 +685,7 @@ function CollectionCard({
                             <button
                                 type="button"
                                 onClick={onReview}
-                                className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                                className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] bg-[var(--bg-page)] border border-[var(--border)] px-3.5 py-2 hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer"
                             >
                                 {t('reviewCta')}
                             </button>
@@ -693,7 +693,7 @@ function CollectionCard({
                         <button
                             type="button"
                             onClick={onTransfer}
-                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] bg-[var(--bg-page)] border border-[var(--border)] px-3.5 py-2 hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer"
                         >
                             {t('transferCta')}
                         </button>
@@ -737,8 +737,8 @@ function CollectionCard({
 
 function EmptyShell({ message }: { message: string }) {
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-            <p className="italic text-[16px] text-[#78716c] max-w-md mx-auto leading-[1.7]">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
+            <p className="italic text-[16px] text-[var(--text-secondary)] max-w-md mx-auto leading-[1.7]">
                 {message}
             </p>
         </div>
@@ -748,21 +748,21 @@ function EmptyShell({ message }: { message: string }) {
 function EmptyCollection() {
     const t = useTranslations('Collector');
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
             <img
                 src="/logo-mona.svg"
                 alt=""
-                className="w-16 h-16 object-contain mx-auto mb-6 opacity-30"
+                className="w-16 h-16 object-contain mx-auto mb-6 opacity-30 dark:invert"
             />
-            <h2 className="text-[24px] font-normal text-[#1c1917] mb-3">
+            <h2 className="text-[24px] font-normal text-[var(--text-primary)] mb-3">
                 {t('emptyTitle')}
             </h2>
-            <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto leading-[1.7] mb-6">
+            <p className="text-[14px] font-light text-[var(--text-secondary)] max-w-md mx-auto leading-[1.7] mb-6">
                 {t('empty')}
             </p>
             <Link
                 href="/explore/editions"
-                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] border border-[var(--border)] bg-[var(--bg-page)] px-4 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
             >
                 {t('emptyLinkExplore')} <span aria-hidden>→</span>
             </Link>
@@ -792,11 +792,11 @@ function Modal({
 
     return (
         <div
-            className="fixed inset-0 bg-[#1c1917]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-[var(--bg-inverse)]/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={onClose}
         >
             <div
-                className="border border-[#d6d0c8] bg-[#fafaf8] p-8 max-w-md w-full"
+                className="border border-[var(--border)] bg-[var(--bg-card)] p-8 max-w-md w-full"
                 onClick={e => e.stopPropagation()}
             >
                 {children}

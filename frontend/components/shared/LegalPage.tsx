@@ -33,16 +33,16 @@ export default async function LegalPage({ file, title, accent }: Props) {
     const tLegal = await getTranslations('Legal');
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-3xl mx-auto px-6 pt-28 pb-20">
                 <div className="text-center mb-12">
                     <img
                         src="/logo-mona.svg"
                         alt="Mona Editions"
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
+                        className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert"
                     />
-                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        {title} <em className="italic text-[#78716c]">{accent}</em>
+                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight">
+                        {title} <em className="italic text-[var(--text-secondary)]">{accent}</em>
                     </h1>
                 </div>
 
@@ -58,7 +58,7 @@ export default async function LegalPage({ file, title, accent }: Props) {
                 )}
 
                 <article
-                    className="border border-[#d6d0c8] bg-[#fafaf8] p-8 md:p-12 legal-prose"
+                    className="border border-[var(--border)] bg-[var(--bg-card)] p-8 md:p-12 legal-prose"
                     dangerouslySetInnerHTML={{ __html: html }}
                 />
             </div>
@@ -68,7 +68,7 @@ export default async function LegalPage({ file, title, accent }: Props) {
                 .legal-prose h2 {
                     font-size: 22px;
                     font-weight: 500;
-                    color: #1c1917;
+                    color: var(--text-primary);
                     margin: 32px 0 12px 0;
                     letter-spacing: -0.3px;
                     line-height: 1.3;
@@ -77,29 +77,29 @@ export default async function LegalPage({ file, title, accent }: Props) {
                 .legal-prose h3 {
                     font-size: 16px;
                     font-weight: 500;
-                    color: #1c1917;
+                    color: var(--text-primary);
                     margin: 24px 0 8px 0;
                 }
                 .legal-prose p {
                     font-size: 14px;
                     line-height: 1.75;
-                    color: #1c1917;
+                    color: var(--text-primary);
                     margin: 0 0 14px 0;
                     font-weight: 300;
                 }
                 .legal-prose ul, .legal-prose ol {
                     font-size: 14px;
                     line-height: 1.75;
-                    color: #1c1917;
+                    color: var(--text-primary);
                     font-weight: 300;
                     padding-left: 22px;
                     margin: 0 0 18px 0;
                 }
                 .legal-prose li { margin-bottom: 6px; }
-                .legal-prose strong { color: #1c1917; font-weight: 500; }
-                .legal-prose em { color: #78716c; font-style: italic; }
+                .legal-prose strong { color: var(--text-primary); font-weight: 500; }
+                .legal-prose em { color: var(--text-secondary); font-style: italic; }
                 .legal-prose a {
-                    color: #1c1917;
+                    color: var(--text-primary);
                     text-decoration: underline;
                     text-underline-offset: 3px;
                 }
@@ -107,16 +107,16 @@ export default async function LegalPage({ file, title, accent }: Props) {
                 .legal-prose code {
                     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
                     font-size: 12.5px;
-                    background: #ede9e3;
+                    background: var(--bg-card-alt);
                     padding: 1px 6px;
                     border-radius: 3px;
-                    color: #1c1917;
+                    color: var(--text-primary);
                 }
                 .legal-prose blockquote {
-                    border-left: 2px solid #d6d0c8;
+                    border-left: 2px solid var(--border);
                     padding-left: 16px;
                     margin: 16px 0;
-                    color: #78716c;
+                    color: var(--text-secondary);
                     font-style: italic;
                 }
                 .legal-prose table {
@@ -129,23 +129,23 @@ export default async function LegalPage({ file, title, accent }: Props) {
                 .legal-prose td {
                     text-align: left;
                     padding: 10px 12px;
-                    border: 1px solid #d6d0c8;
+                    border: 1px solid var(--border);
                     vertical-align: top;
                     line-height: 1.6;
-                    color: #1c1917;
+                    color: var(--text-primary);
                     font-weight: 300;
                 }
                 .legal-prose th {
-                    background: #ede9e3;
+                    background: var(--bg-card-alt);
                     font-weight: 500;
                     font-size: 11px;
                     letter-spacing: 0.06em;
                     text-transform: uppercase;
-                    color: #78716c;
+                    color: var(--text-secondary);
                 }
                 .legal-prose hr {
                     border: 0;
-                    border-top: 1px solid #d6d0c8;
+                    border-top: 1px solid var(--border);
                     margin: 32px 0;
                 }
             `}</style>

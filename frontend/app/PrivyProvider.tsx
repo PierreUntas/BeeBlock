@@ -6,8 +6,27 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { base, sepolia } from "viem/chains";
 import { http, createConfig } from "wagmi";
 import { activeChain, isProduction } from "@/config/constants";
+import { useEffect, useState } from "react";
 
 const queryClient = new QueryClient();
+
+/**
+ * Watches the `.dark` class on <html> and returns the current Privy theme
+ * value ('light' | 'dark'). The initial value is read at mount; subsequent
+ * toggles by ThemeToggle are picked up via a MutationObserver so Privy's
+ * embedded UI (login, transaction approval) re-skins on the fly.
+ */
+function usePrivyTheme(): 'light' | 'dark' {
+    const [theme, setTheme] = useState<'light' | 'dark'>('light');
+    useEffect(() => {
+        const sync = () => setTheme(document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+        sync();
+        const observer = new MutationObserver(sync);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        return () => observer.disconnect();
+    }, []);
+    return theme;
+}
 
 const wagmiConfig = createConfig({
     chains: isProduction ? [base] : [base, sepolia],
@@ -19,7 +38,8 @@ const wagmiConfig = createConfig({
 
 export default function PrivyProvider({ children }: { children: React.ReactNode }) {
     const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-    
+    const privyTheme = usePrivyTheme();
+
     if (!appId) {
         console.error("NEXT_PUBLIC_PRIVY_APP_ID is not defined in .env");
         return (
@@ -43,8 +63,8 @@ export default function PrivyProvider({ children }: { children: React.ReactNode 
             config={{
                 loginMethods: ["email"], // ["email", "wallet"]
                 appearance: {
-                    theme: "light",
-                    accentColor: "#1c1917",
+                    theme: privyTheme,
+                    accentColor: privyTheme === 'dark' ? "#f5f3ef" : "#1c1917",
                     logo: "/monaeditions-logo.png",
                     landingHeader: "Bienvenue chez Mona Editions",
                     loginMessage: "Authentifiez vos œuvres ou réclamez votre certificat",

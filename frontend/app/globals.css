@@ -3,6 +3,85 @@
 @import "tailwindcss/theme" layer(theme);
 @import "tailwindcss/utilities" layer(utilities);
 
+/*
+ * Dark mode — class-based strategy (Tailwind 4).
+ *
+ * Active when the `.dark` class is present on <html>. The class is added by
+ * the inline script in app/layout.tsx BEFORE React hydrates (avoids the
+ * flash of wrong theme) and toggled by the ThemeToggle component.
+ *
+ * All design tokens are exposed as CSS variables below so a single class
+ * swap re-skins the entire app without touching any component code.
+ */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Design tokens.
+ *
+ * Each component reads colors via `var(--token-name)` (e.g.
+ * `bg-[var(--bg-page)]`). The light values mirror the original palette
+ * (warm beige / cream / sepia tones) so light mode is unchanged. The dark
+ * values keep a warm tone (brown-black, not neutral grey) to preserve the
+ * editorial / fine-art identity rather than feeling like a generic app.
+ */
+:root {
+    /* Backgrounds */
+    --bg-page:        #f5f3ef;  /* page background — warm beige */
+    --bg-card:        #fafaf8;  /* cards / inputs / pop surfaces */
+    --bg-card-alt:    #ede9e3;  /* alt cards (e.g. tech section) */
+    --bg-inverse:     #1c1917;  /* dark blocks on light pages (CTA dark, manifesto) */
+
+    /* Text */
+    --text-primary:   #1c1917;  /* main copy, headlines */
+    --text-secondary: #78716c;  /* body soft, descriptions */
+    --text-muted:     #a8a29e;  /* labels, eyebrows, captions */
+    --text-on-inverse: #fafaf8; /* text on bg-inverse */
+
+    /* Borders */
+    --border:         #d6d0c8;  /* default borders */
+    --border-soft:    #e7e3dc;  /* subtle dividers inside cards */
+
+    /* Interactive accents */
+    --accent:         #1c1917;  /* primary action color */
+    --accent-hover:   #292524;
+    --danger:         #dc2626;
+    --danger-bg:      #fef2f2;
+}
+
+.dark {
+    /* Backgrounds — warm dark (brown-black), not neutral grey */
+    --bg-page:        #0f0e0c;
+    --bg-card:        #1a1816;
+    --bg-card-alt:    #221f1c;
+    --bg-inverse:     #fafaf8;  /* light blocks on dark pages — inverted */
+
+    /* Text — mirror tones, slightly desaturated */
+    --text-primary:   #f5f3ef;
+    --text-secondary: #a8a29e;
+    --text-muted:     #78716c;
+    --text-on-inverse: #1c1917;
+
+    /* Borders — barely visible, warm */
+    --border:         #2d2925;
+    --border-soft:    #221e1b;
+
+    /* Interactive accents */
+    --accent:         #f5f3ef;
+    --accent-hover:   #ede9e3;
+    --danger:         #ef4444;
+    --danger-bg:      #1f1212;
+}
+
+/* Apply page background + default text color from tokens on the root */
+html {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    color-scheme: light;
+}
+html.dark {
+    color-scheme: dark;
+}
+
 @font-face {
     font-family: 'Carbon BL';
     src: url('/fonts/carbon-bl.otf') format('opentype');

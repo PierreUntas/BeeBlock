@@ -220,18 +220,18 @@ export default function ArtistPageClient() {
     }, [artistAddress]);
 
     if (loadingStates.fetchingArtist) return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
-                <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
+                <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('loading')}</p>
             </div>
         </div>
     );
 
     if (!artist) return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                <p className=" italic text-[22px] text-[#a8a29e]">{t('notFound')}</p>
+                <p className=" italic text-[22px] text-[var(--text-muted)]">{t('notFound')}</p>
             </div>
         </div>
     );
@@ -240,27 +240,27 @@ export default function ArtistPageClient() {
     const hasSocialMedia = socialMedia && (socialMedia.instagram || socialMedia.twitter || socialMedia.facebook);
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-6xl mx-auto px-6 pt-28 pb-20">
 
                 {/* Back */}
                 <Link
                     href="/explore/artists"
-                    className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#78716c]
-                        border border-[#d6d0c8] px-4 py-2 mb-12 no-underline
-                        hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                    className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-secondary)]
+                        border border-[var(--border)] px-4 py-2 mb-12 no-underline
+                        hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200"
                 >
                     {t('back')}
                 </Link>
 
                 {loadingStates.loadingIPFS && (
-                    <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6">
+                    <p className="text-[12px] font-light text-[var(--text-muted)] tracking-[0.06em] mb-6">
                         {t('ipfsLoading')}
                     </p>
                 )}
 
                 {/* Artist header */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] mb-px">
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] mb-px">
 
                     {/*
                      * Hero — first portfolio photo, with the artist avatar
@@ -271,7 +271,7 @@ export default function ArtistPageClient() {
                      */}
                     {portfolio?.[0] && (
                         <div className="relative">
-                            <div className="w-full aspect-[21/9] overflow-hidden bg-[#e7e3dc]">
+                            <div className="w-full aspect-[21/9] overflow-hidden bg-[var(--border-soft)]">
                                 <img
                                     src={ipfsToHttp(portfolio[0])}
                                     alt={artist.name}
@@ -282,7 +282,7 @@ export default function ArtistPageClient() {
                                 <img
                                     src={ipfsToHttp(artistIPFSData.logo)}
                                     alt={t('logoAlt', { name: artist.name })}
-                                    className="absolute left-6 md:left-8 bottom-0 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover border-2 border-[#fafaf8] bg-[#f5f3ef] shadow-md z-10"
+                                    className="absolute left-6 md:left-8 bottom-0 translate-y-1/2 w-24 h-24 md:w-28 md:h-28 object-cover border-2 border-[var(--bg-page)] bg-[var(--bg-page)] shadow-md z-10"
                                 />
                             )}
                         </div>
@@ -306,24 +306,24 @@ export default function ArtistPageClient() {
                             <img
                                 src={ipfsToHttp(artistIPFSData.logo)}
                                 alt={t('logoAlt', { name: artist.name })}
-                                className="w-24 h-24 md:w-28 md:h-28 object-cover border border-[#e7e3dc] bg-[#f5f3ef] mb-6"
+                                className="w-24 h-24 md:w-28 md:h-28 object-cover border border-[var(--border-soft)] bg-[var(--bg-page)] mb-6"
                             />
                         )}
 
                         {/* Name + share */}
-                        <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[#e7e3dc] flex-wrap">
+                        <div className="flex items-start justify-between gap-6 mb-6 pb-6 border-b border-[var(--border-soft)] flex-wrap">
                             <div>
                                 <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-6 h-px bg-[#d6d0c8]" />
-                                    <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                                    <div className="w-6 h-px bg-[var(--border)]" />
+                                    <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                         {t('certifiedArtist')}
                                     </span>
                                 </div>
-                                <h1 className=" text-[clamp(32px,5vw,52px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
+                                <h1 className=" text-[clamp(32px,5vw,52px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-2">
                                     {artist.name}
                                 </h1>
                                 {artist.location && (
-                                    <p className="text-[14px] font-light text-[#78716c]">{artist.location}</p>
+                                    <p className="text-[14px] font-light text-[var(--text-secondary)]">{artist.location}</p>
                                 )}
                             </div>
 
@@ -334,7 +334,7 @@ export default function ArtistPageClient() {
 
                         {/* Stats bar — editions count · collectors · member since */}
                         {stats && (
-                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 pb-8 border-b border-[#e7e3dc]">
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-2 mb-8 pb-8 border-b border-[var(--border-soft)]">
                                 <StatItem value={t('statsEditions', { count: stats.editionsCount })} />
                                 <StatDot />
                                 <StatItem value={t('statsCollectors', { count: stats.collectorsCount })} />
@@ -354,7 +354,7 @@ export default function ArtistPageClient() {
                                 {artistIPFSData?.bio && (
                                     <div>
                                         <Label>{t('about')}</Label>
-                                        <p className="text-[14px] font-light text-[#1c1917] leading-[1.8]">
+                                        <p className="text-[14px] font-light text-[var(--text-primary)] leading-[1.8]">
                                             {artistIPFSData.bio}
                                         </p>
                                     </div>
@@ -364,7 +364,7 @@ export default function ArtistPageClient() {
                                         <Label>{t('exhibitions')}</Label>
                                         <ul className="flex flex-col gap-1.5">
                                             {exhibitions.map((ex, i) => (
-                                                <li key={i} className="text-[13px] font-light text-[#1c1917] leading-[1.7] border-l-2 border-[#d6d0c8] pl-3">
+                                                <li key={i} className="text-[13px] font-light text-[var(--text-primary)] leading-[1.7] border-l-2 border-[var(--border)] pl-3">
                                                     {ex}
                                                 </li>
                                             ))}
@@ -433,7 +433,7 @@ export default function ArtistPageClient() {
 
                                 <div>
                                     <Label>{t('ethAddress')}</Label>
-                                    <p className="text-[11px] font-mono text-[#a8a29e] break-all">{artistAddress}</p>
+                                    <p className="text-[11px] font-mono text-[var(--text-muted)] break-all">{artistAddress}</p>
                                 </div>
                             </div>
                         </div>
@@ -442,13 +442,13 @@ export default function ArtistPageClient() {
 
                 {/* Photo gallery — portfolio (skip first used as hero) */}
                 {portfolio && portfolio.length > 1 && (
-                    <div className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
-                        <h2 className=" text-[22px] font-normal text-[#1c1917] mb-6">
-                            {t('portfolioTitleStart')} <em className="italic text-[#78716c]">{t('portfolioTitleAccent')}</em>
+                    <div className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
+                        <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-6">
+                            {t('portfolioTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('portfolioTitleAccent')}</em>
                         </h2>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-px bg-[var(--border)] border border-[var(--border)]">
                             {portfolio.slice(1).map((photo, i) => (
-                                <div key={i} className="aspect-square overflow-hidden bg-[#e7e3dc]">
+                                <div key={i} className="aspect-square overflow-hidden bg-[var(--border-soft)]">
                                     <img
                                         src={ipfsToHttp(photo)}
                                         alt={t('photoAlt', { index: i + 2, name: artist.name })}
@@ -462,32 +462,32 @@ export default function ArtistPageClient() {
 
                 {/* Works section */}
                 <div className="mt-16 mb-8">
-                    <div className="flex items-end justify-between border-b border-[#d6d0c8] pb-6 mb-0">
-                        <h2 className=" text-[clamp(24px,3vw,36px)] font-normal tracking-[-0.5px] text-[#1c1917]">
-                            {t('worksTitleStart')} <em className="italic text-[#78716c]">{t('worksTitleAccent')}</em>
+                    <div className="flex items-end justify-between border-b border-[var(--border)] pb-6 mb-0">
+                        <h2 className=" text-[clamp(24px,3vw,36px)] font-normal tracking-[-0.5px] text-[var(--text-primary)]">
+                            {t('worksTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('worksTitleAccent')}</em>
                         </h2>
-                        <span className=" italic text-[36px] text-[#e7e3dc] leading-none">
+                        <span className=" italic text-[36px] text-[var(--border-soft)] leading-none">
                             {editions.length}
                         </span>
                     </div>
                 </div>
 
                 {editions.length === 0 ? (
-                    <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-                        <p className=" italic text-[18px] text-[#a8a29e]">
+                    <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
+                        <p className=" italic text-[18px] text-[var(--text-muted)]">
                             {t('noWorks')}
                         </p>
                     </div>
                 ) : (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-px bg-[var(--border)] border border-[var(--border)]">
                         {editions.filter(e => !e.disabled).map((edition) => (
                             <Link
                                 key={edition.tokenId.toString()}
                                 href={`/explore/edition/${edition.tokenId}`}
-                                className="bg-[#fafaf8] p-5 flex flex-col gap-3 hover:bg-[#f5f3ef] transition-colors duration-200 no-underline group"
+                                className="bg-[var(--bg-card)] p-5 flex flex-col gap-3 hover:bg-[var(--bg-page)] transition-colors duration-200 no-underline group"
                             >
                                 {edition.ipfsData?.images?.[0] ? (
-                                    <div className="w-full aspect-[4/3] overflow-hidden bg-[#e7e3dc]">
+                                    <div className="w-full aspect-[4/3] overflow-hidden bg-[var(--border-soft)]">
                                         <img
                                             src={ipfsToHttp(edition.ipfsData.images[0])}
                                             alt={edition.title}
@@ -495,19 +495,19 @@ export default function ArtistPageClient() {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-full aspect-[4/3] bg-[#e7e3dc] flex items-center justify-center">
-                                        <img src="/logo-mona.svg" alt="Logo" className="w-16 h-16 object-contain opacity-20" />
+                                    <div className="w-full aspect-[4/3] bg-[var(--border-soft)] flex items-center justify-center">
+                                        <img src="/logo-mona.svg" alt="Logo" className="w-16 h-16 object-contain opacity-20 dark:invert" />
                                     </div>
                                 )}
 
                                 <div className="flex items-start justify-between gap-2">
                                     <div>
                                         {edition.ipfsData?.category && (
-                                            <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-1">
+                                            <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-1">
                                                 {getCategoryLabel(edition.ipfsData.category)}
                                             </p>
                                         )}
-                                        <h3 className=" text-[17px] font-normal text-[#1c1917] leading-tight">
+                                        <h3 className=" text-[17px] font-normal text-[var(--text-primary)] leading-tight">
                                             {edition.title}
                                         </h3>
                                     </div>
@@ -517,27 +517,27 @@ export default function ArtistPageClient() {
                                 </div>
 
                                 {edition.ipfsData?.technique && (
-                                    <p className="text-[12px] font-light text-[#78716c]">
+                                    <p className="text-[12px] font-light text-[var(--text-secondary)]">
                                         {edition.ipfsData.technique}
                                         {edition.ipfsData.dimensions ? ` — ${edition.ipfsData.dimensions}` : ''}
                                     </p>
                                 )}
 
                                 {edition.ipfsData?.year && (
-                                    <p className="text-[11px] font-light text-[#a8a29e]">{edition.ipfsData.year}</p>
+                                    <p className="text-[11px] font-light text-[var(--text-muted)]">{edition.ipfsData.year}</p>
                                 )}
 
                                 {edition.commentsCount !== undefined && edition.commentsCount > 0 && (
-                                    <p className="text-[12px] font-light text-[#78716c]">
+                                    <p className="text-[12px] font-light text-[var(--text-secondary)]">
                                         {edition.averageRating?.toFixed(1)} · {t('verifiedReviews', { count: edition.commentsCount })}
                                     </p>
                                 )}
 
-                                <div className="border-t border-[#e7e3dc] pt-3 flex items-center justify-between">
-                                    <p className="text-[10px] font-mono text-[#a8a29e]">
+                                <div className="border-t border-[var(--border-soft)] pt-3 flex items-center justify-between">
+                                    <p className="text-[10px] font-mono text-[var(--text-muted)]">
                                         #{edition.tokenId.toString()}
                                     </p>
-                                    <p className="text-[12px] font-light text-[#78716c]">
+                                    <p className="text-[12px] font-light text-[var(--text-secondary)]">
                                         {t('copies', { count: Number(edition.remainingTokens) })}
                                     </p>
                                 </div>
@@ -547,30 +547,30 @@ export default function ArtistPageClient() {
                 )}
 
                 {/* Trust block — for visitors landing here from social media */}
-                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                <div className="mt-20 border-t border-[var(--border)] pt-12">
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                         <img
                             src="/logo-mona.svg"
                             alt="Mona Editions"
-                            className="w-24 h-12 object-contain opacity-60"
+                            className="w-24 h-12 object-contain opacity-60 dark:invert"
                         />
-                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             {t('trustTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                             {t('trustBody')}
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                             <Link
                                 href="/about"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkAbout')}
                             </Link>
-                            <span className="text-[#d6d0c8]">·</span>
+                            <span className="text-[var(--border)]">·</span>
                             <Link
                                 href="/explore/artists"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkArtists')}
                             </Link>
@@ -585,7 +585,7 @@ export default function ArtistPageClient() {
 
 function Label({ children }: { children: React.ReactNode }) {
     return (
-        <p className="text-[9px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-2">{children}</p>
+        <p className="text-[9px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">{children}</p>
     );
 }
 
@@ -593,21 +593,21 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex flex-col gap-1 pb-4 border-b border-[#f0ede8]">
             <Label>{label}</Label>
-            <p className="text-[13px] font-light text-[#1c1917]">{value}</p>
+            <p className="text-[13px] font-light text-[var(--text-primary)]">{value}</p>
         </div>
     );
 }
 
 function StatItem({ value }: { value: string }) {
     return (
-        <span className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] uppercase">
+        <span className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] uppercase">
             {value}
         </span>
     );
 }
 
 function StatDot() {
-    return <span className="text-[#d6d0c8] text-[12px]">·</span>;
+    return <span className="text-[var(--border)] text-[12px]">·</span>;
 }
 
 /**

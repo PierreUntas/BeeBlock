@@ -93,25 +93,25 @@ export default function Home() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-[1080px] mx-auto px-6 pt-28 pb-20">
 
                 {/* Hero */}
                 <section className="text-center mb-24">
-                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-6">
+                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-6">
                         {t('hero.eyebrow')}
                     </p>
-                    <h1 className="text-[clamp(44px,7vw,72px)] font-normal tracking-[-1.5px] leading-[1.05] mb-7 text-[#1c1917]">
-                        {t('hero.titleStart')} <em className="italic text-[#78716c]">{t('hero.titleAccent')}</em><br />
+                    <h1 className="text-[clamp(44px,7vw,72px)] font-normal tracking-[-1.5px] leading-[1.05] mb-7 text-[var(--text-primary)]">
+                        {t('hero.titleStart')} <em className="italic text-[var(--text-secondary)]">{t('hero.titleAccent')}</em><br />
                         {t('hero.titleEnd')}
                     </h1>
-                    <p className="text-[15px] font-light leading-[1.8] text-[#78716c] max-w-[540px] mx-auto">
+                    <p className="text-[15px] font-light leading-[1.8] text-[var(--text-secondary)] max-w-[540px] mx-auto">
                         {t('hero.subtitle')}
                     </p>
                 </section>
 
                 {/* 3 cards personas */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-px mb-24 bg-[#d6d0c8] border border-[#d6d0c8]">
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-px mb-24 bg-[var(--border)] border border-[var(--border)]">
                     <PersonaCard
                         eyebrow={t('personas.artist.eyebrow')}
                         title={t('personas.artist.title')}
@@ -137,11 +137,11 @@ export default function Home() {
 
                 {/* Comment ça marche */}
                 <section className="mb-24">
-                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-3 text-center">
                         {t('howItWorks.eyebrow')}
                     </p>
-                    <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[#1c1917] text-center">
-                        {t('howItWorks.title')} <em className="italic text-[#78716c]">{t('howItWorks.titleAccent')}</em>
+                    <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[var(--text-primary)] text-center">
+                        {t('howItWorks.title')} <em className="italic text-[var(--text-secondary)]">{t('howItWorks.titleAccent')}</em>
                     </h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 md:gap-8">
                         <Step number="01" title={t('howItWorks.step1.title')}>
@@ -161,28 +161,28 @@ export default function Home() {
                     <section className="mb-24">
                         <div className="flex items-end justify-between mb-10 flex-wrap gap-4">
                             <div>
-                                <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-2">
+                                <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-2">
                                     {t('gallery.eyebrow')}
                                 </p>
-                                <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] text-[#1c1917]">
-                                    {t('gallery.titleStart')} <em className="italic text-[#78716c]">{t('gallery.titleAccent')}</em>
+                                <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] text-[var(--text-primary)]">
+                                    {t('gallery.titleStart')} <em className="italic text-[var(--text-secondary)]">{t('gallery.titleAccent')}</em>
                                 </h2>
                             </div>
                             <Link
                                 href="/explore/editions"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] hover:opacity-60 inline-flex items-center gap-2 transition-opacity no-underline"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] hover:opacity-60 inline-flex items-center gap-2 transition-opacity no-underline"
                             >
                                 <span className="hidden sm:inline">{t('gallery.viewAll')}</span>
-                                <span className="inline-block w-12 h-px bg-[#1c1917]" />
+                                <span className="inline-block w-12 h-px bg-[var(--bg-inverse)]" />
                             </Link>
                         </div>
 
                         {loadingRecent ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                <div className="aspect-[4/5] bg-[#ede9e3] animate-pulse" />
+                                <div className="aspect-[4/5] bg-[var(--bg-card-alt)] animate-pulse" />
                                 <div className="grid grid-rows-2 gap-4 md:gap-6">
-                                    <div className="bg-[#ede9e3] animate-pulse" />
-                                    <div className="bg-[#ede9e3] animate-pulse" />
+                                    <div className="bg-[var(--bg-card-alt)] animate-pulse" />
+                                    <div className="bg-[var(--bg-card-alt)] animate-pulse" />
                                 </div>
                             </div>
                         ) : (
@@ -218,13 +218,13 @@ export default function Home() {
 
                 {/* Pérennité / Sécurité */}
                 <section className="mb-24">
-                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+                    <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-3 text-center">
                         {t('trust.eyebrow')}
                     </p>
-                    <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[#1c1917] text-center">
-                        {t('trust.titleStart')} <em className="italic text-[#78716c]">{t('trust.titleAccent')}</em>
+                    <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[var(--text-primary)] text-center">
+                        {t('trust.titleStart')} <em className="italic text-[var(--text-secondary)]">{t('trust.titleAccent')}</em>
                     </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border)] border border-[var(--border)]">
                         <TrustCell title={t('trust.blockchain.title')}>
                             {t('trust.blockchain.description')}
                         </TrustCell>
@@ -239,19 +239,19 @@ export default function Home() {
 
                 {/* CTA final (visiteurs non authentifiés seulement) */}
                 {!authenticated && (
-                    <section className="border border-[#d6d0c8] bg-[#1c1917] py-16 px-10 text-center">
-                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 mb-5">
+                    <section className="border border-[var(--border)] bg-[var(--bg-inverse)] py-16 px-10 text-center">
+                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-on-inverse)]/40 mb-5">
                             {t('cta.eyebrow')}
                         </p>
-                        <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-white leading-[1.2] mb-4 tracking-[-0.5px]">
-                            {t('cta.titleStart')} <em className="italic text-white/40">{t('cta.titleAccent')}</em>
+                        <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-[var(--text-on-inverse)] leading-[1.2] mb-4 tracking-[-0.5px]">
+                            {t('cta.titleStart')} <em className="italic text-[var(--text-on-inverse)]/55">{t('cta.titleAccent')}</em>
                         </h2>
-                        <p className="text-[14px] font-light text-white/50 max-w-[420px] mx-auto mb-7 leading-[1.7]">
+                        <p className="text-[14px] font-light text-[var(--text-on-inverse)]/65 max-w-[420px] mx-auto mb-7 leading-[1.7]">
                             {t('cta.subtitle')}
                         </p>
                         <button
                             onClick={login}
-                            className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] bg-white py-3.5 px-8 cursor-pointer hover:bg-[#f5f3ef] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
+                            className="text-[12px] font-medium tracking-[0.06em] text-[var(--bg-inverse)] bg-[var(--text-on-inverse)] py-3.5 px-8 cursor-pointer hover:bg-[var(--bg-page)] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
                         >
                             {t('cta.button')}
                         </button>
@@ -262,7 +262,7 @@ export default function Home() {
                 <div className="text-center mt-10">
                     <Link
                         href="/about"
-                        className="text-[12px] font-normal tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] underline underline-offset-4 transition-colors"
+                        className="text-[12px] font-normal tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline underline-offset-4 transition-colors"
                     >
                         {t('aboutLink')}
                     </Link>
@@ -291,18 +291,18 @@ function PersonaCard({
     return (
         <Link
             href={href}
-            className="bg-[#fafaf8] p-8 flex flex-col group no-underline hover:bg-[#f0ece6] transition-colors duration-300"
+            className="bg-[var(--bg-card)] p-8 flex flex-col group no-underline hover:bg-[#f0ece6] transition-colors duration-300"
         >
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-4">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-4">
                 {eyebrow}
             </p>
-            <h3 className="text-[22px] font-normal text-[#1c1917] mb-3 leading-tight">
+            <h3 className="text-[22px] font-normal text-[var(--text-primary)] mb-3 leading-tight">
                 {title}
             </h3>
-            <p className="text-[13px] font-light text-[#78716c] leading-[1.7] mb-7 flex-1">
+            <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7] mb-7 flex-1">
                 {description}
             </p>
-            <span className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] group-hover:translate-x-1 transition-transform inline-block">
+            <span className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] group-hover:translate-x-1 transition-transform inline-block">
                 {cta} →
             </span>
         </Link>
@@ -320,13 +320,13 @@ function Step({
 }) {
     return (
         <div>
-            <p className="text-[40px] font-light text-[#d6d0c8] leading-none mb-4 tracking-tight">
+            <p className="text-[40px] font-light text-[var(--border)] leading-none mb-4 tracking-tight">
                 {number}
             </p>
-            <h3 className="text-[18px] font-normal text-[#1c1917] mb-3 leading-tight">
+            <h3 className="text-[18px] font-normal text-[var(--text-primary)] mb-3 leading-tight">
                 {title}
             </h3>
-            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+            <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7]">
                 {children}
             </p>
         </div>
@@ -341,11 +341,11 @@ function TrustCell({
     children: React.ReactNode;
 }) {
     return (
-        <div className="bg-[#fafaf8] p-8">
-            <h3 className="text-[16px] font-medium text-[#1c1917] mb-3 leading-tight">
+        <div className="bg-[var(--bg-card)] p-8">
+            <h3 className="text-[16px] font-medium text-[var(--text-primary)] mb-3 leading-tight">
                 {title}
             </h3>
-            <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+            <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7]">
                 {children}
             </p>
         </div>
@@ -369,7 +369,7 @@ function ArtworkTile({
     return (
         <Link
             href={`/explore/edition/${edition.tokenId}`}
-            className={`group relative block overflow-hidden bg-[#1c1917] no-underline ${aspectClass}`}
+            className={`group relative block overflow-hidden bg-[var(--bg-inverse)] no-underline ${aspectClass}`}
         >
             {edition.imageUrl ? (
                 /* eslint-disable-next-line @next/next/no-img-element */
@@ -379,14 +379,14 @@ function ArtworkTile({
                     className="absolute inset-0 w-full h-full object-cover transition-all duration-[1200ms] ease-out group-hover:scale-[1.04] group-hover:opacity-90"
                 />
             ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-[11px] text-white/40 tracking-[0.1em] uppercase">
+                <div className="absolute inset-0 flex items-center justify-center text-[11px] text-[var(--text-on-inverse)]/55 tracking-[0.1em] uppercase">
                     {noImageLabel}
                 </div>
             )}
 
             {eyebrow && (
                 <div className="absolute top-5 left-5 z-10">
-                    <span className="inline-block text-[10px] font-medium tracking-[0.18em] uppercase text-white bg-[#1c1917]/80 backdrop-blur-sm px-3 py-1.5">
+                    <span className="inline-block text-[10px] font-medium tracking-[0.18em] uppercase text-white bg-[var(--bg-inverse)]/80 backdrop-blur-sm px-3 py-1.5">
                         {eyebrow}
                     </span>
                 </div>

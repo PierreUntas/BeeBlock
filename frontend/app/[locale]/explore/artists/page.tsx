@@ -120,24 +120,24 @@ export default function ArtistsPage() {
     const filtered = filterArtist === 'all' ? artists : artists.filter(p => p.name === filterArtist);
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-6xl mx-auto px-6 pt-28 pb-20">
 
                 {/* Header */}
                 <div className="mb-16">
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="w-8 h-px bg-[#d6d0c8]" />
-                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">{t('eyebrow')}</span>
+                        <div className="w-8 h-px bg-[var(--border)]" />
+                        <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">{t('eyebrow')}</span>
                     </div>
-                    <div className="flex items-end justify-between border-b border-[#d6d0c8] pb-8">
+                    <div className="flex items-end justify-between border-b border-[var(--border)] pb-8">
                         <div>
-                            <h1 className=" text-[clamp(40px,6vw,64px)] font-normal leading-[1.05] tracking-[-1.5px] text-[#1c1917] mb-3">
-                                {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
+                            <h1 className=" text-[clamp(40px,6vw,64px)] font-normal leading-[1.05] tracking-[-1.5px] text-[var(--text-primary)] mb-3">
+                                {t('title')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent')}</em>
                             </h1>
                         </div>
                         <div className="text-right hidden md:block">
-                            <span className=" italic text-[48px] text-[#e7e3dc] leading-none">{artists.length}</span>
-                            <span className="block text-[11px] font-light tracking-[0.08em] text-[#a8a29e] mt-1">{t('certifiedSuffix')}</span>
+                            <span className=" italic text-[48px] text-[var(--border-soft)] leading-none">{artists.length}</span>
+                            <span className="block text-[11px] font-light tracking-[0.08em] text-[var(--text-muted)] mt-1">{t('certifiedSuffix')}</span>
                         </div>
                     </div>
                 </div>
@@ -155,7 +155,7 @@ export default function ArtistsPage() {
                 </div>
 
                 {loadingStates.loadingIPFS && (
-                    <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6">
+                    <p className="text-[12px] font-light text-[var(--text-muted)] tracking-[0.06em] mb-6">
                         {/* Reuse Common.ipfsLoading via per-page key for clarity */}
                         {t('loading')}
                     </p>
@@ -163,24 +163,24 @@ export default function ArtistsPage() {
 
                 {loadingStates.fetchingArtists ? (
                     <div className="flex flex-col items-center justify-center py-32 gap-4">
-                        <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                        <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
+                        <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                        <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('loading')}</p>
                     </div>
                 ) : filtered.length === 0 ? (
-                    <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-                        <p className=" italic text-[22px] text-[#a8a29e]">{t('empty')}</p>
+                    <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
+                        <p className=" italic text-[22px] text-[var(--text-muted)]">{t('empty')}</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[var(--border)] border border-[var(--border)]">
                         {filtered.map((artist) => (
                             <Link
                                 key={artist.address}
                                 href={`/explore/artist/${artist.address}`}
-                                className="bg-[#fafaf8] p-6 flex flex-col gap-4 hover:bg-[#f5f3ef] transition-colors duration-200 no-underline group"
+                                className="bg-[var(--bg-card)] p-6 flex flex-col gap-4 hover:bg-[var(--bg-page)] transition-colors duration-200 no-underline group"
                             >
                                 {/* First portfolio photo as hero */}
                                 {artist.ipfsData?.portfolio?.[0] ? (
-                                    <div className="w-full aspect-[16/9] overflow-hidden bg-[#e7e3dc]">
+                                    <div className="w-full aspect-[16/9] overflow-hidden bg-[var(--border-soft)]">
                                         <img
                                             src={ipfsToHttp(artist.ipfsData.portfolio[0])}
                                             alt={artist.name}
@@ -188,42 +188,42 @@ export default function ArtistsPage() {
                                         />
                                     </div>
                                 ) : (
-                                    <div className="w-full aspect-[16/9] bg-[#e7e3dc] flex items-center justify-center">
-                                        <img src="/logo-mona.svg" alt="Logo" className="w-16 h-16 object-contain opacity-20" />
+                                    <div className="w-full aspect-[16/9] bg-[var(--border-soft)] flex items-center justify-center">
+                                        <img src="/logo-mona.svg" alt="Logo" className="w-16 h-16 object-contain opacity-20 dark:invert" />
                                     </div>
                                 )}
 
                                 {/* Name + logo */}
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className=" text-[20px] font-normal text-[#1c1917] leading-tight mb-1">
+                                        <h3 className=" text-[20px] font-normal text-[var(--text-primary)] leading-tight mb-1">
                                             {artist.name}
                                         </h3>
-                                        <p className="text-[12px] font-light text-[#78716c]">{artist.location}</p>
+                                        <p className="text-[12px] font-light text-[var(--text-secondary)]">{artist.location}</p>
                                     </div>
                                     {artist.ipfsData?.logo && (
                                         <img
                                             src={ipfsToHttp(artist.ipfsData.logo)}
                                             alt={t('logoAlt', { name: artist.name })}
-                                            className="w-14 h-14 object-contain flex-shrink-0 border border-[#e7e3dc] bg-[#f5f3ef]"
+                                            className="w-14 h-14 object-contain flex-shrink-0 border border-[var(--border-soft)] bg-[var(--bg-page)]"
                                         />
                                     )}
                                 </div>
 
                                 {/* Bio */}
                                 {artist.ipfsData?.bio && (
-                                    <p className="text-[13px] font-light text-[#78716c] leading-relaxed line-clamp-3">
+                                    <p className="text-[13px] font-light text-[var(--text-secondary)] leading-relaxed line-clamp-3">
                                         {artist.ipfsData.bio}
                                     </p>
                                 )}
 
                                 {/* Footer */}
-                                <div className="border-t border-[#e7e3dc] pt-4 flex items-center justify-between">
-                                    <p className="text-[12px] font-light text-[#78716c]">
+                                <div className="border-t border-[var(--border-soft)] pt-4 flex items-center justify-between">
+                                    <p className="text-[12px] font-light text-[var(--text-secondary)]">
                                         {t('certifiedWorks', { count: artist.editionCount })}
                                     </p>
                                     {artist.ipfsData?.portfolio && artist.ipfsData.portfolio.length > 1 && (
-                                        <p className="text-[11px] font-light text-[#a8a29e]">
+                                        <p className="text-[11px] font-light text-[var(--text-muted)]">
                                             {t('portfolioPhotos', { count: artist.ipfsData.portfolio.length })}
                                         </p>
                                     )}
@@ -234,30 +234,30 @@ export default function ArtistsPage() {
                 )}
 
                 {/* Trust footer — same pattern as artist/edition/collector pages */}
-                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                <div className="mt-20 border-t border-[var(--border)] pt-12">
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                         <img
                             src="/logo-mona.svg"
                             alt="Mona Editions"
-                            className="w-24 h-12 object-contain opacity-60"
+                            className="w-24 h-12 object-contain opacity-60 dark:invert"
                         />
-                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             {t('trustTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                             {t('trustBody')}
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                             <Link
                                 href="/about"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkAbout')}
                             </Link>
-                            <span className="text-[#d6d0c8]">·</span>
+                            <span className="text-[var(--border)]">·</span>
                             <Link
                                 href="/explore/editions"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkEditions')}
                             </Link>
@@ -275,8 +275,8 @@ function FilterBtn({ active, onClick, children }: { active: boolean; onClick: ()
             onClick={onClick}
             className={`text-[11px] font-medium tracking-[0.06em] px-4 py-2 border transition-all duration-200 cursor-pointer
                 ${active
-                    ? 'bg-[#1c1917] text-[#f5f3ef] border-[#1c1917]'
-                    : 'bg-[#fafaf8] text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
+                    ? 'bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] border-[var(--text-primary)]'
+                    : 'bg-[var(--bg-card)] text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
                 }`}
         >
             {children}

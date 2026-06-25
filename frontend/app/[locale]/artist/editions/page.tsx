@@ -199,8 +199,8 @@ export default function ArtistEditionsPage() {
         return (
             <Shell>
                 <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">
                         {t('checkingPermissions')}
                     </p>
                 </div>
@@ -231,23 +231,23 @@ export default function ArtistEditionsPage() {
             {/* Hero */}
             <header className="text-center mb-12">
                 <div className="flex items-center justify-center gap-3 mb-4">
-                    <div className="w-8 h-px bg-[#d6d0c8]" />
-                    <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-[#a8a29e]">
+                    <div className="w-8 h-px bg-[var(--border)]" />
+                    <span className="text-[10px] font-medium tracking-[0.2em] uppercase text-[var(--text-muted)]">
                         Mona Editions
                     </span>
-                    <div className="w-8 h-px bg-[#d6d0c8]" />
+                    <div className="w-8 h-px bg-[var(--border)]" />
                 </div>
-                <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-3">
-                    {t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
+                <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-3">
+                    {t('title')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent')}</em>
                 </h1>
                 {!loadingStates.fetchingEditions && (
-                    <p className="text-[13px] font-light text-[#78716c] mb-6">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] mb-6">
                         {t('subtitle', { count: editions.length })}
                     </p>
                 )}
                 <Link
                     href="/artist/editions/create"
-                    className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-8 border border-[#1c1917] no-underline hover:bg-[#292524] transition-all duration-200"
+                    className="inline-block bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3 px-8 border border-[var(--text-primary)] no-underline hover:bg-[var(--accent-hover)] transition-all duration-200"
                 >
                     {t('createButton')}
                 </Link>
@@ -256,8 +256,8 @@ export default function ArtistEditionsPage() {
             {/* Content */}
             {loadingStates.fetchingEditions ? (
                 <div className="flex flex-col items-center justify-center py-16 gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">
                         {t('loading')}
                     </p>
                 </div>
@@ -276,30 +276,30 @@ export default function ArtistEditionsPage() {
             )}
 
             {/* Trust footer */}
-            <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+            <div className="mt-20 border-t border-[var(--border)] pt-12">
                 <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                     <img
                         src="/logo-mona.svg"
                         alt="Mona Editions"
-                        className="w-24 h-12 object-contain opacity-60"
+                        className="w-24 h-12 object-contain opacity-60 dark:invert"
                     />
-                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                         {t('trustTitle')}
                     </p>
-                    <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                         {t('trustBody')}
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                         <Link
                             href="/about"
-                            className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                         >
                             {t('trustLinkAbout')}
                         </Link>
-                        <span className="text-[#d6d0c8]">·</span>
+                        <span className="text-[var(--border)]">·</span>
                         <Link
                             href="/artist"
-                            className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                         >
                             {t('trustLinkDashboard')}
                         </Link>
@@ -316,7 +316,7 @@ export default function ArtistEditionsPage() {
 
 function Shell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-4xl mx-auto px-6 pt-24 pb-20">{children}</div>
         </div>
     );
@@ -324,8 +324,8 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function Centered({ message }: { message: string }) {
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
-            <p className="italic text-[16px] text-[#78716c] max-w-md mx-auto leading-[1.7]">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
+            <p className="italic text-[16px] text-[var(--text-secondary)] max-w-md mx-auto leading-[1.7]">
                 {message}
             </p>
         </div>
@@ -335,21 +335,21 @@ function Centered({ message }: { message: string }) {
 function EmptyEditions() {
     const t = useTranslations('Artist.editions');
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-12 text-center">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-12 text-center">
             <img
                 src="/logo-mona.svg"
                 alt=""
-                className="w-16 h-16 object-contain mx-auto mb-6 opacity-30"
+                className="w-16 h-16 object-contain mx-auto mb-6 opacity-30 dark:invert"
             />
-            <h2 className="text-[24px] font-normal text-[#1c1917] mb-3">
+            <h2 className="text-[24px] font-normal text-[var(--text-primary)] mb-3">
                 {t('emptyTitle')}
             </h2>
-            <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto leading-[1.7] mb-6">
+            <p className="text-[14px] font-light text-[var(--text-secondary)] max-w-md mx-auto leading-[1.7] mb-6">
                 {t('emptyBody')}
             </p>
             <Link
                 href="/artist/editions/create"
-                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#1c1917] px-5 py-3 no-underline hover:bg-[#292524] transition-all duration-200"
+                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-on-inverse)] bg-[var(--bg-inverse)] px-5 py-3 no-underline hover:bg-[var(--accent-hover)] transition-all duration-200"
             >
                 {t('emptyCta')} <span aria-hidden>→</span>
             </Link>
@@ -378,12 +378,12 @@ function EditionRow({
         : 0;
 
     return (
-        <article className="border border-[#d6d0c8] bg-[#fafaf8] overflow-hidden">
+        <article className="border border-[var(--border)] bg-[var(--bg-card)] overflow-hidden">
             <div className="flex flex-col md:flex-row">
                 {/* ---- Image ---- */}
                 <Link
                     href={`/explore/edition/${edition.tokenId}`}
-                    className="block md:w-52 flex-shrink-0 bg-[#e7e3dc] aspect-[4/3] md:aspect-square overflow-hidden no-underline group"
+                    className="block md:w-52 flex-shrink-0 bg-[var(--border-soft)] aspect-[4/3] md:aspect-square overflow-hidden no-underline group"
                     aria-label={edition.title}
                 >
                     {imageUrl ? (
@@ -394,7 +394,7 @@ function EditionRow({
                         />
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                            <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-25" />
+                            <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-25 dark:invert" />
                         </div>
                     )}
                 </Link>
@@ -404,13 +404,13 @@ function EditionRow({
                     {/* Title + badges */}
                     <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
                         <div className="min-w-0 flex-1">
-                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-1">
+                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-1">
                                 {t('tokenIdLabel', { id: edition.tokenId.toString() })}
                             </p>
-                            <h2 className="text-[22px] font-normal text-[#1c1917] leading-tight">
+                            <h2 className="text-[22px] font-normal text-[var(--text-primary)] leading-tight">
                                 <Link
                                     href={`/explore/edition/${edition.tokenId}`}
-                                    className="hover:text-[#78716c] no-underline transition-colors"
+                                    className="hover:text-[var(--text-secondary)] no-underline transition-colors"
                                 >
                                     {edition.title}
                                 </Link>
@@ -423,7 +423,7 @@ function EditionRow({
                                 </span>
                             )}
                             {locked && !edition.disabled && (
-                                <span className="text-[9px] font-medium tracking-[0.12em] uppercase text-[#78716c] border border-[#d6d0c8] px-2 py-0.5">
+                                <span className="text-[9px] font-medium tracking-[0.12em] uppercase text-[var(--text-secondary)] border border-[var(--border)] px-2 py-0.5">
                                     {t('lockedBadge')}
                                 </span>
                             )}
@@ -432,7 +432,7 @@ function EditionRow({
 
                     {/* Meta line */}
                     {(edition.ipfsData?.category || edition.ipfsData?.technique || edition.ipfsData?.year) && (
-                        <p className="text-[12px] font-light text-[#78716c] mb-4">
+                        <p className="text-[12px] font-light text-[var(--text-secondary)] mb-4">
                             {[
                                 edition.ipfsData?.category && getCategoryLabel(edition.ipfsData.category),
                                 edition.ipfsData?.technique,
@@ -447,14 +447,14 @@ function EditionRow({
                     {/* Claim progress bar */}
                     {totalSize && totalSize > 0 && (
                         <div className="mb-5">
-                            <div className="w-full h-1.5 bg-[#e7e3dc] overflow-hidden mb-1.5">
+                            <div className="w-full h-1.5 bg-[var(--border-soft)] overflow-hidden mb-1.5">
                                 <div
-                                    className={`h-full ${edition.disabled ? 'bg-[#a8a29e]' : 'bg-[#4a5240]'}`}
+                                    className={`h-full ${edition.disabled ? 'bg-[var(--text-muted)]' : 'bg-[#4a5240]'}`}
                                     style={{ width: `${claimPct}%` }}
                                     aria-hidden="true"
                                 />
                             </div>
-                            <p className="text-[11px] font-light text-[#78716c]">
+                            <p className="text-[11px] font-light text-[var(--text-secondary)]">
                                 {t('claimRate', { claimed, total: totalSize })}
                             </p>
                         </div>
@@ -464,14 +464,14 @@ function EditionRow({
                     <div className="mt-auto flex flex-wrap gap-2">
                         <Link
                             href={`/explore/edition/${edition.tokenId}`}
-                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] bg-[var(--bg-page)] border border-[var(--border)] px-3.5 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                         >
                             {t('viewPublicCta')} <span aria-hidden>↗</span>
                         </Link>
                         {!locked && !edition.disabled && (
                             <Link
                                 href={`/artist/editions/${edition.tokenId}/edit`}
-                                className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] bg-[#f5f3ef] border border-[#d6d0c8] px-3.5 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                                className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] bg-[var(--bg-page)] border border-[var(--border)] px-3.5 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                             >
                                 {t('editCta')}
                             </Link>

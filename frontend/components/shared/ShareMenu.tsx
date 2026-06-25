@@ -102,8 +102,8 @@ export default function ShareMenu({ data, labels, variant = 'default' }: ShareMe
     };
 
     const buttonClass = variant === 'inverted'
-        ? 'inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#fafaf8] border border-[#1c1917] bg-[#1c1917] px-3 py-2 hover:bg-[#292524] transition-all duration-200 cursor-pointer'
-        : 'inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#1c1917] border border-[#d6d0c8] bg-[#f5f3ef] px-3 py-2 hover:border-[#1c1917] transition-all duration-200 cursor-pointer';
+        ? 'inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-on-inverse)] border border-[var(--text-primary)] bg-[var(--bg-inverse)] px-3 py-2 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer'
+        : 'inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-primary)] border border-[var(--border)] bg-[var(--bg-page)] px-3 py-2 hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer';
 
     return (
         <div className="relative" ref={ref}>
@@ -123,7 +123,7 @@ export default function ShareMenu({ data, labels, variant = 'default' }: ShareMe
             {open && (
                 <div
                     role="menu"
-                    className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full mt-2 z-50 min-w-[200px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm`}
+                    className={`absolute ${align === 'left' ? 'left-0' : 'right-0'} top-full mt-2 z-50 min-w-[200px] bg-[var(--bg-card)] border border-[var(--border)] shadow-sm`}
                 >
                     <MenuItem onClick={copyLink}>
                         {copied ? `${labels.shareCopied} ✓` : labels.shareCopyLink}
@@ -143,9 +143,9 @@ function MenuItem({ children, onClick }: { children: React.ReactNode; onClick: (
             type="button"
             onClick={onClick}
             role="menuitem"
-            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917]
-                hover:bg-[#f5f3ef] transition-colors duration-150 cursor-pointer
-                border-b border-[#e7e3dc] last:border-b-0"
+            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[var(--text-primary)]
+                hover:bg-[var(--bg-page)] transition-colors duration-150 cursor-pointer
+                border-b border-[var(--border-soft)] last:border-b-0"
         >
             {children}
         </button>
@@ -159,9 +159,9 @@ function MenuLink({ children, href }: { children: React.ReactNode; href: string 
             target="_blank"
             rel="noopener noreferrer"
             role="menuitem"
-            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[#1c1917] no-underline
-                hover:bg-[#f5f3ef] transition-colors duration-150
-                border-b border-[#e7e3dc] last:border-b-0"
+            className="block w-full text-left px-4 py-2.5 text-[13px] font-light text-[var(--text-primary)] no-underline
+                hover:bg-[var(--bg-page)] transition-colors duration-150
+                border-b border-[var(--border-soft)] last:border-b-0"
         >
             {children}
         </a>

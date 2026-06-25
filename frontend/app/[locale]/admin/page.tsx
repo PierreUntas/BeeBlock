@@ -559,10 +559,10 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
     // Loading state while checking permissions
     if (isCheckingAdmin || isLoadingAdmin) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Vérification des permissions…</p>
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">Vérification des permissions…</p>
                 </div>
             </div>
         );
@@ -570,9 +570,9 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
 
     if (!address) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">Veuillez connecter votre wallet</p>
+                    <p className=" italic text-[22px] text-[var(--text-muted)]">Veuillez connecter votre wallet</p>
                 </div>
             </div>
         );
@@ -580,36 +580,36 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
 
     if (!isAdmin) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">Accès refusé : vous n'êtes pas admin</p>
+                    <p className=" italic text-[22px] text-[var(--text-muted)]">Accès refusé : vous n'êtes pas admin</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
                 <div className="text-center mb-12">
                     <img 
                         src="/logo-mona.svg" 
                         alt="Mona Editions Logo" 
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
+                        className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert"
                     />
-                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        Gestion des <em className="italic text-[#78716c]">Artistes</em>
+                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight">
+                        Gestion des <em className="italic text-[var(--text-secondary)]">Artistes</em>
                     </h1>
                 </div>
 
                 {/* Authorize an artist */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Autoriser un <em className="italic text-[#78716c]">Artiste</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        Autoriser un <em className="italic text-[var(--text-secondary)]">Artiste</em>
                     </h2>
                     <form onSubmit={handleAuthorizeArtist} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 Adresse de l'artiste
                             </label>
                             <input
@@ -617,7 +617,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={newArtistAddress}
                                 onChange={(e) => setNewArtistAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                                 required
                             />
@@ -625,7 +625,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                         <button
                             type="submit"
                             disabled={isAuthorizingArtist}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                         >
                             {isAuthorizingArtist ? 'Autorisation en cours…' : 'Autoriser Artiste'}
                         </button>
@@ -633,13 +633,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 </div>
 
                 {/* Revoke an artist */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Révoquer un <em className="italic text-[#78716c]">Artiste</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        Révoquer un <em className="italic text-[var(--text-secondary)]">Artiste</em>
                     </h2>
                     <form onSubmit={handleRevokeArtist} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 Adresse de l'artiste
                             </label>
                             <input
@@ -647,7 +647,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={removeArtistAddress}
                                 onChange={(e) => setRemoveArtistAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                                 required
                             />
@@ -655,7 +655,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                         <button
                             type="submit"
                             disabled={isRevokingArtist}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                         >
                             {isRevokingArtist ? 'Révocation en cours…' : 'Révoquer Artiste'}
                         </button>
@@ -663,13 +663,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 </div>
 
                 {/* Check artist status */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        Vérifier le <em className="italic text-[#78716c]">Statut Artiste</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        Vérifier le <em className="italic text-[var(--text-secondary)]">Statut Artiste</em>
                     </h2>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 Adresse à vérifier
                             </label>
                             <input
@@ -677,12 +677,12 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={checkArtistAddress}
                                 onChange={(e) => setCheckArtistAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                             />
                         </div>
                         {checkArtistAddress && isArtistAuthorized !== undefined && (
-                            <div className="p-4 border border-[#d6d0c8] bg-[#f5f3ef] text-[14px] font-light text-[#1c1917]">
+                            <div className="p-4 border border-[var(--border)] bg-[var(--bg-page)] text-[14px] font-light text-[var(--text-primary)]">
                                 {isArtistAuthorized ? '✓ Cette adresse est autorisée comme artiste' : '✗ Cette adresse n\'est pas autorisée comme artiste'}
                             </div>
                         )}
@@ -690,16 +690,16 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 </div>
 
                 {/* Disable an edition */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className="text-[22px] font-normal text-[#1c1917] mb-2">
-                        Désactiver une <em className="italic text-[#78716c]">Édition</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className="text-[22px] font-normal text-[var(--text-primary)] mb-2">
+                        Désactiver une <em className="italic text-[var(--text-secondary)]">Édition</em>
                     </h2>
-                    <p className="text-[13px] font-light text-[#78716c] mb-5 leading-[1.7]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] mb-5 leading-[1.7]">
                         Désactive immédiatement tous les rachats de certificats pour cette édition. Les certificats déjà réclamés ne sont pas affectés. Utilisez cette action en cas de contenu inapproprié ou de compromission des QR codes.
                     </p>
                     <form onSubmit={handleDisableEdition} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 ID de l'édition
                             </label>
                             <input
@@ -707,7 +707,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={disableEditionId}
                                 onChange={(e) => setDisableEditionId(e.target.value)}
                                 placeholder="Ex: 1"
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 min="1"
                                 required
                             />
@@ -715,7 +715,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                         <button
                             type="submit"
                             disabled={isDisablingEdition}
-                            className="w-full bg-[#dc2626] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#dc2626] disabled:opacity-50 hover:bg-[#b91c1c] transition-all duration-200"
+                            className="w-full bg-[#dc2626] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#dc2626] disabled:opacity-50 hover:bg-[#b91c1c] transition-all duration-200"
                         >
                             {isDisablingEdition ? 'Désactivation en cours…' : 'Désactiver cette édition'}
                         </button>
@@ -725,37 +725,37 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 {/* Replace Merkle root — full recovery flow */}
                 <div className="border-2 border-[#d97706] bg-[#fffbeb] p-8 mb-px space-y-8">
                     <div>
-                        <h2 className="text-[22px] font-normal text-[#1c1917] mb-2">
-                            Récupération après compromission des <em className="italic text-[#78716c]">QR codes</em>
+                        <h2 className="text-[22px] font-normal text-[var(--text-primary)] mb-2">
+                            Récupération après compromission des <em className="italic text-[var(--text-secondary)]">QR codes</em>
                         </h2>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7]">
                             Utilisez ce flux en cas de compromission des clés secrètes. Désactivez d'abord l'édition ci-dessus, puis suivez les étapes ci-dessous pour générer de nouvelles clés uniquement pour les certificats non encore réclamés et soumettre la nouvelle racine Merkle.
                         </p>
                     </div>
 
                     {/* Step 1 — Analyze */}
                     <div>
-                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">Étape 1 — Analyser l'édition</p>
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">Étape 1 — Analyser l'édition</p>
                         <form onSubmit={handleAnalyzeEdition} className="flex gap-3">
                             <input
                                 type="number"
                                 value={recoveryEditionId}
                                 onChange={(e) => { setRecoveryEditionId(e.target.value); setRecoveryRemainingCount(null); setRecoveryKeys([]); setRecoveryTree(null); }}
                                 placeholder="ID de l'édition"
-                                className="flex-1 px-4 py-3 bg-white border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="flex-1 px-4 py-3 bg-[var(--bg-card)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 min="1"
                                 required
                             />
                             <button
                                 type="submit"
                                 disabled={isAnalyzing}
-                                className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 whitespace-nowrap"
+                                className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3 px-6 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 whitespace-nowrap"
                             >
                                 {isAnalyzing ? 'Lecture…' : 'Analyser'}
                             </button>
                         </form>
                         {recoveryRemainingCount !== null && (
-                            <div className="mt-3 p-4 border border-[#d6d0c8] bg-white text-[13px] font-light text-[#1c1917]">
+                            <div className="mt-3 p-4 border border-[var(--border)] bg-[var(--bg-card)] text-[13px] font-light text-[var(--text-primary)]">
                                 <span className="font-medium">{recoveryRemainingCount}</span> certificat{recoveryRemainingCount > 1 ? 's' : ''} non réclamé{recoveryRemainingCount > 1 ? 's' : ''} — artiste : <span className="font-mono text-[11px]">{recoveryArtistAddress}</span>
                             </div>
                         )}
@@ -764,18 +764,18 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     {/* Step 2 — Generate keys */}
                     {recoveryRemainingCount !== null && recoveryRemainingCount > 0 && (
                         <div>
-                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">Étape 2 — Générer de nouvelles clés secrètes</p>
+                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">Étape 2 — Générer de nouvelles clés secrètes</p>
                             <button
                                 onClick={handleGenerateRecoveryKeys}
                                 disabled={isGeneratingKeys}
-                                className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                             >
                                 {isGeneratingKeys ? 'Génération…' : `Générer ${recoveryRemainingCount} nouvelle${recoveryRemainingCount > 1 ? 's' : ''} clé${recoveryRemainingCount > 1 ? 's' : ''}`}
                             </button>
                             {recoveryKeys.length > 0 && (
-                                <div className="mt-3 p-4 border border-[#d6d0c8] bg-white space-y-2">
-                                    <p className="text-[12px] font-light text-[#78716c]">Nouvelle racine Merkle générée :</p>
-                                    <p className="font-mono text-[11px] text-[#1c1917] break-all">{replaceMerkleRoot}</p>
+                                <div className="mt-3 p-4 border border-[var(--border)] bg-[var(--bg-card)] space-y-2">
+                                    <p className="text-[12px] font-light text-[var(--text-secondary)]">Nouvelle racine Merkle générée :</p>
+                                    <p className="font-mono text-[11px] text-[var(--text-primary)] break-all">{replaceMerkleRoot}</p>
                                 </div>
                             )}
                         </div>
@@ -784,29 +784,29 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     {/* Step 3 — Download new keys */}
                     {recoveryKeys.length > 0 && (
                         <div>
-                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">Étape 3 — Télécharger les nouvelles clés</p>
+                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">Étape 3 — Télécharger les nouvelles clés</p>
                             <button
                                 onClick={handleDownloadRecoveryKeys}
-                                className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all duration-200"
+                                className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] hover:bg-[var(--accent-hover)] transition-all duration-200"
                             >
                                 Télécharger les nouvelles clés (CSV)
                             </button>
-                            <p className="text-[11px] font-light text-[#a8a29e] mt-2">Redistribuez ces clés aux collectionneurs concernés avant de soumettre la nouvelle racine.</p>
+                            <p className="text-[11px] font-light text-[var(--text-muted)] mt-2">Redistribuez ces clés aux collectionneurs concernés avant de soumettre la nouvelle racine.</p>
                         </div>
                     )}
 
                     {/* Step 4 — Submit new root */}
                     {recoveryKeys.length > 0 && (
                         <div>
-                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">Étape 4 — Soumettre la nouvelle racine Merkle</p>
+                            <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">Étape 4 — Soumettre la nouvelle racine Merkle</p>
                             <form onSubmit={handleReplaceMerkleRoot} className="space-y-4">
                                 <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">ID de l'édition</label>
-                                    <input type="number" value={replaceEditionId} onChange={(e) => setReplaceEditionId(e.target.value)} placeholder="Ex: 1" className="w-full px-4 py-3 bg-white border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors" min="1" required />
+                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">ID de l'édition</label>
+                                    <input type="number" value={replaceEditionId} onChange={(e) => setReplaceEditionId(e.target.value)} placeholder="Ex: 1" className="w-full px-4 py-3 bg-[var(--bg-card)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors" min="1" required />
                                 </div>
                                 <div>
-                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">Nouvelle racine Merkle (bytes32)</label>
-                                    <input type="text" value={replaceMerkleRoot} onChange={(e) => setReplaceMerkleRoot(e.target.value)} placeholder="0x..." className="w-full px-4 py-3 bg-white border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors" pattern="^0x[a-fA-F0-9]{64}$" required />
+                                    <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">Nouvelle racine Merkle (bytes32)</label>
+                                    <input type="text" value={replaceMerkleRoot} onChange={(e) => setReplaceMerkleRoot(e.target.value)} placeholder="0x..." className="w-full px-4 py-3 bg-[var(--bg-card)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors" pattern="^0x[a-fA-F0-9]{64}$" required />
                                 </div>
                                 <button type="submit" disabled={isReplacingMerkleRoot} className="w-full bg-[#d97706] text-white font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#d97706] disabled:opacity-50 hover:bg-[#b45309] transition-all duration-200">
                                     {isReplacingMerkleRoot ? 'Soumission en cours…' : 'Soumettre et réactiver l\'édition'}
@@ -817,16 +817,16 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 </div>
 
                 {/* Subscription comp — off-chain Atelier grant/revoke */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className="text-[22px] font-normal text-[#1c1917] mb-2">
-                        Offrir un <em className="italic text-[#78716c]">abonnement Atelier</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className="text-[22px] font-normal text-[var(--text-primary)] mb-2">
+                        Offrir un <em className="italic text-[var(--text-secondary)]">abonnement Atelier</em>
                     </h2>
-                    <p className="text-[13px] font-light text-[#78716c] mb-5 leading-[1.7]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] mb-5 leading-[1.7]">
                         Octroi off-chain d'un abonnement Atelier gratuit illimité à un artiste (typiquement pour les pilotes). Aucune transaction Stripe n'est créée. Pour révoquer un abonnement Stripe payant, l'artiste doit passer par son Customer Portal.
                     </p>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 Adresse du wallet artiste
                             </label>
                             <input
@@ -834,7 +834,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={compArtistAddress}
                                 onChange={(e) => setCompArtistAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                             />
                         </div>
@@ -843,7 +843,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 type="button"
                                 onClick={handleGrantAtelier}
                                 disabled={isGrantingAtelier || isRevokingAtelier || !compArtistAddress}
-                                className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                             >
                                 {isGrantingAtelier ? 'Octroi en cours…' : "Offrir l'Atelier"}
                             </button>
@@ -851,7 +851,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 type="button"
                                 onClick={handleRevokeAtelier}
                                 disabled={isGrantingAtelier || isRevokingAtelier || !compArtistAddress}
-                                className="w-full bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#d6d0c8] disabled:opacity-50 hover:border-[#1c1917] transition-all duration-200"
+                                className="w-full bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--border)] disabled:opacity-50 hover:border-[var(--text-primary)] transition-all duration-200"
                             >
                                 {isRevokingAtelier ? 'Révocation…' : "Révoquer l'Atelier offert"}
                             </button>
@@ -905,13 +905,13 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                     });
 
                     return (
-                        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
                             <div className="flex items-start justify-between mb-6 gap-4 flex-wrap">
                                 <div>
-                                    <h2 className="text-[22px] font-normal text-[#1c1917]">
-                                        Pilotes <em className="italic text-[#78716c]">en cours</em>
+                                    <h2 className="text-[22px] font-normal text-[var(--text-primary)]">
+                                        Pilotes <em className="italic text-[var(--text-secondary)]">en cours</em>
                                     </h2>
-                                    <p className="text-[13px] font-light text-[#78716c] mt-1">
+                                    <p className="text-[13px] font-light text-[var(--text-secondary)] mt-1">
                                         Vue ops : santé, activité, abonnements
                                     </p>
                                 </div>
@@ -919,14 +919,14 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                     type="button"
                                     onClick={() => { loadArtists(); loadPilotStats(); }}
                                     disabled={isLoadingArtists || isLoadingPilotStats}
-                                    className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] border border-[#d6d0c8] hover:border-[#1c1917] px-4 py-2 transition-all disabled:opacity-50"
+                                    className="text-[11px] font-medium tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-[var(--border)] hover:border-[var(--text-primary)] px-4 py-2 transition-all disabled:opacity-50"
                                 >
                                     {(isLoadingArtists || isLoadingPilotStats) ? 'Chargement…' : '↻ Rafraîchir'}
                                 </button>
                             </div>
 
                             {/* Top stats cards */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#e7e3dc] border border-[#e7e3dc] mb-6">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--border-soft)] border border-[var(--border-soft)] mb-6">
                                 <PilotStatCard label="Pilotes" value={totalArtists} />
                                 <PilotStatCard label="Éditions totales" value={totalEditions} />
                                 <PilotStatCard label="Claims (vie)" value={totalClaims} subtle={isLoadingPilotStats ? '…' : `${recentClaims} sur 7 j`} />
@@ -947,8 +947,8 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                         onClick={() => setPilotFilter(opt.key)}
                                         className={`text-[11px] font-medium tracking-[0.06em] uppercase border px-3 py-1.5 transition-all ${
                                             pilotFilter === opt.key
-                                                ? 'bg-[#1c1917] text-[#fafaf8] border-[#1c1917]'
-                                                : 'text-[#78716c] border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917]'
+                                                ? 'bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] border-[var(--text-primary)]'
+                                                : 'text-[var(--text-secondary)] border-[var(--border)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)]'
                                         }`}
                                     >
                                         {opt.label}
@@ -961,17 +961,17 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                 value={artistsSearch}
                                 onChange={(e) => setArtistsSearch(e.target.value)}
                                 placeholder="Filtrer par adresse, email…"
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors mb-5"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors mb-5"
                             />
 
                             {artists.length === 0 && !isLoadingArtists && (
-                                <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
+                                <p className="text-[13px] italic text-[var(--text-muted)] text-center py-8">
                                     Aucun pilote inscrit pour l'instant.
                                 </p>
                             )}
 
                             {filtered.length === 0 && artists.length > 0 && (
-                                <p className="text-[13px] italic text-[#a8a29e] text-center py-8">
+                                <p className="text-[13px] italic text-[var(--text-muted)] text-center py-8">
                                     Aucun pilote ne correspond à ce filtre.
                                 </p>
                             )}
@@ -983,10 +983,10 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                     const isCanceled = a.status === 'canceled';
                                     const isComp = isAtelierActive && !a.hasStripeSubscription;
                                     let planLabel = 'Découverte';
-                                    let planClass = 'text-[#78716c] border-[#d6d0c8]';
+                                    let planClass = 'text-[var(--text-secondary)] border-[var(--border)]';
                                     if (isAtelierActive) {
                                         planLabel = isComp ? 'Atelier (offert)' : 'Atelier';
-                                        planClass = 'text-[#1c1917] border-[#1c1917]';
+                                        planClass = 'text-[var(--text-primary)] border-[var(--text-primary)]';
                                     }
                                     if (isPastDue) {
                                         planLabel = 'Atelier (paiement échoué)';
@@ -994,16 +994,16 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                     }
                                     if (isCanceled) {
                                         planLabel = 'Atelier (annulé)';
-                                        planClass = 'text-[#a8a29e] border-[#d6d0c8]';
+                                        planClass = 'text-[var(--text-muted)] border-[var(--border)]';
                                     }
 
-                                    const healthDot = health === 'attention' ? 'bg-[#dc2626]' : health === 'active' ? 'bg-[#4a5240]' : 'bg-[#d6d0c8]';
+                                    const healthDot = health === 'attention' ? 'bg-[#dc2626]' : health === 'active' ? 'bg-[#4a5240]' : 'bg-[var(--border)]';
                                     const healthLabel = health === 'attention' ? 'À surveiller' : health === 'active' ? 'Actif' : 'Dormant';
 
                                     return (
                                         <div
                                             key={a.walletAddress}
-                                            className="border border-[#d6d0c8] bg-[#f5f3ef] p-4"
+                                            className="border border-[var(--border)] bg-[var(--bg-page)] p-4"
                                         >
                                             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3">
                                                 <div className="space-y-1.5 min-w-0">
@@ -1016,7 +1016,7 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                                         <button
                                                             type="button"
                                                             onClick={() => setCompArtistAddress(a.walletAddress)}
-                                                            className="font-mono text-[12px] text-[#1c1917] hover:underline cursor-pointer text-left"
+                                                            className="font-mono text-[12px] text-[var(--text-primary)] hover:underline cursor-pointer text-left"
                                                             title="Copier dans le champ de comp"
                                                         >
                                                             {a.walletAddress.slice(0, 10)}…{a.walletAddress.slice(-6)}
@@ -1029,25 +1029,25 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                                                 RGPD ✓
                                                             </span>
                                                         ) : (
-                                                            <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-2 py-0.5">
+                                                            <span className="inline-block text-[10px] font-medium tracking-[0.06em] uppercase text-[var(--text-muted)] border border-[var(--border)] px-2 py-0.5">
                                                                 RGPD —
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <p className="text-[12px] font-light text-[#78716c] truncate">
+                                                    <p className="text-[12px] font-light text-[var(--text-secondary)] truncate">
                                                         {a.email || <em className="italic">email non renseigné</em>}
                                                     </p>
                                                     {/* On-chain activity line */}
-                                                    <p className="text-[11px] font-light text-[#78716c]">
-                                                        <span className="text-[#1c1917] font-medium">{a.editionsCount}</span> éd ·{' '}
-                                                        <span className="text-[#1c1917] font-medium">{stats?.totalClaims ?? (isLoadingPilotStats ? '…' : '0')}</span> claims ·{' '}
-                                                        <span className="text-[#1c1917] font-medium">{stats?.uniqueCollectors ?? (isLoadingPilotStats ? '…' : '0')}</span> collect.
+                                                    <p className="text-[11px] font-light text-[var(--text-secondary)]">
+                                                        <span className="text-[var(--text-primary)] font-medium">{a.editionsCount}</span> éd ·{' '}
+                                                        <span className="text-[var(--text-primary)] font-medium">{stats?.totalClaims ?? (isLoadingPilotStats ? '…' : '0')}</span> claims ·{' '}
+                                                        <span className="text-[var(--text-primary)] font-medium">{stats?.uniqueCollectors ?? (isLoadingPilotStats ? '…' : '0')}</span> collect.
                                                         {stats?.lastActivityDate && (
                                                             <> · dernier claim {formatRelative(stats.lastActivityDate)}</>
                                                         )}
                                                     </p>
                                                     {/* Quota / period info */}
-                                                    <p className="text-[10px] font-light text-[#a8a29e]">
+                                                    <p className="text-[10px] font-light text-[var(--text-muted)]">
                                                         {a.plan === 'free' && `Quota Découverte : ${a.freeQuotaUsed}/5 — `}
                                                         {isAtelierActive && a.currentPeriodEnd && `Expire le ${new Date(a.currentPeriodEnd).toLocaleDateString('fr-FR')} — `}
                                                         Inscrit le {new Date(a.createdAt).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' })}
@@ -1060,14 +1060,14 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                                                         href={`/explore/artist/${a.walletAddress}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[#78716c] border border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917] px-2.5 py-1.5 no-underline transition-all"
+                                                        className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[var(--text-secondary)] border border-[var(--border)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 no-underline transition-all"
                                                     >
                                                         Profil ↗
                                                     </a>
                                                     {a.email && (
                                                         <a
                                                             href={`mailto:${a.email}?subject=${encodeURIComponent('Mona Editions — un message de Pierre')}`}
-                                                            className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[#78716c] border border-[#d6d0c8] hover:border-[#1c1917] hover:text-[#1c1917] px-2.5 py-1.5 no-underline transition-all"
+                                                            className="inline-flex items-center gap-1 text-[10px] font-medium tracking-[0.06em] uppercase text-[var(--text-secondary)] border border-[var(--border)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] px-2.5 py-1.5 no-underline transition-all"
                                                         >
                                                             Contacter →
                                                         </a>
@@ -1085,8 +1085,8 @@ const isArtistAuthorized = artistData ? (artistData as any).authorized : undefin
                 {/* Footer mark */}
                 <div className="flex justify-center mt-20">
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                        <div className="w-px h-12 bg-[var(--border)]" />
+                        <span className=" italic text-[13px] text-[var(--text-muted)]">Mona Editions</span>
                     </div>
                 </div>
             </div>
@@ -1112,17 +1112,17 @@ function PilotStatCard({
 }) {
     const valueClass = accent === 'red' && Number(value) > 0
         ? 'text-[#dc2626]'
-        : 'text-[#1c1917]';
+        : 'text-[var(--text-primary)]';
     return (
-        <div className="bg-[#fafaf8] p-5">
-            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-2">
+        <div className="bg-[var(--bg-card)] p-5">
+            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-2">
                 {label}
             </p>
             <p className={`text-[clamp(24px,3vw,32px)] font-normal leading-none tracking-[-0.5px] ${valueClass}`}>
                 {value}
             </p>
             {subtle && (
-                <p className="text-[10px] font-light text-[#a8a29e] mt-2">{subtle}</p>
+                <p className="text-[10px] font-light text-[var(--text-muted)] mt-2">{subtle}</p>
             )}
         </div>
     );

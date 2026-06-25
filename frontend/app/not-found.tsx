@@ -15,18 +15,18 @@ import Link from 'next/link';
 
 export default function NotFound() {
     return (
-        <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center px-6">
+        <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center px-6">
             <div className="text-center max-w-md">
-                <p className="text-[80px] font-light text-[#d6d0c8] leading-none mb-4">404</p>
-                <h1 className="text-[24px] font-normal text-[#1c1917] mb-3">
+                <p className="text-[80px] font-light text-[var(--border)] leading-none mb-4">404</p>
+                <h1 className="text-[24px] font-normal text-[var(--text-primary)] mb-3">
                     Page introuvable / Seite nicht gefunden
                 </h1>
-                <p className="text-[14px] font-light text-[#78716c] mb-8 leading-[1.7]">
+                <p className="text-[14px] font-light text-[var(--text-secondary)] mb-8 leading-[1.7]">
                     L'adresse demandée n'existe pas. / Die angeforderte Adresse existiert nicht.
                 </p>
                 <Link
                     href="/"
-                    className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[#1c1917] hover:bg-[#292524] transition-all no-underline"
+                    className="inline-block bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3 px-8 border border-[var(--text-primary)] hover:bg-[var(--accent-hover)] transition-all no-underline"
                 >
                     Mona Editions →
                 </Link>

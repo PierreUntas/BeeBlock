@@ -72,27 +72,27 @@ export default function SubscriptionGate({ snapshot }: Props) {
 
     if (isFreeExhausted) {
         return (
-            <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
-                <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-3">
+            <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
+                <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-3">
                     {t('freeExhausted.eyebrow')}
                 </p>
-                <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[#1c1917] leading-tight mb-4">
-                    {t('freeExhausted.titleStart')} <em className="italic text-[#78716c]">{t('freeExhausted.titleAccent')}</em>{' '}
+                <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[var(--text-primary)] leading-tight mb-4">
+                    {t('freeExhausted.titleStart')} <em className="italic text-[var(--text-secondary)]">{t('freeExhausted.titleAccent')}</em>{' '}
                     {t('freeExhausted.titleEnd')}
                 </h2>
-                <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8 leading-[1.7]">
+                <p className="text-[14px] font-light text-[var(--text-secondary)] max-w-md mx-auto mb-8 leading-[1.7]">
                     {t('freeExhausted.description')}{' '}
-                    <strong className="font-medium text-[#1c1917]">{t('freeExhausted.priceHighlight')}</strong>
+                    <strong className="font-medium text-[var(--text-primary)]">{t('freeExhausted.priceHighlight')}</strong>
                     {t('freeExhausted.descriptionEnd')}
                 </p>
                 <button
                     onClick={handleSubscribeClick}
                     disabled={busy}
-                    className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                    className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                 >
                     {busy ? t('freeExhausted.ctaLoading') : t('freeExhausted.cta')}
                 </button>
-                <p className="text-[11px] text-[#a8a29e] mt-4">
+                <p className="text-[11px] text-[var(--text-muted)] mt-4">
                     {t('freeExhausted.secured')}
                 </p>
                 <WithdrawalConsentModal
@@ -106,19 +106,19 @@ export default function SubscriptionGate({ snapshot }: Props) {
 
     if (isAtelierExhausted) {
         return (
-            <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
-                <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[#a8a29e] mb-3">
+            <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
+                <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-3">
                     {t('atelierExhausted.eyebrow')}
                 </p>
-                <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[#1c1917] leading-tight mb-4">
-                    {t('atelierExhausted.titleStart')} <em className="italic text-[#78716c]">{t('atelierExhausted.titleAccent')}</em>{' '}
+                <h2 className="text-[clamp(24px,3.5vw,32px)] font-normal text-[var(--text-primary)] leading-tight mb-4">
+                    {t('atelierExhausted.titleStart')} <em className="italic text-[var(--text-secondary)]">{t('atelierExhausted.titleAccent')}</em>{' '}
                     {t('atelierExhausted.titleEnd')}
                 </h2>
-                <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8 leading-[1.7]">
+                <p className="text-[14px] font-light text-[var(--text-secondary)] max-w-md mx-auto mb-8 leading-[1.7]">
                     {t('atelierExhausted.description')}{' '}
                     {periodEnd && (
                         <>
-                            <strong className="font-medium text-[#1c1917]">
+                            <strong className="font-medium text-[var(--text-primary)]">
                                 {t('atelierExhausted.descriptionDate', { date: periodEnd })}
                             </strong>
                         </>
@@ -128,13 +128,13 @@ export default function SubscriptionGate({ snapshot }: Props) {
                 <button
                     onClick={handleRenew}
                     disabled={busy}
-                    className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                    className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-10 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                 >
                     {busy ? t('atelierExhausted.ctaLoading') : t('atelierExhausted.cta')}
                 </button>
                 <Link
                     href="/artist/subscription"
-                    className="block text-[12px] text-[#a8a29e] hover:text-[#1c1917] underline underline-offset-4 mt-4 transition-colors"
+                    className="block text-[12px] text-[var(--text-muted)] hover:text-[var(--text-primary)] underline underline-offset-4 mt-4 transition-colors"
                 >
                     {t('atelierExhausted.manageLink')}
                 </Link>
@@ -144,8 +144,8 @@ export default function SubscriptionGate({ snapshot }: Props) {
 
     // Default informative banner if neither case matches (shouldn't normally render)
     return (
-        <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 text-center">
-            <p className="text-[13px] font-light text-[#78716c]">
+        <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 text-center">
+            <p className="text-[13px] font-light text-[var(--text-secondary)]">
                 {t('default.text')}
             </p>
         </div>
@@ -165,13 +165,13 @@ export function QuotaBadge({ snapshot }: { snapshot: SubscriptionSnapshot }) {
         isAtelier && snapshot.cancelAtPeriodEnd ? t('cancelNotice') : '';
 
     return (
-        <div className="border border-[#d6d0c8] bg-[#ede9e3] px-4 py-3 flex items-center justify-between gap-4">
+        <div className="border border-[var(--border)] bg-[var(--bg-card-alt)] px-4 py-3 flex items-center justify-between gap-4">
             <div>
-                <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-[#a8a29e]">
+                <p className="text-[10px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)]">
                     {label}
                     {cancelNotice}
                 </p>
-                <p className="text-[13px] text-[#1c1917] mt-0.5">
+                <p className="text-[13px] text-[var(--text-primary)] mt-0.5">
                     <strong className="font-medium">
                         {used} / {limit}
                     </strong>{' '}
@@ -181,7 +181,7 @@ export function QuotaBadge({ snapshot }: { snapshot: SubscriptionSnapshot }) {
             </div>
             <Link
                 href="/artist/subscription"
-                className="text-[11px] font-medium tracking-[0.06em] text-[#78716c] hover:text-[#1c1917] underline underline-offset-4 transition-colors flex-shrink-0"
+                className="text-[11px] font-medium tracking-[0.06em] text-[var(--text-secondary)] hover:text-[var(--text-primary)] underline underline-offset-4 transition-colors flex-shrink-0"
             >
                 {t('manage')}
             </Link>

@@ -208,25 +208,25 @@ export default function EditEditionPage() {
 
     if (isLoadingArtist || isLoading) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef] flex flex-col items-center justify-center gap-4">
-                <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
+            <div className="min-h-screen bg-[var(--bg-page)] flex flex-col items-center justify-center gap-4">
+                <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('loading')}</p>
             </div>
         );
     }
 
     if (!activeAddress) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center">
-                <p className="italic text-[22px] text-[#a8a29e]">{t('connectWallet')}</p>
+            <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+                <p className="italic text-[22px] text-[var(--text-muted)]">{t('connectWallet')}</p>
             </div>
         );
     }
 
     if (!isAuthorized) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center">
-                <p className="italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
+            <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center">
+                <p className="italic text-[22px] text-[var(--text-muted)] text-center max-w-md px-6">
                     {t('notOwner')}
                 </p>
             </div>
@@ -235,19 +235,19 @@ export default function EditEditionPage() {
 
     if (metadataIsLocked) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="max-w-3xl mx-auto px-6 pt-28 pb-20">
                     <div className="text-center mb-12">
-                        <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6" />
-                        <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-4">
-                            {t('lockedTitleStart')} <em className="italic text-[#78716c]">{t('lockedTitleAccent')}</em>
+                        <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert" />
+                        <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-4">
+                            {t('lockedTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('lockedTitleAccent')}</em>
                         </h1>
-                        <p className="text-[14px] font-light text-[#78716c] max-w-md mx-auto mb-8">
+                        <p className="text-[14px] font-light text-[var(--text-secondary)] max-w-md mx-auto mb-8">
                             {t('lockedExplanation')}
                         </p>
                         <Link
                             href="/artist/editions"
-                            className="inline-block text-[12px] font-medium tracking-[0.06em] text-[#1c1917] border border-[#d6d0c8] px-8 py-3 hover:border-[#1c1917] transition-all duration-200"
+                            className="inline-block text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] border border-[var(--border)] px-8 py-3 hover:border-[var(--text-primary)] transition-all duration-200"
                         >
                             ← {t('back')}
                         </Link>
@@ -260,50 +260,50 @@ export default function EditEditionPage() {
     const isBusy = loadingStates.uploadingImage || loadingStates.uploading || loadingStates.saving;
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-3xl mx-auto px-6 pt-28 pb-20">
 
                 {saved && (
-                    <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917]">{t('updateSuccess')}</p>
-                        <p className="text-[13px] font-light text-[#78716c] mt-1">
+                    <div className="border border-[var(--border)] bg-[var(--bg-card-alt)] p-6 mb-px">
+                        <p className="text-[14px] font-medium text-[var(--text-primary)]">{t('updateSuccess')}</p>
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] mt-1">
                             {t('updateSuccessHint')}
                         </p>
                     </div>
                 )}
 
                 <div className="text-center mb-12">
-                    <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6" />
-                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        {t('title')} <em className="italic text-[#78716c]">{t('titleAccent', { id: params.id as string })}</em>
+                    <img src="/logo-mona.svg" alt="Mona Editions Logo" className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert" />
+                    <h1 className="text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight">
+                        {t('title')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent', { id: params.id as string })}</em>
                     </h1>
                 </div>
 
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
                     <form onSubmit={handleSubmit} className="space-y-6" autoComplete="off">
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.titleLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.title}
                                 onChange={(e) => setEditionData({ ...editionData, title: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.yearLabel')}
                             </label>
                             <input
                                 type="number"
                                 value={editionData.year}
                                 onChange={(e) => setEditionData({ ...editionData, year: parseInt(e.target.value) })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 min="1900"
                                 max={new Date().getFullYear()}
                                 required
@@ -311,13 +311,13 @@ export default function EditEditionPage() {
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.categoryLabel')}
                             </label>
                             <select
                                 value={editionData.category}
                                 onChange={(e) => setEditionData({ ...editionData, category: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                             >
                                 <option value="">{t('form.categoryPlaceholder')}</option>
                                 {CATEGORIES_EN.map(cat => (
@@ -327,46 +327,46 @@ export default function EditEditionPage() {
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.techniqueLabel')}
                             </label>
                             <textarea
                                 ref={techniqueRef}
                                 value={editionData.technique}
                                 onChange={(e) => setEditionData({ ...editionData, technique: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors resize-none overflow-hidden min-h-[60px]"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors resize-none overflow-hidden min-h-[60px]"
                                 placeholder={t('form.techniquePlaceholder')}
                                 rows={2}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.dimensionsLabel')}
                             </label>
                             <input
                                 type="text"
                                 value={editionData.dimensions}
                                 onChange={(e) => setEditionData({ ...editionData, dimensions: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 placeholder={t('form.dimensionsPlaceholder')}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.descriptionLabel')}
                             </label>
                             <textarea
                                 value={editionData.description}
                                 onChange={(e) => setEditionData({ ...editionData, description: e.target.value })}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[120px]"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors min-h-[120px]"
                                 placeholder={t('form.descriptionPlaceholder')}
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.imagesLabel')}
                             </label>
                             <input
@@ -381,26 +381,26 @@ export default function EditEditionPage() {
                                 type="button"
                                 onClick={() => imageInputRef.current?.click()}
                                 disabled={loadingStates.uploadingImage}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors disabled:opacity-50 text-left"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-card-alt)] transition-colors disabled:opacity-50 text-left"
                             >
                                 {loadingStates.uploadingImage ? t('form.uploadingImages') : t('form.addImagesCta')}
                             </button>
                             {editionData.images.length > 0 && (
                                 <ul className="mt-3 space-y-1">
                                     {editionData.images.map((img, i) => (
-                                        <li key={i} className="flex items-center justify-between gap-2 bg-[#f5f3ef] border border-[#d6d0c8] px-3 py-2">
+                                        <li key={i} className="flex items-center justify-between gap-2 bg-[var(--bg-page)] border border-[var(--border)] px-3 py-2">
                                             <a
                                                 href={getIPFSUrl(img)}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="text-[11px] font-mono text-[#a8a29e] truncate hover:text-[#78716c] transition-colors"
+                                                className="text-[11px] font-mono text-[var(--text-muted)] truncate hover:text-[var(--text-secondary)] transition-colors"
                                             >
                                                 {img}
                                             </a>
                                             <button
                                                 type="button"
                                                 onClick={() => removeImage(i)}
-                                                className="text-[#a8a29e] hover:text-[#1c1917] transition-colors text-xs flex-shrink-0"
+                                                className="text-[var(--text-muted)] hover:text-[var(--text-primary)] transition-colors text-xs flex-shrink-0"
                                             >
                                                 ×
                                             </button>
@@ -413,14 +413,14 @@ export default function EditEditionPage() {
                         <div className="flex gap-3 pt-2">
                             <Link
                                 href="/artist/editions"
-                                className="flex-1 text-center text-[12px] font-normal tracking-[0.06em] text-[#78716c] border border-[#d6d0c8] py-3.5 hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                                className="flex-1 text-center text-[12px] font-normal tracking-[0.06em] text-[var(--text-secondary)] border border-[var(--border)] py-3.5 hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200"
                             >
                                 {t('cancel')}
                             </Link>
                             <button
                                 type="submit"
                                 disabled={isBusy || editionData.images.length === 0}
-                                className="flex-[2] bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                                className="flex-[2] bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                             >
                                 {loadingStates.uploadingImage
                                     ? t('uploadingButton')
@@ -435,30 +435,30 @@ export default function EditEditionPage() {
                 </div>
 
                 {/* Trust footer */}
-                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                <div className="mt-20 border-t border-[var(--border)] pt-12">
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                         <img
                             src="/logo-mona.svg"
                             alt="Mona Editions"
-                            className="w-24 h-12 object-contain opacity-60"
+                            className="w-24 h-12 object-contain opacity-60 dark:invert"
                         />
-                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             {t('trustTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                             {t('trustBody')}
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                             <Link
                                 href="/artist/editions"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkEditions')}
                             </Link>
-                            <span className="text-[#d6d0c8]">·</span>
+                            <span className="text-[var(--border)]">·</span>
                             <Link
                                 href="/artist"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('trustLinkDashboard')}
                             </Link>

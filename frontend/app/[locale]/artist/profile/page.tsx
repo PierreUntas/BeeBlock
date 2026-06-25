@@ -334,10 +334,10 @@ export default function ArtistProfilePage() {
 
     if (isCheckingAuthorization || isLoadingArtist) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">Vérification des permissions…</p>
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">Vérification des permissions…</p>
                 </div>
             </div>
         );
@@ -345,9 +345,9 @@ export default function ArtistProfilePage() {
 
     if (!address) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e]">
+                    <p className=" italic text-[22px] text-[var(--text-muted)]">
                         Veuillez connecter votre wallet
                     </p>
                 </div>
@@ -357,9 +357,9 @@ export default function ArtistProfilePage() {
 
     if (!isAuthorized) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className=" italic text-[22px] text-[#a8a29e] text-center max-w-md px-6">
+                    <p className=" italic text-[22px] text-[var(--text-muted)] text-center max-w-md px-6">
                         Accès refusé : vous n'êtes pas autorisé comme artiste
                     </p>
                 </div>
@@ -368,25 +368,25 @@ export default function ArtistProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
                 <div className="text-center mb-12">
                     <img
                         src="/logo-mona.svg"
                         alt="Mona Editions Logo"
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
+                        className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert"
                     />
-                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
+                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight">
                         {isRegistered ? (
-                            <>{t('title')} <em className="italic text-[#78716c]">{t('titleAccent')}</em></>
+                            <>{t('title')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent')}</em></>
                         ) : (
-                            <>{t('createTitleStart')} <em className="italic text-[#78716c]">{t('createTitleAccent')}</em></>
+                            <>{t('createTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('createTitleAccent')}</em></>
                         )}
                     </h1>
                 </div>
 
                 {loadingStates.loadingIPFS && (
-                    <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6 text-center">
+                    <p className="text-[12px] font-light text-[var(--text-muted)] tracking-[0.06em] mb-6 text-center">
                         {tCommon('ipfsLoading')}
                     </p>
                 )}
@@ -407,27 +407,27 @@ export default function ArtistProfilePage() {
                 )}
 
                 {isRegistered && (
-                    <div className="border border-[#d6d0c8] bg-[#ede9e3] p-6 mb-px">
-                        <p className="text-[14px] font-medium text-[#1c1917] mb-2">
+                    <div className="border border-[var(--border)] bg-[var(--bg-card-alt)] p-6 mb-px">
+                        <p className="text-[14px] font-medium text-[var(--text-primary)] mb-2">
                             {t('qrTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] mb-4 leading-[1.7]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] mb-4 leading-[1.7]">
                             {t('qrDescription')}
                         </p>
                         <button
                             onClick={downloadArtistPageQRCode}
                             disabled={loadingStates.generatingQR}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200"
                         >
                             {loadingStates.generatingQR ? t('qrGenerating') : t('qrDownload')}
                         </button>
                     </div>
                 )}
 
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.nameLabel')}
                             </label>
                             <input
@@ -435,14 +435,14 @@ export default function ArtistProfilePage() {
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder={t('form.namePlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 maxLength={256}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.locationLabel')}
                             </label>
                             <input
@@ -450,26 +450,26 @@ export default function ArtistProfilePage() {
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 placeholder={t('form.locationPlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 maxLength={256}
                                 required
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.bioLabel')}
                             </label>
                             <textarea
                                 value={additionalData.bio}
                                 onChange={(e) => setAdditionalData({...additionalData, bio: e.target.value})}
                                 placeholder={t('form.bioPlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[120px]"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors min-h-[120px]"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.logoLabel')}
                             </label>
                             <input
@@ -482,7 +482,7 @@ export default function ArtistProfilePage() {
                             <button
                                 type="button"
                                 onClick={() => logoInputRef.current?.click()}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-card-alt)] transition-colors text-left"
                             >
                                 {logoFile ? logoFile.name : t('form.logoButton')}
                             </button>
@@ -491,14 +491,14 @@ export default function ArtistProfilePage() {
                                     <img
                                         src={logoPreview}
                                         alt={t('form.logoPreviewAlt')}
-                                        className="w-24 h-24 object-contain border border-[#d6d0c8] bg-[#f5f3ef]"
+                                        className="w-24 h-24 object-contain border border-[var(--border)] bg-[var(--bg-page)]"
                                     />
                                 </div>
                             )}
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.photosLabel', { max: MAX_PHOTOS })}
                             </label>
                             <input
@@ -513,7 +513,7 @@ export default function ArtistProfilePage() {
                                 type="button"
                                 onClick={() => photosInputRef.current?.click()}
                                 disabled={photoFiles.length >= MAX_PHOTOS}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] hover:bg-[#e7e3dc] transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[#f5f3ef]"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] hover:bg-[var(--bg-card-alt)] transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-[var(--bg-page)]"
                             >
                                 {photoFiles.length > 0
                                     ? t('form.photosSelected', { count: photoFiles.length, max: MAX_PHOTOS })
@@ -526,12 +526,12 @@ export default function ArtistProfilePage() {
                                             <img
                                                 src={preview}
                                                 alt={`Photo ${index + 1}`}
-                                                className="w-full h-24 object-cover border border-[#d6d0c8] bg-[#e7e3dc]"
+                                                className="w-full h-24 object-cover border border-[var(--border)] bg-[var(--border-soft)]"
                                             />
                                             <button
                                                 type="button"
                                                 onClick={() => removePhoto(index)}
-                                                className="absolute top-1 right-1 bg-[#1c1917] text-[#fafaf8] w-5 h-5 flex items-center justify-center text-xs hover:bg-[#292524] transition-colors"
+                                                className="absolute top-1 right-1 bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] w-5 h-5 flex items-center justify-center text-xs hover:bg-[var(--accent-hover)] transition-colors"
                                             >
                                                 ×
                                             </button>
@@ -542,7 +542,7 @@ export default function ArtistProfilePage() {
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.websiteLabel')}
                             </label>
                             <input
@@ -550,12 +550,12 @@ export default function ArtistProfilePage() {
                                 value={additionalData.website}
                                 onChange={(e) => setAdditionalData({...additionalData, website: e.target.value})}
                                 placeholder={t('form.websitePlaceholderExample')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                             />
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.exhibitionsLabel')}
                             </label>
                             <textarea
@@ -565,13 +565,13 @@ export default function ArtistProfilePage() {
                                     exhibitions: e.target.value.split('\n').filter(Boolean)
                                 })}
                                 placeholder={t('form.exhibitionsExamplePlaceholder')}
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors min-h-[100px]"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors min-h-[100px]"
                             />
-                            <p className="text-[11px] text-[#a8a29e] mt-1">{t('form.exhibitionsPlaceholder')}</p>
+                            <p className="text-[11px] text-[var(--text-muted)] mt-1">{t('form.exhibitionsPlaceholder')}</p>
                         </div>
 
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('form.instagramLabel')} / {t('form.twitterLabel')} / {t('form.facebookLabel')}
                             </label>
                             <div className="space-y-2">
@@ -583,7 +583,7 @@ export default function ArtistProfilePage() {
                                         socialMedia: { ...additionalData.socialMedia, instagram: e.target.value }
                                     })}
                                     placeholder={t('form.instagramPlaceholder')}
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 />
                                 <input
                                     type="text"
@@ -593,7 +593,7 @@ export default function ArtistProfilePage() {
                                         socialMedia: { ...additionalData.socialMedia, twitter: e.target.value }
                                     })}
                                     placeholder={t('form.twitterPlaceholder')}
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 />
                                 <input
                                     type="text"
@@ -603,13 +603,13 @@ export default function ArtistProfilePage() {
                                         socialMedia: { ...additionalData.socialMedia, facebook: e.target.value }
                                     })}
                                     placeholder={t('form.facebookPlaceholder')}
-                                    className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                    className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 />
                             </div>
                         </div>
 
                         {saveSuccess && (
-                            <div className="border border-[#d6d0c8] bg-[#f0fdf4] p-4">
+                            <div className="border border-[var(--border)] bg-[#f0fdf4] p-4">
                                 <p className="text-[13px] font-medium text-[#166534]">
                                     {tCommon('saveSuccess')}
                                 </p>
@@ -617,16 +617,16 @@ export default function ArtistProfilePage() {
                         )}
 
                         {needsPrivacyAcceptance && (
-                            <div className="border border-[#d6d0c8] bg-[#ede9e3] p-5">
+                            <div className="border border-[var(--border)] bg-[var(--bg-card-alt)] p-5">
                                 <label className="flex items-start gap-3 cursor-pointer">
                                     <input
                                         type="checkbox"
                                         checked={privacyAccepted}
                                         onChange={(e) => setPrivacyAccepted(e.target.checked)}
                                         required
-                                        className="mt-1 w-4 h-4 accent-[#1c1917] cursor-pointer flex-shrink-0"
+                                        className="mt-1 w-4 h-4 accent-[var(--text-primary)] cursor-pointer flex-shrink-0"
                                     />
-                                    <span className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                                    <span className="text-[13px] font-light text-[var(--text-primary)] leading-[1.7]">
                                         {t('form.privacyLabel')}{' '}
                                         <a
                                             href="/legal/privacy"
@@ -650,7 +650,7 @@ export default function ArtistProfilePage() {
                                 loadingStates.loadingIPFS ||
                                 (needsPrivacyAcceptance && !privacyAccepted)
                             }
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                         >
                             {loadingStates.uploading
                                 ? tCommon('uploadIPFS')
@@ -664,17 +664,17 @@ export default function ArtistProfilePage() {
                 </div>
 
                 {/* Trust footer — for cohérence with the rest of the artist area */}
-                <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+                <div className="mt-20 border-t border-[var(--border)] pt-12">
                     <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                         <img
                             src="/logo-mona.svg"
                             alt="Mona Editions"
                             className="w-24 h-12 object-contain opacity-60"
                         />
-                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             {t('profileTrust.title')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                             {t('profileTrust.body')}
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
@@ -684,16 +684,16 @@ export default function ArtistProfilePage() {
                                         href={`/explore/artist/${activeAddress}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                        className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                                     >
                                         {t('profileTrust.linkPublicProfile')} ↗
                                     </Link>
-                                    <span className="text-[#d6d0c8]">·</span>
+                                    <span className="text-[var(--border)]">·</span>
                                 </>
                             )}
                             <Link
                                 href="/artist"
-                                className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                                className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                             >
                                 {t('profileTrust.linkDashboard')}
                             </Link>

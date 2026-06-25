@@ -99,34 +99,34 @@ export default function AboutPage() {
   const { login, authenticated } = usePrivy();
 
   return (
-    <div className="min-h-screen bg-[#f5f3ef] text-[#1c1917]">
+    <div className="min-h-screen bg-[var(--bg-page)] text-[var(--text-primary)]">
       <div className="max-w-[860px] mx-auto px-6 pt-28 pb-20">
 
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section className="text-center mb-24">
-          <div className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-5 flex items-center justify-center gap-3">
-            <span className="block w-8 h-px bg-[#d6d0c8]" />
+          <div className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-5 flex items-center justify-center gap-3">
+            <span className="block w-8 h-px bg-[var(--border)]" />
             {t('eyebrow')}
-            <span className="block w-8 h-px bg-[#d6d0c8]" />
+            <span className="block w-8 h-px bg-[var(--border)]" />
           </div>
           <h1 className="text-[clamp(40px,6vw,64px)] font-normal tracking-[-1.5px] leading-[1.1] mb-5">
             {t('heroTitleStart')}<br />
-            <em className="italic text-[#78716c]">{t('heroTitleAccent')}</em>
+            <em className="italic text-[var(--text-secondary)]">{t('heroTitleAccent')}</em>
           </h1>
-          <p className="text-[15px] font-light leading-[1.8] text-[#78716c] max-w-[480px] mx-auto">
+          <p className="text-[15px] font-light leading-[1.8] text-[var(--text-secondary)] max-w-[480px] mx-auto">
             {t('heroSubtitle')}
           </p>
         </section>
 
         {/* ── Vision : 3 paragraphes courts ──────────────────────────── */}
         <section className="mb-24">
-          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-3 text-center">
             {t('visionEyebrow')}
           </p>
-          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-10 text-[#1c1917] text-center">
-            {t('visionTitleStart')} <em className="italic text-[#78716c]">{t('visionTitleAccent')}</em>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-10 text-[var(--text-primary)] text-center">
+            {t('visionTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('visionTitleAccent')}</em>
           </h2>
-          <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 space-y-5 text-[14px] font-light leading-[1.85] text-[#78716c]">
+          <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 space-y-5 text-[14px] font-light leading-[1.85] text-[var(--text-secondary)]">
             <p>{t('visionBody1')}</p>
             <p>{t('visionBody2')}</p>
             <p>{t('visionBody3')}</p>
@@ -134,24 +134,24 @@ export default function AboutPage() {
         </section>
 
         {/* ── Manifeste ──────────────────────────────────────────────── */}
-        <section className="border border-[#d6d0c8] bg-[#1c1917] p-10 mb-24">
-          <div className="text-[10px] font-normal tracking-[0.15em] uppercase text-white/30 mb-4">
+        <section className="border border-[var(--border)] bg-[var(--bg-inverse)] p-10 mb-24">
+          <div className="text-[10px] font-normal tracking-[0.15em] uppercase text-[var(--text-on-inverse)]/40 mb-4">
             {t('manifestoEyebrow')}
           </div>
-          <p className="text-[clamp(20px,3vw,28px)] font-normal text-white leading-[1.4]">
-            {t('manifestoBodyStart')} <em className="italic text-white/40">{t('manifestoBodyAccent')}</em>{t('manifestoBodyEnd')}
+          <p className="text-[clamp(20px,3vw,28px)] font-normal text-[var(--text-on-inverse)] leading-[1.4]">
+            {t('manifestoBodyStart')} <em className="italic text-[var(--text-on-inverse)]/55">{t('manifestoBodyAccent')}</em>{t('manifestoBodyEnd')}
           </p>
         </section>
 
         {/* ── Pour qui : 3 cartes ────────────────────────────────────── */}
         <section className="mb-24">
-          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[#a8a29e] mb-3 text-center">
+          <p className="text-[11px] font-normal tracking-[0.18em] uppercase text-[var(--text-muted)] mb-3 text-center">
             {t('forwhoEyebrow')}
           </p>
-          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[#1c1917] text-center">
-            {t('forwhoTitleStart')} <em className="italic text-[#78716c]">{t('forwhoTitleAccent')}</em>
+          <h2 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] leading-[1.15] mb-12 text-[var(--text-primary)] text-center">
+            {t('forwhoTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('forwhoTitleAccent')}</em>
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#d6d0c8] border border-[#d6d0c8]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border)] border border-[var(--border)]">
             <ForWhoCell
               title={t('forwho.artists.title')}
               description={t('forwho.artists.description')}
@@ -168,8 +168,8 @@ export default function AboutPage() {
         </section>
 
         {/* ── Disciplines couvertes ──────────────────────────────────── */}
-        <section className="border border-[#d6d0c8] bg-[#fafaf8] p-10 mb-8">
-          <h3 className="text-[17px] font-normal mb-5 text-[#1c1917]">
+        <section className="border border-[var(--border)] bg-[var(--bg-card)] p-10 mb-8">
+          <h3 className="text-[17px] font-normal mb-5 text-[var(--text-primary)]">
             {t('sectorsTitle')}
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -177,23 +177,23 @@ export default function AboutPage() {
               <Link
                 key={labelKey}
                 href={`/explore/editions?category=${encodeURIComponent(category)}`}
-                className="flex items-center gap-2.5 py-2.5 px-3 border border-[#d6d0c8] bg-[#f5f3ef] hover:bg-[#e7e3dc] hover:border-[#1c1917] transition-all duration-200 no-underline group"
+                className="flex items-center gap-2.5 py-2.5 px-3 border border-[var(--border)] bg-[var(--bg-page)] hover:bg-[var(--bg-card-alt)] hover:border-[var(--text-primary)] transition-all duration-200 no-underline group"
               >
-                <div className="w-4 h-4 text-[#78716c] group-hover:text-[#1c1917] flex-shrink-0 transition-colors">
+                <div className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] flex-shrink-0 transition-colors">
                   {svg}
                 </div>
-                <span className="text-[12px] font-light text-[#78716c] group-hover:text-[#1c1917] transition-colors">{t(`sectors.${labelKey}`)}</span>
+                <span className="text-[12px] font-light text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{t(`sectors.${labelKey}`)}</span>
               </Link>
             ))}
           </div>
         </section>
 
         {/* ── Technologie ────────────────────────────────────────────── */}
-        <section className="border border-[#d6d0c8] bg-[#ede9e3] p-10 mb-24">
-          <h3 className="text-[17px] font-normal mb-1.5 text-[#1c1917]">
+        <section className="border border-[var(--border)] bg-[var(--bg-card-alt)] p-10 mb-24">
+          <h3 className="text-[17px] font-normal mb-1.5 text-[var(--text-primary)]">
             {t('techTitle')}
           </h3>
-          <p className="text-[13px] font-light text-[#78716c] mb-5 leading-[1.7]">
+          <p className="text-[13px] font-light text-[var(--text-secondary)] mb-5 leading-[1.7]">
             {t('techSubtitle')}
           </p>
           <div className="flex flex-wrap gap-2">
@@ -203,7 +203,7 @@ export default function AboutPage() {
                 href={url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-[11px] font-normal tracking-[0.06em] text-[#78716c] border border-[#d6d0c8] py-1 px-3 font-mono bg-[#fafaf8] hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200 no-underline"
+                className="text-[11px] font-normal tracking-[0.06em] text-[var(--text-secondary)] border border-[var(--border)] py-1 px-3 font-mono bg-[var(--bg-card)] hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200 no-underline"
               >
                 {name}
               </a>
@@ -213,37 +213,37 @@ export default function AboutPage() {
 
         {/* ── CTA final ──────────────────────────────────────────────── */}
         {!authenticated ? (
-          <section className="border border-[#d6d0c8] bg-[#1c1917] py-16 px-10 text-center">
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 mb-5">
+          <section className="border border-[var(--border)] bg-[var(--bg-inverse)] py-16 px-10 text-center">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-on-inverse)]/40 mb-5">
               {t('ctaEyebrow')}
             </p>
-            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-white leading-[1.2] mb-4 tracking-[-0.5px]">
-              {t('ctaTitleStart')} <em className="italic text-white/40">{t('ctaTitleAccent')}</em>
+            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-[var(--text-on-inverse)] leading-[1.2] mb-4 tracking-[-0.5px]">
+              {t('ctaTitleStart')} <em className="italic text-[var(--text-on-inverse)]/55">{t('ctaTitleAccent')}</em>
             </h2>
-            <p className="text-[14px] font-light text-white/50 max-w-[420px] mx-auto mb-7 leading-[1.7]">
+            <p className="text-[14px] font-light text-[var(--text-on-inverse)]/65 max-w-[420px] mx-auto mb-7 leading-[1.7]">
               {t('ctaSubtitle')}
             </p>
             <button
               onClick={login}
-              className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] bg-white py-3.5 px-8 cursor-pointer hover:bg-[#f5f3ef] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
+              className="text-[12px] font-medium tracking-[0.06em] text-[var(--bg-inverse)] bg-[var(--text-on-inverse)] py-3.5 px-8 cursor-pointer hover:bg-[var(--bg-page)] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
             >
               {t('ctaButton')}
             </button>
           </section>
         ) : (
-          <section className="border border-[#d6d0c8] bg-[#1c1917] py-16 px-10 text-center">
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-white/30 mb-5">
+          <section className="border border-[var(--border)] bg-[var(--bg-inverse)] py-16 px-10 text-center">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-on-inverse)]/40 mb-5">
               {t('ctaEyebrow')}
             </p>
-            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-white leading-[1.2] mb-4 tracking-[-0.5px]">
-              {t('ctaTitleStart')} <em className="italic text-white/40">{t('ctaTitleAccent')}</em>
+            <h2 className="text-[clamp(28px,4vw,40px)] font-normal text-[var(--text-on-inverse)] leading-[1.2] mb-4 tracking-[-0.5px]">
+              {t('ctaTitleStart')} <em className="italic text-[var(--text-on-inverse)]/55">{t('ctaTitleAccent')}</em>
             </h2>
-            <p className="text-[14px] font-light text-white/50 max-w-[420px] mx-auto mb-7 leading-[1.7]">
+            <p className="text-[14px] font-light text-[var(--text-on-inverse)]/65 max-w-[420px] mx-auto mb-7 leading-[1.7]">
               {t('ctaSubtitle')}
             </p>
             <Link
               href="/artist"
-              className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] bg-white py-3.5 px-8 no-underline inline-block hover:bg-[#f5f3ef] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
+              className="text-[12px] font-medium tracking-[0.06em] text-[var(--bg-inverse)] bg-[var(--text-on-inverse)] py-3.5 px-8 no-underline inline-block hover:bg-[var(--bg-page)] hover:-translate-y-px hover:shadow-[0_4px_16px_rgba(255,255,255,0.15)] transition-all duration-200"
             >
               {t('ctaButton')}
             </Link>
@@ -259,11 +259,11 @@ export default function AboutPage() {
 
 function ForWhoCell({ title, description }: { title: string; description: string }) {
   return (
-    <div className="bg-[#fafaf8] p-8">
-      <h3 className="text-[16px] font-medium text-[#1c1917] mb-3 leading-tight">
+    <div className="bg-[var(--bg-card)] p-8">
+      <h3 className="text-[16px] font-medium text-[var(--text-primary)] mb-3 leading-tight">
         {title}
       </h3>
-      <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+      <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7]">
         {description}
       </p>
     </div>

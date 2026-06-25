@@ -14,27 +14,27 @@ export default function NotFound() {
     const t = useTranslations('NotFound');
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef] flex items-center justify-center px-6 pt-20 pb-20">
+        <div className="min-h-screen bg-[var(--bg-page)] flex items-center justify-center px-6 pt-20 pb-20">
             <div className="text-center max-w-lg">
-                <p className="text-[120px] font-light text-[#d6d0c8] leading-none mb-6 tracking-tight">
+                <p className="text-[120px] font-light text-[var(--border)] leading-none mb-6 tracking-tight">
                     {t('code')}
                 </p>
-                <h1 className="text-[clamp(28px,4vw,40px)] font-normal text-[#1c1917] mb-4 tracking-[-0.5px]">
+                <h1 className="text-[clamp(28px,4vw,40px)] font-normal text-[var(--text-primary)] mb-4 tracking-[-0.5px]">
                     {t('title')}
                 </h1>
-                <p className="text-[14px] font-light text-[#78716c] mb-10 leading-[1.7]">
+                <p className="text-[14px] font-light text-[var(--text-secondary)] mb-10 leading-[1.7]">
                     {t('subtitle')}
                 </p>
                 <div className="flex gap-3 justify-center flex-wrap">
                     <Link
                         href="/"
-                        className="bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-7 border border-[#1c1917] hover:bg-[#292524] transition-all no-underline"
+                        className="bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-7 border border-[var(--text-primary)] hover:bg-[var(--accent-hover)] transition-all no-underline"
                     >
                         {t('homeButton')}
                     </Link>
                     <Link
                         href="/explore/editions"
-                        className="bg-[#f5f3ef] text-[#1c1917] font-medium text-[12px] tracking-[0.06em] py-3.5 px-7 border border-[#d6d0c8] hover:border-[#1c1917] transition-all no-underline"
+                        className="bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-7 border border-[var(--border)] hover:border-[var(--text-primary)] transition-all no-underline"
                     >
                         {t('galleryButton')}
                     </Link>

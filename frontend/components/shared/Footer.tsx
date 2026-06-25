@@ -32,29 +32,29 @@ const Footer = () => {
     }[colCount] ?? 'md:grid-cols-2';
 
     return (
-        <footer className="bg-[#f5f3ef] border-t border-[#d6d0c8] mt-auto">
+        <footer className="bg-[var(--bg-page)] border-t border-[var(--border)] mt-auto">
             <div className="max-w-6xl mx-auto px-6 py-16">
 
                 {/* Top row — sections conditionnelles */}
-                <div className={`grid grid-cols-1 ${gridClass} gap-12 pb-12 border-b border-[#d6d0c8]`}>
+                <div className={`grid grid-cols-1 ${gridClass} gap-12 pb-12 border-b border-[var(--border)]`}>
 
                     {/* Brand */}
                     <div className="flex flex-col gap-4">
                         <div className="flex items-center gap-3">
-                            <img 
-                                src="/logo-mona.svg" 
-                                alt="Mona Editions Logo" 
-                                className="w-28 h-14 object-contain"
+                            <img
+                                src="/logo-mona.svg"
+                                alt="Mona Editions Logo"
+                                className="w-28 h-14 object-contain dark:invert"
                             />
                         </div>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7] max-w-[220px]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7] max-w-[220px]">
                             {t('tagline')}
                         </p>
                     </div>
 
                     {/* Explorer — toujours visible */}
                     <div className="flex flex-col gap-4">
-                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                        <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                             {t('exploreTitle')}
                         </p>
                         <nav className="flex flex-col gap-2.5">
@@ -67,7 +67,7 @@ const Footer = () => {
                     {/* Collectionneur — connecté uniquement */}
                     {authenticated && (
                         <div className="flex flex-col gap-4">
-                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                 {t('collectorTitle')}
                             </p>
                             <nav className="flex flex-col gap-2.5">
@@ -79,7 +79,7 @@ const Footer = () => {
                     {/* Espace artiste — artiste autorisé uniquement */}
                     {isArtist && (
                         <div className="flex flex-col gap-4">
-                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                 {t('artistTitle')}
                             </p>
                             <nav className="flex flex-col gap-2.5">
@@ -92,27 +92,27 @@ const Footer = () => {
                 </div>
 
                 {/* Contact + Légal — ligne unique */}
-                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-6 border-b border-[#d6d0c8]">
-                    <a href="mailto:pierre.untas@gmail.com" className="text-[12px] font-light text-[#78716c] hover:text-[#1c1917] transition-colors no-underline">pierre.untas@gmail.com</a>
-                    <span className="text-[#d6d0c8]">·</span>
+                <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-6 border-b border-[var(--border)]">
+                    <a href="mailto:pierre.untas@gmail.com" className="text-[12px] font-light text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors no-underline">pierre.untas@gmail.com</a>
+                    <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/contact">{t('contactUs')}</FooterLink>
-                    <span className="text-[#d6d0c8]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/faq">{t('faq')}</FooterLink>
-                    <span className="text-[#d6d0c8]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/legal/mentions">{t('legalNotice')}</FooterLink>
-                    <span className="text-[#d6d0c8]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/legal/terms">{t('termsOfService')}</FooterLink>
-                    <span className="text-[#d6d0c8]">·</span>
+                    <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/legal/privacy">{t('privacyPolicy')}</FooterLink>
                 </div>
 
                 {/* Copyright */}
                 <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-8">
                     <div className="flex items-center gap-3">
-                        <div className="w-px h-4 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                        <div className="w-px h-4 bg-[var(--border)]" />
+                        <span className=" italic text-[13px] text-[var(--text-muted)]">Mona Editions</span>
                     </div>
-                    <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.04em]">
+                    <p className="text-[12px] font-light text-[var(--text-muted)] tracking-[0.04em]">
                         &copy; Mona Editions {new Date().getFullYear()} — {t('copyright')}
                     </p>
                 </div>
@@ -123,7 +123,7 @@ const Footer = () => {
 
 function FooterLink({ href, children }: { href: string; children: React.ReactNode }) {
     return (
-        <Link href={href} className="text-[13px] font-light text-[#78716c] hover:text-[#1c1917] transition-colors no-underline">
+        <Link href={href} className="text-[13px] font-light text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors no-underline">
             {children}
         </Link>
     );

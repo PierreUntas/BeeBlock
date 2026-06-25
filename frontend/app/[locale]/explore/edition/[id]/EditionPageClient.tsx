@@ -235,8 +235,8 @@ export default function EditionPageClient() {
         return (
             <Shell>
                 <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('loading')}</p>
                 </div>
             </Shell>
         );
@@ -246,7 +246,7 @@ export default function EditionPageClient() {
         return (
             <Shell>
                 <div className="flex items-center justify-center min-h-[40vh]">
-                    <p className="italic text-[20px] text-[#a8a29e]">{t('notFound')}</p>
+                    <p className="italic text-[20px] text-[var(--text-muted)]">{t('notFound')}</p>
                 </div>
             </Shell>
         );
@@ -262,15 +262,15 @@ export default function EditionPageClient() {
             {/* ---- Back link ---- */}
             <Link
                 href="/explore/editions"
-                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#78716c]
-                    border border-[#d6d0c8] px-4 py-2 mb-10 no-underline
-                    hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-secondary)]
+                    border border-[var(--border)] px-4 py-2 mb-10 no-underline
+                    hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200"
             >
                 {t('back')}
             </Link>
 
             {loadingStates.loadingIPFS && (
-                <p className="text-[12px] font-light text-[#a8a29e] tracking-[0.06em] mb-6">
+                <p className="text-[12px] font-light text-[var(--text-muted)] tracking-[0.06em] mb-6">
                     {t('ipfsLoading')}
                 </p>
             )}
@@ -278,12 +278,12 @@ export default function EditionPageClient() {
             {/* ============================================================ */}
             {/* HERO: image + thumbnails + title + share                     */}
             {/* ============================================================ */}
-            <section className="border border-[#d6d0c8] bg-[#fafaf8] mb-px overflow-hidden">
+            <section className="border border-[var(--border)] bg-[var(--bg-card)] mb-px overflow-hidden">
 
                 {/* Main image */}
                 {images.length > 0 ? (
                     <>
-                        <div className="w-full bg-[#e7e3dc] flex items-center justify-center" style={{ minHeight: '50vh' }}>
+                        <div className="w-full bg-[var(--border-soft)] flex items-center justify-center" style={{ minHeight: '50vh' }}>
                             <img
                                 src={ipfsToHttp(images[selectedImage])}
                                 alt={t('imageAlt', { n: selectedImage + 1, title: edition.title })}
@@ -291,7 +291,7 @@ export default function EditionPageClient() {
                             />
                         </div>
                         {images.length > 1 && (
-                            <div className="flex gap-2 p-4 border-t border-[#e7e3dc] overflow-x-auto">
+                            <div className="flex gap-2 p-4 border-t border-[var(--border-soft)] overflow-x-auto">
                                 {images.map((img, i) => (
                                     <button
                                         key={i}
@@ -300,8 +300,8 @@ export default function EditionPageClient() {
                                         aria-label={t('thumbnailAlt', { n: i + 1 })}
                                         className={`flex-shrink-0 w-16 h-16 overflow-hidden border transition-all duration-200 cursor-pointer ${
                                             selectedImage === i
-                                                ? 'border-[#1c1917]'
-                                                : 'border-[#d6d0c8] opacity-60 hover:opacity-100'
+                                                ? 'border-[var(--text-primary)]'
+                                                : 'border-[var(--border)] opacity-60 hover:opacity-100'
                                         }`}
                                     >
                                         <img
@@ -315,8 +315,8 @@ export default function EditionPageClient() {
                         )}
                     </>
                 ) : (
-                    <div className="w-full bg-[#e7e3dc] flex items-center justify-center" style={{ minHeight: '40vh' }}>
-                        <img src="/logo-mona.svg" alt="" className="w-20 h-20 object-contain opacity-20" />
+                    <div className="w-full bg-[var(--border-soft)] flex items-center justify-center" style={{ minHeight: '40vh' }}>
+                        <img src="/logo-mona.svg" alt="" className="w-20 h-20 object-contain opacity-20 dark:invert" />
                     </div>
                 )}
 
@@ -325,24 +325,24 @@ export default function EditionPageClient() {
                     <div className="flex items-start justify-between gap-6 flex-wrap">
                         <div className="flex-1 min-w-[260px]">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-6 h-px bg-[#d6d0c8]" />
+                                <div className="w-6 h-px bg-[var(--border)]" />
                                 {editionIPFSData?.category ? (
-                                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                         {getCategoryLabel(editionIPFSData.category)}
                                     </span>
                                 ) : (
-                                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                                    <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                         {t('editionLabel', { id: edition.tokenId.toString() })}
                                     </span>
                                 )}
                             </div>
-                            <h1 className="text-[clamp(30px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
+                            <h1 className="text-[clamp(30px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-2">
                                 {edition.title}
                             </h1>
-                            <p className="text-[15px] italic text-[#78716c]">
+                            <p className="text-[15px] italic text-[var(--text-secondary)]">
                                 <Link
                                     href={`/explore/artist/${edition.artistAddress}`}
-                                    className="hover:text-[#1c1917] no-underline transition-colors"
+                                    className="hover:text-[var(--text-primary)] no-underline transition-colors"
                                 >
                                     {t('byArtist', { artist: artist.name })}
                                 </Link>
@@ -353,28 +353,28 @@ export default function EditionPageClient() {
                     </div>
 
                     {/* Status bar */}
-                    <div className="mt-6 pt-6 border-t border-[#e7e3dc] flex flex-wrap items-center gap-x-6 gap-y-3">
+                    <div className="mt-6 pt-6 border-t border-[var(--border-soft)] flex flex-wrap items-center gap-x-6 gap-y-3">
                         {isSoldOut ? (
-                            <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                 {t('soldOutLabel')}
                             </span>
                         ) : (
-                            <span className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] uppercase">
+                            <span className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] uppercase">
                                 {t('editionStatus', { remaining, total })}
                             </span>
                         )}
                         {editionIPFSData?.year && (
                             <>
-                                <span className="text-[#d6d0c8]">·</span>
-                                <span className="text-[12px] font-light text-[#78716c]">
+                                <span className="text-[var(--border)]">·</span>
+                                <span className="text-[12px] font-light text-[var(--text-secondary)]">
                                     {editionIPFSData.year}
                                 </span>
                             </>
                         )}
                         {comments.length > 0 && (
                             <>
-                                <span className="text-[#d6d0c8]">·</span>
-                                <span className="text-[12px] font-light text-[#78716c]">
+                                <span className="text-[var(--border)]">·</span>
+                                <span className="text-[12px] font-light text-[var(--text-secondary)]">
                                     {averageRating.toFixed(1)} ★ ({t('reviewsCount', { n: comments.length })})
                                 </span>
                             </>
@@ -387,14 +387,14 @@ export default function EditionPageClient() {
             {/* ABOUT THE WORK: description + meta grid                      */}
             {/* ============================================================ */}
             {(editionIPFSData?.description || editionIPFSData?.technique || editionIPFSData?.dimensions) && (
-                <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+                <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
                     {editionIPFSData?.description && (
-                        <p className="text-[16px] font-light text-[#1c1917] leading-[1.85] mb-8 italic">
+                        <p className="text-[16px] font-light text-[var(--text-primary)] leading-[1.85] mb-8 italic">
                             {editionIPFSData.description}
                         </p>
                     )}
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-px bg-[var(--border-soft)] border border-[var(--border-soft)]">
                         {editionIPFSData?.year && (
                             <MetaCell label={t('year')} value={String(editionIPFSData.year)} />
                         )}
@@ -417,8 +417,8 @@ export default function EditionPageClient() {
             {/* ============================================================ */}
             {/* ARTIST PREVIEW                                               */}
             {/* ============================================================ */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
-                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-5">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
+                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-5">
                     {t('artistTitleStart')} {t('artistTitleAccent')}
                 </p>
 
@@ -427,31 +427,31 @@ export default function EditionPageClient() {
                         <img
                             src={ipfsToHttp(artistIPFSData.logo)}
                             alt={t('logoAlt', { name: artist.name })}
-                            className="w-16 h-16 object-contain border border-[#e7e3dc] bg-[#f5f3ef] flex-shrink-0"
+                            className="w-16 h-16 object-contain border border-[var(--border-soft)] bg-[var(--bg-page)] flex-shrink-0"
                         />
                     ) : (
-                        <div className="w-16 h-16 bg-[#e7e3dc] flex items-center justify-center flex-shrink-0">
-                            <img src="/logo-mona.svg" alt="" className="w-8 h-8 object-contain opacity-30" />
+                        <div className="w-16 h-16 bg-[var(--border-soft)] flex items-center justify-center flex-shrink-0">
+                            <img src="/logo-mona.svg" alt="" className="w-8 h-8 object-contain opacity-30 dark:invert" />
                         </div>
                     )}
 
                     <div className="flex-1 min-w-[200px]">
-                        <h3 className="text-[20px] font-normal text-[#1c1917] mb-1">
+                        <h3 className="text-[20px] font-normal text-[var(--text-primary)] mb-1">
                             {artist.name}
                         </h3>
                         {artist.location && (
-                            <p className="text-[13px] font-light text-[#78716c] mb-3">
+                            <p className="text-[13px] font-light text-[var(--text-secondary)] mb-3">
                                 {artist.location}
                             </p>
                         )}
                         {artistIPFSData?.bio && (
-                            <p className="text-[14px] font-light text-[#1c1917] leading-[1.75] mb-4 line-clamp-3">
+                            <p className="text-[14px] font-light text-[var(--text-primary)] leading-[1.75] mb-4 line-clamp-3">
                                 {artistIPFSData.bio}
                             </p>
                         )}
                         <Link
                             href={`/explore/artist/${edition.artistAddress}`}
-                            className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                            className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] border border-[var(--border)] px-4 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                         >
                             {t('viewAllWorks')} <span aria-hidden>→</span>
                         </Link>
@@ -463,25 +463,25 @@ export default function EditionPageClient() {
             {/* REVIEWS                                                      */}
             {/* ============================================================ */}
             {comments.length > 0 && (
-                <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
-                    <h2 className="text-[22px] font-normal text-[#1c1917] mb-6">
-                        {t('reviewsTitleStart')} <em className="italic text-[#78716c]">{t('reviewsTitleAccent')}</em>
+                <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className="text-[22px] font-normal text-[var(--text-primary)] mb-6">
+                        {t('reviewsTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('reviewsTitleAccent')}</em>
                     </h2>
                     <div className="space-y-5">
                         {comments.map((comment, index) => (
                             <div
                                 key={index}
-                                className={index < comments.length - 1 ? 'pb-5 border-b border-[#e7e3dc]' : ''}
+                                className={index < comments.length - 1 ? 'pb-5 border-b border-[var(--border-soft)]' : ''}
                             >
                                 <div className="flex items-center gap-3 mb-2">
-                                    <span className="text-[14px] text-[#1c1917] tracking-[0.1em]">
+                                    <span className="text-[14px] text-[var(--text-primary)] tracking-[0.1em]">
                                         {'★'.repeat(comment.rating)}{'☆'.repeat(5 - comment.rating)}
                                     </span>
-                                    <span className="font-mono text-[11px] text-[#a8a29e]">
+                                    <span className="font-mono text-[11px] text-[var(--text-muted)]">
                                         {comment.collector.slice(0, 6)}…{comment.collector.slice(-4)}
                                     </span>
                                 </div>
-                                <p className="text-[14px] font-light text-[#1c1917] leading-[1.75]">
+                                <p className="text-[14px] font-light text-[var(--text-primary)] leading-[1.75]">
                                     {commentsIPFS[index]?.comment ?? '…'}
                                 </p>
                             </div>
@@ -493,11 +493,11 @@ export default function EditionPageClient() {
             {/* ============================================================ */}
             {/* PROVENANCE — technical, sober, for the curious               */}
             {/* ============================================================ */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#f5f3ef] p-8 mb-px">
-                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-4">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-page)] p-8 mb-px">
+                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-4">
                     {t('provenanceTitle')}
                 </p>
-                <p className="text-[13px] font-light text-[#78716c] leading-[1.75] mb-5 max-w-2xl">
+                <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.75] mb-5 max-w-2xl">
                     {t('provenanceBody')}
                 </p>
                 <div className="space-y-3 text-[11px]">
@@ -517,30 +517,30 @@ export default function EditionPageClient() {
             {/* ============================================================ */}
             {/* TRUST FOOTER                                                  */}
             {/* ============================================================ */}
-            <div className="mt-20 border-t border-[#d6d0c8] pt-12">
+            <div className="mt-20 border-t border-[var(--border)] pt-12">
                 <div className="flex flex-col items-center text-center max-w-2xl mx-auto gap-4">
                     <img
                         src="/logo-mona.svg"
                         alt="Mona Editions"
-                        className="w-24 h-12 object-contain opacity-60"
+                        className="w-24 h-12 object-contain opacity-60 dark:invert"
                     />
-                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                         {t('trustTitle')}
                     </p>
-                    <p className="text-[13px] font-light text-[#78716c] leading-[1.8]">
+                    <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.8]">
                         {t('trustBody')}
                     </p>
                     <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 mt-2">
                         <Link
                             href="/about"
-                            className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                         >
                             {t('trustLinkAbout')}
                         </Link>
-                        <span className="text-[#d6d0c8]">·</span>
+                        <span className="text-[var(--border)]">·</span>
                         <Link
                             href="/explore/artists"
-                            className="text-[12px] font-medium tracking-[0.06em] text-[#1c1917] underline underline-offset-4 hover:opacity-70 transition-opacity"
+                            className="text-[12px] font-medium tracking-[0.06em] text-[var(--text-primary)] underline underline-offset-4 hover:opacity-70 transition-opacity"
                         >
                             {t('trustLinkArtists')}
                         </Link>
@@ -557,7 +557,7 @@ export default function EditionPageClient() {
 
 function Shell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-4xl mx-auto px-6 pt-24 pb-20">{children}</div>
         </div>
     );
@@ -569,11 +569,11 @@ function Shell({ children }: { children: React.ReactNode }) {
 
 function MetaCell({ label, value }: { label: string; value: string }) {
     return (
-        <div className="bg-[#fafaf8] p-4">
-            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-2">
+        <div className="bg-[var(--bg-card)] p-4">
+            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-2">
                 {label}
             </p>
-            <p className="text-[13px] font-light text-[#1c1917] leading-tight">
+            <p className="text-[13px] font-light text-[var(--text-primary)] leading-tight">
                 {value}
             </p>
         </div>
@@ -583,7 +583,7 @@ function MetaCell({ label, value }: { label: string; value: string }) {
 function ProvLine({ label, value, href }: { label: string; value: string; href: string }) {
     return (
         <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3">
-            <span className="font-medium tracking-[0.12em] uppercase text-[#a8a29e] flex-shrink-0 min-w-[120px]">
+            <span className="font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] flex-shrink-0 min-w-[120px]">
                 {label}
             </span>
             <a

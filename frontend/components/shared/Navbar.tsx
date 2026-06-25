@@ -6,6 +6,7 @@ import { useAccount, useReadContract } from "wagmi";
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter, usePathname } from '@/i18n/navigation';
 import { ARTWORK_REGISTRY_ADDRESS, ARTWORK_REGISTRY_ABI } from '@/config/contracts';
+import ThemeToggle from "@/components/shared/ThemeToggle";
 
 export default function Navbar() {
     const t = useTranslations('Navbar');
@@ -109,15 +110,15 @@ export default function Navbar() {
             {/* Top bar */}
             <header
                 className={`fixed top-0 left-0 right-0 z-50 h-16 flex items-center justify-between px-10 transition-all duration-300
-                    bg-[#f5f3ef]/95 backdrop-blur-md
-                    ${scrolled ? 'border-b border-[#d6d0c8] shadow-sm' : 'border-b border-transparent'}`}
+                    bg-[var(--bg-page)]/95 backdrop-blur-md
+                    ${scrolled ? 'border-b border-[var(--border)] shadow-sm' : 'border-b border-transparent'}`}
             >
-                {/* Logo */}
+                {/* Logo — SVG monochrome noir, inversé en blanc via CSS filter en dark mode */}
                 <a href="/" className="flex items-center gap-2.5 group no-underline">
-                    <img 
-                        src="/logo-mona.svg" 
-                        alt="Mona Editions Logo" 
-                        className="w-[100px] h-[100px] object-contain flex-shrink-0"
+                    <img
+                        src="/logo-mona.svg"
+                        alt="Mona Editions Logo"
+                        className="w-[100px] h-[100px] object-contain flex-shrink-0 dark:invert"
                     />
                 </a>
 
@@ -129,9 +130,9 @@ export default function Navbar() {
                         { href: '/about', label: t('about') },
                     ].map(({ href, label }) => (
                         <a key={href} href={locale === 'fr' ? href : `/${locale}${href}`}
-                            className="text-xs font-normal tracking-[0.06em] text-[#78716c] no-underline
+                            className="text-xs font-normal tracking-[0.06em] text-[var(--text-secondary)] no-underline
                                 pb-0.5 border-b border-transparent
-                                hover:text-[#1c1917] hover:border-[#1c1917] transition-all duration-200">
+                                hover:text-[var(--text-primary)] hover:border-[var(--text-primary)] transition-all duration-200">
                             {label}
                         </a>
                     ))}
@@ -139,6 +140,10 @@ export default function Navbar() {
 
                 {/* Right */}
                 <div className="flex items-center gap-2.5">
+                    {/* Theme toggle (light / dark) — placed just before the
+                        language switcher so all user preferences group together. */}
+                    <ThemeToggle />
+
                     {/* Language switcher — compact popover on all viewports.
                         Shows the active locale as a button; popover lists the
                         other available locales for one-click switch. */}
@@ -149,9 +154,9 @@ export default function Navbar() {
                             aria-label="Language switcher"
                             aria-haspopup="true"
                             aria-expanded={langOpen}
-                            className="flex items-center gap-1 border border-[#d6d0c8] bg-[#fafaf8] h-8 px-2.5
-                                text-[10px] font-medium tracking-[0.08em] text-[#1c1917]
-                                hover:border-[#1c1917] transition-all duration-200 cursor-pointer"
+                            className="flex items-center gap-1 border border-[var(--border)] bg-[var(--bg-card)] h-8 px-2.5
+                                text-[10px] font-medium tracking-[0.08em] text-[var(--text-primary)]
+                                hover:border-[var(--text-primary)] transition-all duration-200 cursor-pointer"
                         >
                             {locale.toUpperCase()}
                             <svg
@@ -174,7 +179,7 @@ export default function Navbar() {
                                 />
                                 <div
                                     role="menu"
-                                    className="absolute right-0 top-full mt-1 z-50 min-w-[60px] bg-[#fafaf8] border border-[#d6d0c8] shadow-sm flex flex-col"
+                                    className="absolute right-0 top-full mt-1 z-50 min-w-[60px] bg-[var(--bg-card)] border border-[var(--border)] shadow-sm flex flex-col"
                                 >
                                     {(['fr', 'de', 'en'] as const).filter(l => l !== locale).map(l => (
                                         <button
@@ -182,9 +187,9 @@ export default function Navbar() {
                                             type="button"
                                             onClick={() => { switchLocale(l); setLangOpen(false); }}
                                             role="menuitem"
-                                            className="text-[10px] font-medium tracking-[0.08em] uppercase text-[#78716c]
-                                                px-3 py-2 hover:bg-[#f5f3ef] hover:text-[#1c1917] transition-colors cursor-pointer
-                                                border-b border-[#e7e3dc] last:border-b-0 text-left"
+                                            className="text-[10px] font-medium tracking-[0.08em] uppercase text-[var(--text-secondary)]
+                                                px-3 py-2 hover:bg-[var(--bg-page)] hover:text-[var(--text-primary)] transition-colors cursor-pointer
+                                                border-b border-[var(--border-soft)] last:border-b-0 text-left"
                                         >
                                             {l}
                                         </button>
@@ -196,17 +201,17 @@ export default function Navbar() {
                     {authenticated ? (
                         <div
                             onClick={() => setIsOpen(!isOpen)}
-                            className="w-8 h-8 border border-[#d6d0c8] bg-[#fafaf8] flex items-center justify-center
-                                 italic text-sm text-[#78716c] cursor-pointer
-                                hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200">
+                            className="w-8 h-8 border border-[var(--border)] bg-[var(--bg-card)] flex items-center justify-center
+                                 italic text-sm text-[var(--text-secondary)] cursor-pointer
+                                hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200">
                             {user?.email?.address?.[0]?.toUpperCase() ?? '?'}
                         </div>
                     ) : (
                         <button
                             onClick={login}
-                            className="text-[11px] font-medium tracking-[0.08em] text-[#1c1917] bg-transparent
-                                border border-[#d6d0c8] px-[18px] py-[7px] cursor-pointer
-                                hover:bg-[#1c1917] hover:text-[#f5f3ef] hover:border-[#1c1917] transition-all duration-200">
+                            className="text-[11px] font-medium tracking-[0.08em] text-[var(--text-primary)] bg-transparent
+                                border border-[var(--border)] px-[18px] py-[7px] cursor-pointer
+                                hover:bg-[var(--bg-inverse)] hover:text-[var(--text-on-inverse)] hover:border-[var(--text-primary)] transition-all duration-200">
                             {t('connect')}
                         </button>
                     )}
@@ -214,15 +219,15 @@ export default function Navbar() {
                     {/* Hamburger */}
                     <button
                         onClick={() => setIsOpen(!isOpen)}
-                        className="w-8 h-8 border border-[#d6d0c8] bg-[#fafaf8] flex flex-col items-center justify-center gap-1
-                            cursor-pointer hover:border-[#1c1917] transition-all duration-200 p-0"
+                        className="w-8 h-8 border border-[var(--border)] bg-[var(--bg-card)] flex flex-col items-center justify-center gap-1
+                            cursor-pointer hover:border-[var(--text-primary)] transition-all duration-200 p-0"
                         aria-label={t('menu')}
                     >
-                        <span className={`block w-3.5 h-px bg-[#78716c] transition-all duration-250
+                        <span className={`block w-3.5 h-px bg-[var(--text-secondary)] transition-all duration-250
                             ${isOpen ? 'translate-y-[5px] rotate-45' : ''}`} />
-                        <span className={`block w-3.5 h-px bg-[#78716c] transition-all duration-250
+                        <span className={`block w-3.5 h-px bg-[var(--text-secondary)] transition-all duration-250
                             ${isOpen ? 'opacity-0' : ''}`} />
-                        <span className={`block w-3.5 h-px bg-[#78716c] transition-all duration-250
+                        <span className={`block w-3.5 h-px bg-[var(--text-secondary)] transition-all duration-250
                             ${isOpen ? '-translate-y-[5px] -rotate-45' : ''}`} />
                     </button>
                 </div>
@@ -231,28 +236,28 @@ export default function Navbar() {
             {/* Backdrop */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-[#1c1917]/40 backdrop-blur-sm"
+                    className="fixed inset-0 z-40 bg-[var(--bg-inverse)]/40 backdrop-blur-sm"
                     onClick={() => setIsOpen(false)}
                 />
             )}
 
             {/* Slide panel */}
-            <nav className={`fixed top-0 right-0 h-screen w-[300px] z-50 bg-[#f5f3ef] border-l border-[#d6d0c8]
+            <nav className={`fixed top-0 right-0 h-screen w-[300px] z-50 bg-[var(--bg-page)] border-l border-[var(--border)]
                 flex flex-col transition-transform duration-300 ease-[cubic-bezier(0.4,0,0.2,1)]
                 ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
 
                 <div className="flex flex-col h-full pt-20">
 
                     {/* Auth section */}
-                    <div className="px-6 pb-5 border-b border-[#d6d0c8]">
+                    <div className="px-6 pb-5 border-b border-[var(--border)]">
                         {authenticated ? (
                             <div className="space-y-2.5">
-                                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-3.5">
-                                    <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-1.5">
+                                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-3.5">
+                                    <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-1.5">
                                         {t('connected')}
                                     </p>
                                     {user?.email?.address && (
-                                        <p className="text-[13px] text-[#1c1917] truncate mb-1">
+                                        <p className="text-[13px] text-[var(--text-primary)] truncate mb-1">
                                             {user.email.address}
                                         </p>
                                     )}
@@ -260,7 +265,7 @@ export default function Navbar() {
                                         <>
                                             <button
                                                 onClick={copyAddress}
-                                                className="text-[11px] font-mono text-[#78716c] bg-transparent border-0 p-0
+                                                className="text-[11px] font-mono text-[var(--text-secondary)] bg-transparent border-0 p-0
                                                     cursor-pointer flex items-center gap-2 w-full">
                                                 <span>{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
                                                 <span className="ml-auto text-[#4a5240]">{copied ? '✓' : '⧉'}</span>
@@ -268,15 +273,15 @@ export default function Navbar() {
                                             {user?.wallet && (
                                                 <button
                                                     onClick={() => exportWallet()}
-                                                    className="mt-1.5 text-[10px] tracking-[0.06em] text-[#a8a29e] bg-transparent border-0 p-0
-                                                        cursor-pointer hover:text-[#78716c] transition-colors duration-150 text-left">
+                                                    className="mt-1.5 text-[10px] tracking-[0.06em] text-[var(--text-muted)] bg-transparent border-0 p-0
+                                                        cursor-pointer hover:text-[var(--text-secondary)] transition-colors duration-150 text-left">
                                                     {t('exportPrivateKey')}
                                                 </button>
                                             )}
                                         </>
                                     )}
                                     {(isOwner || isAdmin || isArtist) && (
-                                        <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[#e7e3dc]">
+                                        <div className="flex flex-wrap gap-1.5 mt-2.5 pt-2.5 border-t border-[var(--border-soft)]">
                                             {isOwner && <RoleBadge>{t('roles.owner')}</RoleBadge>}
                                             {isAdmin && <RoleBadge>{t('roles.admin')}</RoleBadge>}
                                             {isArtist && <RoleBadge>{t('roles.artist')}</RoleBadge>}
@@ -285,16 +290,16 @@ export default function Navbar() {
                                 </div>
                                 <button
                                     onClick={() => { logout(); setIsOpen(false); }}
-                                    className="w-full text-xs font-normal text-[#78716c] bg-transparent
-                                        border border-[#d6d0c8] py-2.5 cursor-pointer
-                                        hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200">
+                                    className="w-full text-xs font-normal text-[var(--text-secondary)] bg-transparent
+                                        border border-[var(--border)] py-2.5 cursor-pointer
+                                        hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200">
                                     {t('logout')}
                                 </button>
                             </div>
                         ) : (
                             <button
                                 onClick={() => { login(); setIsOpen(false); }}
-                                className="w-full text-xs font-medium tracking-[0.06em] text-[#f5f3ef] bg-[#1c1917]
+                                className="w-full text-xs font-medium tracking-[0.06em] text-[var(--text-on-inverse)] bg-[var(--bg-inverse)]
                                     border-0 py-3 cursor-pointer hover:opacity-80 transition-opacity duration-200">
                                 {t('signIn')}
                             </button>
@@ -341,9 +346,9 @@ export default function Navbar() {
                     </div>
 
                     {/* Panel footer */}
-                    <div className="px-6 py-4 border-t border-[#d6d0c8] flex items-center justify-between">
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
-                        <span className="flex items-center gap-1.5 text-[10px] font-light text-[#a8a29e]">
+                    <div className="px-6 py-4 border-t border-[var(--border)] flex items-center justify-between">
+                        <span className=" italic text-[13px] text-[var(--text-muted)]">Mona Editions</span>
+                        <span className="flex items-center gap-1.5 text-[10px] font-light text-[var(--text-muted)]">
                             <span className="w-1.5 h-1.5 rounded-full bg-[#4a5240] inline-block" />
                             {networkName}
                         </span>
@@ -373,9 +378,9 @@ function PanelLink({
         !locale || locale === 'fr' ? href : `/${locale}${href === '/' ? '' : href}`;
     return (
         <a href={localizedHref} onClick={onClick}
-            className="block text-[13px] font-light text-[#78716c] no-underline
+            className="block text-[13px] font-light text-[var(--text-secondary)] no-underline
                 px-3 py-2.5 border-l border-transparent
-                hover:text-[#1c1917] hover:border-l-[#1c1917] hover:pl-4 hover:bg-[#1c1917]/[0.03]
+                hover:text-[var(--text-primary)] hover:border-l-[var(--text-primary)] hover:pl-4 hover:bg-[var(--bg-inverse)]/[0.03]
                 transition-all duration-150">
             {children}
         </a>
@@ -385,7 +390,7 @@ function PanelLink({
 function PanelDivider({ children }: { children: React.ReactNode }) {
     return (
         <div className="pt-4 pb-1.5 px-3">
-            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+            <p className="text-[9px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                 {children}
             </p>
         </div>

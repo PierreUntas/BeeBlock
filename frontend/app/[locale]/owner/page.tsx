@@ -65,10 +65,10 @@ export default function AdminPage() {
 
     if (isCheckingOwner || isLoadingOwner) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('checkingPermissions')}</p>
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('checkingPermissions')}</p>
                 </div>
             </div>
         );
@@ -76,9 +76,9 @@ export default function AdminPage() {
 
     if (!address) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notConnected')}</p>
+                    <p className="italic text-[18px] text-[var(--text-muted)] text-center max-w-md px-6">{t('notConnected')}</p>
                 </div>
             </div>
         );
@@ -86,9 +86,9 @@ export default function AdminPage() {
 
     if (!isOwner) {
         return (
-            <div className="min-h-screen bg-[#f5f3ef]">
+            <div className="min-h-screen bg-[var(--bg-page)]">
                 <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
-                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">
+                    <p className="italic text-[18px] text-[var(--text-muted)] text-center max-w-md px-6">
                         {t('notOwner')}
                     </p>
                 </div>
@@ -97,27 +97,27 @@ export default function AdminPage() {
     }
 
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-2xl mx-auto px-6 pt-28 pb-20">
                 <div className="text-center mb-12">
                     <img
                         src="/logo-mona.svg"
                         alt={t('logoAlt')}
-                        className="w-[100px] h-[100px] object-contain mx-auto mb-6"
+                        className="w-[100px] h-[100px] object-contain mx-auto mb-6 dark:invert"
                     />
-                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight">
-                        {t('titleStart')} <em className="italic text-[#78716c]">{t('titleAccent')}</em>
+                    <h1 className=" text-[clamp(32px,5vw,48px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight">
+                        {t('titleStart')} <em className="italic text-[var(--text-secondary)]">{t('titleAccent')}</em>
                     </h1>
                 </div>
 
                 {/* Add an admin */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        {t('addTitleStart')} <em className="italic text-[#78716c]">{t('addTitleAccent')}</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        {t('addTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('addTitleAccent')}</em>
                     </h2>
                     <form onSubmit={handleAddAdmin} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('addressLabel')}
                             </label>
                             <input
@@ -125,7 +125,7 @@ export default function AdminPage() {
                                 value={newAdminAddress}
                                 onChange={(e) => setNewAdminAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                                 required
                             />
@@ -133,7 +133,7 @@ export default function AdminPage() {
                         <button
                             type="submit"
                             disabled={isAddingAdmin}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                         >
                             {isAddingAdmin ? t('addingButton') : t('addButton')}
                         </button>
@@ -141,13 +141,13 @@ export default function AdminPage() {
                 </div>
 
                 {/* Remove an admin */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        {t('removeTitleStart')} <em className="italic text-[#78716c]">{t('removeTitleAccent')}</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        {t('removeTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('removeTitleAccent')}</em>
                     </h2>
                     <form onSubmit={handleRemoveAdmin} className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('addressLabel')}
                             </label>
                             <input
@@ -155,7 +155,7 @@ export default function AdminPage() {
                                 value={removeAdminAddress}
                                 onChange={(e) => setRemoveAdminAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                                 required
                             />
@@ -163,7 +163,7 @@ export default function AdminPage() {
                         <button
                             type="submit"
                             disabled={isRemovingAdmin}
-                            className="w-full bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[#1c1917] disabled:opacity-50 hover:bg-[#292524] transition-all duration-200 cursor-pointer"
+                            className="w-full bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] uppercase py-3.5 px-8 border border-[var(--text-primary)] disabled:opacity-50 hover:bg-[var(--accent-hover)] transition-all duration-200 cursor-pointer"
                         >
                             {isRemovingAdmin ? t('removingButton') : t('removeButton')}
                         </button>
@@ -171,13 +171,13 @@ export default function AdminPage() {
                 </div>
 
                 {/* Check admin status */}
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
-                    <h2 className=" text-[22px] font-normal text-[#1c1917] mb-5">
-                        {t('checkTitleStart')} <em className="italic text-[#78716c]">{t('checkTitleAccent')}</em>
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
+                    <h2 className=" text-[22px] font-normal text-[var(--text-primary)] mb-5">
+                        {t('checkTitleStart')} <em className="italic text-[var(--text-secondary)]">{t('checkTitleAccent')}</em>
                     </h2>
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[#a8a29e] mb-2">
+                            <label className="block text-[12px] font-normal tracking-[0.12em] uppercase text-[var(--text-muted)] mb-2">
                                 {t('checkAddressLabel')}
                             </label>
                             <input
@@ -185,12 +185,12 @@ export default function AdminPage() {
                                 value={checkAdminAddress}
                                 onChange={(e) => setCheckAdminAddress(e.target.value)}
                                 placeholder="0x..."
-                                className="w-full px-4 py-3 bg-[#f5f3ef] border border-[#d6d0c8] font-mono text-[13px] text-[#1c1917] placeholder:text-[#a8a29e] focus:outline-none focus:border-[#1c1917] transition-colors"
+                                className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] font-mono text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 pattern="^0x[a-fA-F0-9]{40}$"
                             />
                         </div>
                         {checkAdminAddress && isAdminResult !== undefined && (
-                            <div className="p-4 border border-[#d6d0c8] bg-[#f5f3ef] text-[14px] font-light text-[#1c1917]">
+                            <div className="p-4 border border-[var(--border)] bg-[var(--bg-page)] text-[14px] font-light text-[var(--text-primary)]">
                                 {isAdminResult ? t('isAdminYes') : t('isAdminNo')}
                             </div>
                         )}
@@ -200,8 +200,8 @@ export default function AdminPage() {
                 {/* Footer mark */}
                 <div className="flex justify-center mt-20">
                     <div className="flex flex-col items-center gap-3">
-                        <div className="w-px h-12 bg-[#d6d0c8]" />
-                        <span className=" italic text-[13px] text-[#a8a29e]">Mona Editions</span>
+                        <div className="w-px h-12 bg-[var(--border)]" />
+                        <span className=" italic text-[13px] text-[var(--text-muted)]">Mona Editions</span>
                     </div>
                 </div>
             </div>

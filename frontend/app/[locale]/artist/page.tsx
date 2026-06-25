@@ -285,8 +285,8 @@ export default function ArtistDashboardPage() {
         return (
             <DashboardShell>
                 <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-                    <div className="w-8 h-8 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
-                    <p className="text-[13px] font-light text-[#a8a29e] tracking-[0.06em]">{t('loading')}</p>
+                    <div className="w-8 h-8 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
+                    <p className="text-[13px] font-light text-[var(--text-muted)] tracking-[0.06em]">{t('loading')}</p>
                 </div>
             </DashboardShell>
         );
@@ -296,7 +296,7 @@ export default function ArtistDashboardPage() {
         return (
             <DashboardShell>
                 <div className="flex items-center justify-center min-h-[40vh]">
-                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notConnected')}</p>
+                    <p className="italic text-[18px] text-[var(--text-muted)] text-center max-w-md px-6">{t('notConnected')}</p>
                 </div>
             </DashboardShell>
         );
@@ -306,7 +306,7 @@ export default function ArtistDashboardPage() {
         return (
             <DashboardShell>
                 <div className="flex items-center justify-center min-h-[40vh]">
-                    <p className="italic text-[18px] text-[#a8a29e] text-center max-w-md px-6">{t('notAuthorized')}</p>
+                    <p className="italic text-[18px] text-[var(--text-muted)] text-center max-w-md px-6">{t('notAuthorized')}</p>
                 </div>
             </DashboardShell>
         );
@@ -316,16 +316,16 @@ export default function ArtistDashboardPage() {
     if (!isRegistered) {
         return (
             <DashboardShell>
-                <div className="border border-[#d6d0c8] bg-[#fafaf8] p-10 text-center">
-                    <h1 className="text-[clamp(24px,3vw,32px)] font-normal tracking-[-0.5px] text-[#1c1917] mb-3">
+                <div className="border border-[var(--border)] bg-[var(--bg-card)] p-10 text-center">
+                    <h1 className="text-[clamp(24px,3vw,32px)] font-normal tracking-[-0.5px] text-[var(--text-primary)] mb-3">
                         {t('welcomeFirst')}
                     </h1>
-                    <p className="text-[14px] font-light text-[#78716c] leading-[1.7] max-w-md mx-auto mb-8">
+                    <p className="text-[14px] font-light text-[var(--text-secondary)] leading-[1.7] max-w-md mx-auto mb-8">
                         {t('needsProfileBody')}
                     </p>
                     <Link
                         href="/artist/profile"
-                        className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] no-underline hover:bg-[#292524] transition-all duration-200"
+                        className="inline-block bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] no-underline hover:bg-[var(--accent-hover)] transition-all duration-200"
                     >
                         {t('needsProfileCta')}
                     </Link>
@@ -342,27 +342,27 @@ export default function ArtistDashboardPage() {
     return (
         <DashboardShell>
             {/* ---------- Hero ---------- */}
-            <section className="border border-[#d6d0c8] bg-[#fafaf8] p-8 mb-px">
+            <section className="border border-[var(--border)] bg-[var(--bg-card)] p-8 mb-px">
                 <div className="flex items-start gap-6 flex-wrap">
                     {logoUrl && (
                         <img
                             src={logoUrl}
                             alt=""
-                            className="w-20 h-20 object-contain border border-[#e7e3dc] bg-[#f5f3ef] flex-shrink-0"
+                            className="w-20 h-20 object-contain border border-[var(--border-soft)] bg-[var(--bg-page)] flex-shrink-0"
                         />
                     )}
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-2">
-                            <div className="w-6 h-px bg-[#d6d0c8]" />
-                            <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#a8a29e]">
+                            <div className="w-6 h-px bg-[var(--border)]" />
+                            <span className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)]">
                                 Mona Editions
                             </span>
                         </div>
-                        <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[#1c1917] leading-tight mb-2">
+                        <h1 className="text-[clamp(28px,4vw,40px)] font-normal tracking-[-1px] text-[var(--text-primary)] leading-tight mb-2">
                             {t('welcomeBack', { name: displayName })}
                         </h1>
                         {stats?.memberSinceYear && (
-                            <p className="text-[13px] font-light text-[#78716c]">
+                            <p className="text-[13px] font-light text-[var(--text-secondary)]">
                                 {t('memberSince', { year: stats.memberSinceYear })}
                             </p>
                         )}
@@ -371,17 +371,17 @@ export default function ArtistDashboardPage() {
                                 href={`/explore/artist/${activeAddress}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#1c1917]
-                                    border border-[#d6d0c8] bg-[#f5f3ef] px-4 py-2 no-underline uppercase
-                                    hover:border-[#1c1917] transition-all duration-200"
+                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-primary)]
+                                    border border-[var(--border)] bg-[var(--bg-page)] px-4 py-2 no-underline uppercase
+                                    hover:border-[var(--text-primary)] transition-all duration-200"
                             >
                                 {t('viewPublicPage')} <span aria-hidden>↗</span>
                             </Link>
                             <Link
                                 href="/artist/profile"
-                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[#78716c]
-                                    border border-[#d6d0c8] px-4 py-2 no-underline uppercase
-                                    hover:border-[#1c1917] hover:text-[#1c1917] transition-all duration-200"
+                                className="inline-flex items-center gap-2 text-[11px] font-medium tracking-[0.06em] text-[var(--text-secondary)]
+                                    border border-[var(--border)] px-4 py-2 no-underline uppercase
+                                    hover:border-[var(--text-primary)] hover:text-[var(--text-primary)] transition-all duration-200"
                             >
                                 {t('editProfile')}
                             </Link>
@@ -394,28 +394,28 @@ export default function ArtistDashboardPage() {
             <SubscriptionCard status={subscription?.status ?? 'none'} t={t} />
 
             {/* ---------- Stats ---------- */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
-                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-6">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
+                <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-6">
                     {t('statsLabel')}
                 </p>
 
                 {isLoadingData || !stats ? (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border-soft)] border border-[var(--border-soft)]">
                         {[0, 1, 2].map(i => (
-                            <div key={i} className="bg-[#fafaf8] p-6 min-h-[110px] flex items-center justify-center">
-                                <div className="w-6 h-6 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                            <div key={i} className="bg-[var(--bg-card)] p-6 min-h-[110px] flex items-center justify-center">
+                                <div className="w-6 h-6 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
                             </div>
                         ))}
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border-soft)] border border-[var(--border-soft)]">
                             <StatCard label={t('statEditions')} value={stats.editionsCount} />
                             <StatCard label={t('statClaims')} value={stats.totalClaims} />
                             <StatCard label={t('statCollectors')} value={stats.uniqueCollectors} />
                         </div>
-                        <p className="mt-6 text-[12px] font-light text-[#78716c] tracking-[0.02em]">
-                            <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mr-3">
+                        <p className="mt-6 text-[12px] font-light text-[var(--text-secondary)] tracking-[0.02em]">
+                            <span className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mr-3">
                                 {t('activityTitle')}
                             </span>
                             {t('statClaimsThisMonth', { count: stats.claimsLast30Days })}
@@ -425,15 +425,15 @@ export default function ArtistDashboardPage() {
             </section>
 
             {/* ---------- Recent editions ---------- */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
                 <div className="flex items-end justify-between mb-6">
-                    <h2 className="text-[22px] font-normal text-[#1c1917]">
+                    <h2 className="text-[22px] font-normal text-[var(--text-primary)]">
                         {t('recentEditionsTitle')}
                     </h2>
                     {stats && stats.editionsCount > 0 && (
                         <Link
                             href="/artist/editions"
-                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#78716c] no-underline hover:text-[#1c1917] transition-colors"
+                            className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-secondary)] no-underline hover:text-[var(--text-primary)] transition-colors"
                         >
                             {t('viewAllEditions')} <span aria-hidden>→</span>
                         </Link>
@@ -442,17 +442,17 @@ export default function ArtistDashboardPage() {
 
                 {isLoadingData ? (
                     <div className="flex justify-center py-12">
-                        <div className="w-6 h-6 border border-[#d6d0c8] border-t-[#1c1917] rounded-full animate-spin" />
+                        <div className="w-6 h-6 border border-[var(--border)] border-t-[var(--text-primary)] rounded-full animate-spin" />
                     </div>
                 ) : recentEditions.length === 0 ? (
-                    <div className="border border-dashed border-[#d6d0c8] bg-[#f5f3ef] p-10 text-center">
-                        <p className="italic text-[18px] text-[#1c1917] mb-2">{t('noEditionsTitle')}</p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7] max-w-md mx-auto">
+                    <div className="border border-dashed border-[var(--border)] bg-[var(--bg-page)] p-10 text-center">
+                        <p className="italic text-[18px] text-[var(--text-primary)] mb-2">{t('noEditionsTitle')}</p>
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7] max-w-md mx-auto">
                             {t('noEditionsBody')}
                         </p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[#e7e3dc] border border-[#e7e3dc]">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[var(--border-soft)] border border-[var(--border-soft)]">
                         {recentEditions.map(ed => (
                             <EditionCard key={ed.tokenId.toString()} edition={ed} t={t} />
                         ))}
@@ -461,16 +461,16 @@ export default function ArtistDashboardPage() {
             </section>
 
             {/* ---------- Primary CTA ---------- */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#ede9e3] p-8 mb-px">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card-alt)] p-8 mb-px">
                 <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <p className="text-[14px] font-light text-[#1c1917]">
+                    <p className="text-[14px] font-light text-[var(--text-primary)]">
                         {stats && stats.editionsCount === 0
                             ? t('ctaFirstEdition')
                             : t('ctaCreateEdition')}
                     </p>
                     <Link
                         href="/artist/editions/create"
-                        className="inline-block bg-[#1c1917] text-[#fafaf8] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[#1c1917] no-underline uppercase hover:bg-[#292524] transition-all duration-200"
+                        className="inline-block bg-[var(--bg-inverse)] text-[var(--text-on-inverse)] font-medium text-[12px] tracking-[0.06em] py-3.5 px-8 border border-[var(--text-primary)] no-underline uppercase hover:bg-[var(--accent-hover)] transition-all duration-200"
                     >
                         {stats && stats.editionsCount === 0
                             ? t('ctaFirstEdition')
@@ -480,20 +480,20 @@ export default function ArtistDashboardPage() {
             </section>
 
             {/* ---------- QR code (preserved) ---------- */}
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#fafaf8] p-8 mb-px">
+            <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card)] p-8 mb-px">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-[260px]">
-                        <p className="text-[14px] font-medium text-[#1c1917] mb-2">
+                        <p className="text-[14px] font-medium text-[var(--text-primary)] mb-2">
                             {tArtist('qrTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#78716c] leading-[1.7]">
+                        <p className="text-[13px] font-light text-[var(--text-secondary)] leading-[1.7]">
                             {tArtist('qrDescription')}
                         </p>
                     </div>
                     <button
                         onClick={downloadQRCode}
                         disabled={isGeneratingQR}
-                        className="bg-[#f5f3ef] text-[#1c1917] font-medium text-[11px] tracking-[0.06em] py-3 px-6 border border-[#d6d0c8] disabled:opacity-50 hover:border-[#1c1917] transition-all duration-200 uppercase cursor-pointer"
+                        className="bg-[var(--bg-page)] text-[var(--text-primary)] font-medium text-[11px] tracking-[0.06em] py-3 px-6 border border-[var(--border)] disabled:opacity-50 hover:border-[var(--text-primary)] transition-all duration-200 uppercase cursor-pointer"
                     >
                         {isGeneratingQR ? tArtist('qrGenerating') : tArtist('qrDownload')}
                     </button>
@@ -509,7 +509,7 @@ export default function ArtistDashboardPage() {
 
 function DashboardShell({ children }: { children: React.ReactNode }) {
     return (
-        <div className="min-h-screen bg-[#f5f3ef]">
+        <div className="min-h-screen bg-[var(--bg-page)]">
             <div className="max-w-5xl mx-auto px-6 pt-28 pb-20">
                 {children}
             </div>
@@ -519,11 +519,11 @@ function DashboardShell({ children }: { children: React.ReactNode }) {
 
 function StatCard({ label, value }: { label: string; value: number }) {
     return (
-        <div className="bg-[#fafaf8] p-6">
-            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[#a8a29e] mb-3">
+        <div className="bg-[var(--bg-card)] p-6">
+            <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-3">
                 {label}
             </p>
-            <p className="text-[clamp(32px,5vw,44px)] font-normal text-[#1c1917] leading-none tracking-[-1px]">
+            <p className="text-[clamp(32px,5vw,44px)] font-normal text-[var(--text-primary)] leading-none tracking-[-1px]">
                 {value}
             </p>
         </div>
@@ -544,10 +544,10 @@ function EditionCard({
     return (
         <Link
             href={`/explore/edition/${edition.tokenId}`}
-            className="bg-[#fafaf8] p-5 flex flex-col gap-3 no-underline group"
+            className="bg-[var(--bg-card)] p-5 flex flex-col gap-3 no-underline group"
         >
             {edition.imageUrl ? (
-                <div className="w-full aspect-[4/3] overflow-hidden bg-[#e7e3dc]">
+                <div className="w-full aspect-[4/3] overflow-hidden bg-[var(--border-soft)]">
                     <img
                         src={edition.imageUrl}
                         alt={edition.title}
@@ -555,17 +555,17 @@ function EditionCard({
                     />
                 </div>
             ) : (
-                <div className="w-full aspect-[4/3] bg-[#e7e3dc] flex items-center justify-center">
-                    <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-20" />
+                <div className="w-full aspect-[4/3] bg-[var(--border-soft)] flex items-center justify-center">
+                    <img src="/logo-mona.svg" alt="" className="w-12 h-12 object-contain opacity-20 dark:invert" />
                 </div>
             )}
 
             <div className="flex items-start justify-between gap-2">
-                <h3 className="text-[15px] font-normal text-[#1c1917] leading-tight flex-1">
+                <h3 className="text-[15px] font-normal text-[var(--text-primary)] leading-tight flex-1">
                     {edition.title}
                 </h3>
                 {edition.disabled && (
-                    <span className="text-[9px] font-medium tracking-[0.1em] uppercase text-[#a8a29e] border border-[#d6d0c8] px-1.5 py-0.5 flex-shrink-0 mt-0.5">
+                    <span className="text-[9px] font-medium tracking-[0.1em] uppercase text-[var(--text-muted)] border border-[var(--border)] px-1.5 py-0.5 flex-shrink-0 mt-0.5">
                         {t('disabled')}
                     </span>
                 )}
@@ -573,14 +573,14 @@ function EditionCard({
 
             {total > 0 && (
                 <>
-                    <div className="w-full h-1.5 bg-[#e7e3dc] overflow-hidden">
+                    <div className="w-full h-1.5 bg-[var(--border-soft)] overflow-hidden">
                         <div
                             className="h-full bg-[#4a5240]"
                             style={{ width: `${pct}%` }}
                             aria-hidden="true"
                         />
                     </div>
-                    <p className="text-[11px] font-light text-[#78716c]">
+                    <p className="text-[11px] font-light text-[var(--text-secondary)]">
                         {t('claimRate', { claimed, total })}
                     </p>
                 </>
@@ -602,19 +602,19 @@ function SubscriptionCard({
     // until period end.
     if (status === 'active') {
         return (
-            <section className="border border-[#d6d0c8] border-t-0 bg-[#f0fdf4] p-6 mb-px">
+            <section className="border border-[var(--border)] border-t-0 bg-[#f0fdf4] p-6 mb-px">
                 <div className="flex items-start justify-between gap-4 flex-wrap">
                     <div className="flex-1 min-w-[260px]">
                         <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#166534] mb-2">
                             ● {t('subActiveTitle')}
                         </p>
-                        <p className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                        <p className="text-[13px] font-light text-[var(--text-primary)] leading-[1.7]">
                             {t('subActiveBody')}
                         </p>
                     </div>
                     <Link
                         href="/artist/subscription"
-                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#1c1917] border border-[#d6d0c8] bg-[#fafaf8] px-4 py-2 no-underline hover:border-[#1c1917] transition-all duration-200"
+                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-primary)] border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2 no-underline hover:border-[var(--text-primary)] transition-all duration-200"
                     >
                         {t('subManageCta')}
                     </Link>
@@ -637,7 +637,7 @@ function SubscriptionCard({
                     </div>
                     <Link
                         href="/artist/subscription"
-                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#dc2626] px-4 py-2 no-underline hover:bg-[#b91c1c] transition-colors"
+                        className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-on-inverse)] bg-[#dc2626] px-4 py-2 no-underline hover:bg-[#b91c1c] transition-colors"
                     >
                         {t('subManageCta')}
                     </Link>
@@ -648,19 +648,19 @@ function SubscriptionCard({
 
     // status === 'none' or 'canceled'
     return (
-        <section className="border border-[#d6d0c8] border-t-0 bg-[#ede9e3] p-6 mb-px">
+        <section className="border border-[var(--border)] border-t-0 bg-[var(--bg-card-alt)] p-6 mb-px">
             <div className="flex items-start justify-between gap-4 flex-wrap">
                 <div className="flex-1 min-w-[260px]">
-                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[#78716c] mb-2">
+                    <p className="text-[11px] font-medium tracking-[0.15em] uppercase text-[var(--text-secondary)] mb-2">
                         {t('subInactiveTitle')}
                     </p>
-                    <p className="text-[13px] font-light text-[#1c1917] leading-[1.7]">
+                    <p className="text-[13px] font-light text-[var(--text-primary)] leading-[1.7]">
                         {t('subInactiveBody')}
                     </p>
                 </div>
                 <Link
                     href="/artist/subscription"
-                    className="text-[11px] font-medium tracking-[0.06em] uppercase text-[#fafaf8] bg-[#1c1917] px-4 py-2 no-underline hover:bg-[#292524] transition-colors"
+                    className="text-[11px] font-medium tracking-[0.06em] uppercase text-[var(--text-on-inverse)] bg-[var(--bg-inverse)] px-4 py-2 no-underline hover:bg-[var(--accent-hover)] transition-colors"
                 >
                     {t('subActivateCta')}
                 </Link>
