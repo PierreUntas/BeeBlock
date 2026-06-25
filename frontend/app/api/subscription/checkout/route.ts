@@ -91,10 +91,16 @@ export async function POST(req: NextRequest) {
             // EU consumer-rights compliance: explicit ToS acceptance.
             // Requires a Terms of Service URL configured in Stripe Dashboard
             // → Settings → Public details → Terms of service URL pointing to
-            // https://www.monaeditions.com/legal/terms before this is enabled.
+            // https://monaeditions.com/legal/terms before this is enabled.
             consent_collection: {
                 terms_of_service: 'required',
             },
+            // Show the "Add promotion code" field in the Checkout UI.
+            // Required even when promo codes are enabled globally in Stripe
+            // Settings → Checkout — that toggle covers Payment Links and the
+            // Customer Portal, but session-based Checkout needs this flag.
+            // Used for launch discounts (e.g. LAUNCH100) and future campaigns.
+            allow_promotion_codes: true,
         });
 
         if (!session.url) {
