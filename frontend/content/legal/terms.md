@@ -1,12 +1,10 @@
 # Conditions Générales d'Abonnement — Mona Editions
 
-> **Statut de ce document** : brouillon de travail à valider par un juriste avant publication. Ces CGV doivent être acceptées par chaque artiste lors de sa souscription à l'offre Atelier (case à cocher obligatoire dans le tunnel Stripe Checkout).
-
 ## Article 1 — Objet
 
 Les présentes Conditions Générales d'Abonnement (« CGA ») régissent les relations contractuelles entre :
 
-- **Pierre Untas**, éditeur de la plateforme Mona Editions accessible à l'adresse https://www.monaeditions.com, ci-après désigné « l'Éditeur »
+- **Pierre Untas**, entrepreneur individuel (SIREN 507553550, immatriculé au RNE le 24 juin 2026, activité libérale non réglementée code APE 62.01Z), éditeur de la plateforme Mona Editions accessible à l'adresse https://monaeditions.com, ci-après désigné « l'Éditeur »
 - Et toute personne physique ou morale souscrivant à l'offre d'abonnement payante « Atelier », ci-après désignée « l'Artiste »
 
 Toute souscription implique l'acceptation pleine et entière des présentes CGA. L'Artiste est invité à les lire attentivement avant de finaliser sa souscription.
@@ -213,7 +211,7 @@ L'Artiste doit avoir tenté au préalable de résoudre le litige amiablement ave
 
 Les présentes CGA sont régies par le droit français. Tout litige relatif à leur formation, leur exécution ou leur interprétation relève des tribunaux français compétents, sauf disposition impérative contraire bénéficiant au consommateur.
 
-Pour les litiges B2B (entre professionnels), compétence exclusive est attribuée au **Tribunal de commerce de Bordeaux**, lieu du siège de l'Éditeur.
+Pour les litiges B2B (entre professionnels), compétence exclusive est attribuée au **Tribunal judiciaire de Bordeaux**, lieu du siège de l'Éditeur (l'activité de l'Éditeur étant une activité libérale non réglementée, non commerciale, c'est le Tribunal judiciaire et non le Tribunal de commerce qui est compétent).
 
 ## Article 15 — Contact
 
@@ -222,5 +220,5 @@ Pour toute question relative aux présentes CGA :
 
 ---
 
-*Date d'entrée en vigueur de la présente version : à dater à la publication officielle.*
-*Date de la dernière mise à jour : idem.*
+*Date d'entrée en vigueur de la présente version : 24 juin 2026.*
+*Date de la dernière mise à jour : 24 juin 2026.*

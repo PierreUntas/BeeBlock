@@ -29,16 +29,19 @@
 
 Une fois ses corrections intégrées, **resynchroniser** dans `frontend/content/legal/` (commande : `cp docs/legal/01-*.md frontend/content/legal/mentions.md` etc.) puis push.
 
-### Déclaration auto-entreprise 🟡 🔴
+### Déclaration auto-entreprise ✅ FAIT (24/06/2026)
 
-- [ ] Aller sur **autoentrepreneur.urssaf.fr**
-- [ ] Activité principale : « Programmation informatique »
-- [ ] Code APE 62.01Z (sera ajusté par l'INSEE)
-- [ ] Régime fiscal : franchise en base de TVA
-- [ ] Adresse : 88 rue Lagrange, 33000 Bordeaux
-- [ ] Recevoir le SIRET sous **7 jours**
-- [ ] Mettre à jour dans `docs/legal/01-mentions-legales.md` (chercher « SIRET à venir » → remplacer)
-- [ ] Resynchroniser `frontend/content/legal/mentions.md`
+- [x] Inscription Guichet Unique INPI
+- [x] Activité principale : Programmation informatique
+- [x] Nature : **Libérale non réglementée** (après régularisation Commerciale → Libérale ; cotisation 1,24 €)
+- [x] Code APE **62.01Z** confirmé par l'INSEE
+- [x] Régime fiscal : franchise en base de TVA (art. 293 B CGI)
+- [x] Régime social : URSSAF Bretagne, micro-social, versement mensuel
+- [x] Adresse siège : 88 rue Lagrange, 33000 Bordeaux
+- [x] **SIREN 507553550** attribué
+- [x] Date d'immatriculation au RNE : **24 juin 2026**
+- [x] Validations : INSEE + URSSAF (pas de Greffe car libérale)
+- [x] Documents légaux mis à jour avec le SIREN (mentions, privacy, terms — version publique + interne)
 
 ### Adhésion à un médiateur de la consommation 🟢
 

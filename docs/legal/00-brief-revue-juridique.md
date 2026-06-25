@@ -41,7 +41,7 @@ Ce document a deux objectifs :
 
 | Document | Avant | Après | Justification |
 |---|---|---|---|
-| Mentions légales, identité éditeur | APE 62.01Z (Programmation) | APE **63.11Z** (Traitement de données, hébergement) | Code assigné par l'INPI à l'inscription |
+| Mentions légales, identité éditeur | APE 62.01Z (Programmation) | APE **62.01Z** confirmé + statut « libérale non réglementée » + SIREN 507553550 + date d'immatriculation RNE 24/06/2026 | Code finalement maintenu par l'INSEE après régularisation Commerciale → Libérale (le 63.11Z initialement envisagé n'a pas été retenu) |
 | CGV Article 13 | « Médicys, médiateur dont l'Éditeur relève » | « L'Éditeur procède à son adhésion auprès de Médicys » | Adhésion non encore effective (cotisation ~120 €/an), évite l'affirmation fausse |
 | CGV — URL canonique | `https://www.monaeditions.com` | `https://monaeditions.com` | Cohérence avec le canonical des meta HTML et les contrats blockchain |
 
@@ -239,10 +239,10 @@ Je dois ajouter un **bandeau discret** (pas une modal bloquante) lors de la prem
 
 ### 4.2 — Mention « Entrepreneur Individuel »
 
-**État actuel :** mention « Entrepreneur individuel — auto-entreprise en cours d'immatriculation » dans Mentions légales et Politique conf. Pas dans les CGV.
+**État actuel (mis à jour 24/06/2026) :** immatriculation effective. Mention complète « Pierre Untas, entrepreneur individuel, SIREN 507553550, immatriculé au RNE le 24 juin 2026, activité libérale non réglementée code APE 62.01Z » désormais propagée dans Mentions légales, Politique de confidentialité, et CGV (Article 1).
 
 **Question pour Maître Untas :**
-- [ ] Faut-il harmoniser : ajouter « Pierre Untas, EI » ou « Pierre Untas, entrepreneur individuel » systématiquement (CGV, factures, emails) ?
+- [ ] Harmonisation OK ? Y a-t-il d'autres supports (factures Stripe, emails Resend) où la mention complète devrait apparaître également ?
 
 ### 4.3 — Garantie de l'Artiste (CGV Article 9.2)
 

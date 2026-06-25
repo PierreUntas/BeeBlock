@@ -1,6 +1,6 @@
 # Documents juridiques — Mona Editions
 
-Ce dossier contient les **brouillons de travail** des documents juridiques nécessaires à la mise en service publique de Mona Editions. Aucun de ces documents n'a force légale tant qu'il n'a pas été (1) validé par un juriste, (2) signé/publié par l'éditeur, et (3) accessible publiquement sur le site.
+Ce dossier contient les **documents juridiques publiés** de Mona Editions, à jour de l'immatriculation effective de l'éditeur (Pierre Untas, EI, SIREN 507553550, RNE 24 juin 2026). Les versions publiques sont servies depuis `frontend/content/legal/` ; ce dossier en est le miroir interne, enrichi d'annotations et de pistes de revue juridique.
 
 ## Documents inclus
 
@@ -12,33 +12,33 @@ Ce dossier contient les **brouillons de travail** des documents juridiques néce
 
 ## Check-list avant publication officielle
 
-### Pré-remplissage (juin 2026)
+### Identité éditeur — état au 24 juin 2026
 
-- [x] Identité éditeur : Pierre Untas, 88 rue Lagrange 33000 Bordeaux, 06 42 48 03 57
-- [x] Statut : auto-entreprise en cours d'immatriculation
-- [x] Code APE pré-rempli : 62.01Z (Programmation informatique)
+- [x] **Pierre Untas**, 88 rue Lagrange 33000 Bordeaux, 06 42 48 03 57
+- [x] Statut : entrepreneur individuel (auto-entreprise) — **activité libérale non réglementée**
+- [x] **SIREN 507553550** — immatriculé au RNE le 24 juin 2026
+- [x] Code APE : **62.01Z** (Programmation informatique) — confirmé par l'INSEE
 - [x] Régime TVA : franchise en base, art. 293 B CGI
+- [x] Régime social : URSSAF Bretagne (micro-social, versement mensuel)
 - [x] Médiateur : Médicys (à confirmer après adhésion réelle)
-- [x] Tribunal compétent B2B : Tribunal de commerce de Bordeaux
+- [x] Tribunal compétent B2B : Tribunal judiciaire de Bordeaux (l'activité étant libérale, pas commerciale, c'est le TJ et non le tribunal de commerce — à vérifier dans CGV)
 - [x] Publication des 3 documents en pages publiques : `/legal/mentions`, `/legal/privacy`, `/legal/terms`
 - [x] Footer du site mis à jour avec les 3 liens
 
 ### Reste à faire (côté Pierre, externe)
 
-- [ ] **Finaliser la déclaration auto-entreprise** sur autoentrepreneur.urssaf.fr → recevoir le SIRET (~7 jours)
-- [ ] **Compléter le SIRET** dans les 3 documents dès réception (chercher « SIRET à venir » et remplacer)
 - [ ] **Adhérer à Médicys** sur medicys.fr (~120 € HT/an)
 - [ ] **Faire relire les 3 documents par un juriste** — dans le cas de Pierre, sa femme avocate (voir notes pour juriste plus bas)
 - [ ] **Renseigner les URLs juridiques dans Stripe** (Settings → Public details → Terms of service URL + Privacy policy URL)
-- [ ] **Réactiver dans le code `consent_collection.terms_of_service: 'required'`** dans `frontend/app/api/subscription/checkout/route.ts` (la ligne actuellement commentée)
-- [ ] **Ajouter une case à cocher RGPD** au moment de l'inscription artiste (acceptation de la politique de confidentialité)
+- [ ] **Mettre à jour Stripe** avec le SIREN 507553550 (Settings → Business details)
+- [ ] **Vérifier la mention « Tribunal de commerce »** dans CGV : l'activité étant désormais libérale (et non commerciale), c'est le **Tribunal judiciaire** qui est compétent en cas de litige B2B
 
 ## Adaptation selon le statut juridique de l'éditeur
 
-Les documents sont rédigés en supposant que **Pierre Untas est éditeur en tant qu'auto-entrepreneur** (la configuration la plus probable au lancement). Si le statut change (création de SAS, SARL, association loi 1901, etc.), il faudra mettre à jour :
+Les documents reflètent le statut **entrepreneur individuel — activité libérale non réglementée** (validé INSEE/URSSAF au 24 juin 2026). Si le statut change ultérieurement (création de SAS, SARL, dépassement du seuil micro-entreprise, etc.), il faudra mettre à jour :
 
 - Article 1 des CGA (parties)
-- Mentions légales : raison sociale, RCS, capital social, etc.
+- Mentions légales : raison sociale, éventuel RCS, capital social
 - Politique de confidentialité : identité du responsable de traitement
 - Facturation : régime TVA potentiellement applicable
 

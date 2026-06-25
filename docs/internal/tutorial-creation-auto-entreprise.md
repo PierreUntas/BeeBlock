@@ -1,5 +1,7 @@
 # Tutoriel — Création de ton auto-entreprise & démarches administratives
 
+> ✅ **Statut au 24 juin 2026 : auto-entreprise créée** — SIREN 507553550, immatriculée au RNE le 24/06/2026, activité libérale non réglementée, code APE 62.01Z. Validations INSEE + URSSAF Bretagne effectives. Ce tutoriel est conservé pour historique et pour les démarches connexes (ACRE, ARCE, Médicys, RC Pro, banque pro, Stripe Live) qui peuvent encore être à compléter.
+
 > Document destiné à toi (Pierre) pour structurer toutes les démarches dans le bon ordre. **L'ordre compte** parce que certaines aides (ACRE, ARCE) se demandent dans un délai limité après création, et certaines éligibilités dépendent de ton statut au moment de la déclaration.
 
 ---

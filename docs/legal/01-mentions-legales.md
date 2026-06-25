@@ -1,12 +1,14 @@
 # Mentions légales — Mona Editions
 
-> **Statut de ce document** : brouillon de travail à valider par un juriste avant publication. Reflète l'état du projet en juin 2026. À mettre à jour dès l'obtention du SIRET, du changement d'hébergeur, ou de toute modification structurelle.
+> **Statut de ce document** : version publiée. Reflète l'immatriculation effective au 24 juin 2026 (SIREN 507553550). À mettre à jour en cas de changement d'hébergeur, d'adresse ou de toute modification structurelle.
 
 ## Éditeur du site
 
 **Nom** : Pierre Untas
-**Statut** : Entrepreneur individuel — auto-entreprise en cours d'immatriculation auprès de l'URSSAF (SIRET à venir)
-**Activité principale** : Traitement de données, hébergement et activités connexes (code APE 63.11Z — sous réserve de classement définitif par l'INSEE)
+**Statut** : Entrepreneur individuel (auto-entreprise) — activité libérale non réglementée
+**SIREN** : 507553550
+**Date d'immatriculation au Registre National des Entreprises (RNE)** : 24 juin 2026
+**Code APE** : 62.01Z — Programmation informatique
 **Adresse postale** : 88 rue Lagrange, 33000 Bordeaux, France
 **Téléphone** : 06 42 48 03 57
 **Email de contact** : pierre.untas@gmail.com
@@ -67,4 +69,4 @@ Pour toute question relative au site, à la plateforme, ou au présent document 
 
 ---
 
-*Dernière mise à jour : à dater à la publication officielle.*
+*Dernière mise à jour : 24 juin 2026.*

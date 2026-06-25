@@ -1,13 +1,14 @@
 # Politique de confidentialité — Mona Editions
 
-> **Statut de ce document** : brouillon de travail à valider par un juriste avant publication. Conformité RGPD à vérifier ligne par ligne.
+> **Statut de ce document** : version publiée. Reflète l'immatriculation effective au 24 juin 2026 (SIREN 507553550). Conformité RGPD à vérifier ligne par ligne en cas d'évolution des traitements.
 
 ## 1. Responsable du traitement
 
 Le responsable du traitement des données personnelles collectées sur Mona Editions est :
 
 **Pierre Untas**
-Entrepreneur individuel — auto-entreprise en cours d'immatriculation (SIRET à venir)
+Entrepreneur individuel — activité libérale non réglementée
+SIREN 507553550 — immatriculé au RNE le 24 juin 2026
 88 rue Lagrange, 33000 Bordeaux, France
 Téléphone : 06 42 48 03 57
 Email : pierre.untas@gmail.com
@@ -143,4 +144,4 @@ Cette politique peut être modifiée pour refléter l'évolution du service ou d
 
 ---
 
-*Dernière mise à jour : à dater à la publication officielle.*
+*Dernière mise à jour : 24 juin 2026.*
