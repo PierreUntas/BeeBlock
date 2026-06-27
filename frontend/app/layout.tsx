@@ -13,6 +13,25 @@ export const metadata: Metadata = {
         type: "website",
         images: [{ url: "/monaeditions-logo.png", width: 512, height: 512, alt: "Mona Editions" }],
     },
+    // PWA — iOS Safari ignore le manifest.webmanifest pour le comportement
+    // "Add to Home Screen". Il faut ces meta apple-* explicites :
+    //  - apple-touch-icon : l'icône visible sur le springboard iOS
+    //  - capable / status-bar-style : lance l'app en plein écran sans la barre Safari
+    //  - title : le nom court qui apparaît sous l'icône iPhone
+    appleWebApp: {
+        capable: true,
+        title: 'Mona Editions',
+        statusBarStyle: 'default',
+    },
+    icons: {
+        icon: [
+            { url: '/icons/icon-192.png', sizes: '192x192', type: 'image/png' },
+            { url: '/icons/icon-512.png', sizes: '512x512', type: 'image/png' },
+        ],
+        apple: [
+            { url: '/icons/icon-180.png', sizes: '180x180', type: 'image/png' },
+        ],
+    },
 };
 
 /**
@@ -30,6 +49,13 @@ export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
     maximumScale: 5,
+    // Color of the OS status bar when the app runs in standalone mode (PWA
+    // installed on home screen). Adapts to the active theme : warm beige in
+    // light mode, near-black in dark mode — mirrors our globals.css tokens.
+    themeColor: [
+        { media: '(prefers-color-scheme: light)', color: '#f5f3ef' },
+        { media: '(prefers-color-scheme: dark)', color: '#0f0e0c' },
+    ],
 };
 
 /**
