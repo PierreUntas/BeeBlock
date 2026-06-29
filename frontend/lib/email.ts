@@ -13,8 +13,8 @@
 import { Resend } from 'resend';
 import type { Locale } from './db';
 
-const FROM = 'Mona Editions <abonnement@monaeditions.com>';
-const REPLY_TO = 'pierre.untas@gmail.com';
+const FROM = 'Mona Editions <noreply@monaeditions.com>';
+const REPLY_TO = 'contact@monaeditions.com';
 
 let _resend: Resend | null = null;
 function getResend(): Resend | null {

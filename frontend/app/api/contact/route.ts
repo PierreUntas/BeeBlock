@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Send email via Resend
     const { data, error } = await resend.emails.send({
       from: 'Mona Editions Contact <contact@monaeditions.com>',
-      to: ['pierre.untas@gmail.com'],
+      to: ['contact@monaeditions.com'],
       replyTo: email,
       subject: `[Mona Editions Contact] ${safeSubject}`,
       html: `

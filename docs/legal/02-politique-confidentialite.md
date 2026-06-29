@@ -11,7 +11,7 @@ Entrepreneur individuel — activité libérale non réglementée
 SIREN 507553550 — immatriculé au RNE le 24 juin 2026
 88 rue Lagrange, 33000 Bordeaux, France
 Téléphone : 06 42 48 03 57
-Email : pierre.untas@gmail.com
+Email : contact@monaeditions.com
 
 Au stade actuel du projet, l'éditeur n'a pas désigné de Délégué à la Protection des Données (DPO) — non requis légalement compte tenu de la nature et du volume des traitements. Toute demande relative aux données personnelles peut être adressée directement à l'éditeur aux coordonnées ci-dessus.
 
@@ -96,7 +96,7 @@ Conformément au RGPD et à la loi Informatique et Libertés, vous disposez des 
 - **Droit d'opposition** : refuser certains traitements
 - **Droit de limitation** : geler temporairement certains traitements
 
-Pour exercer ces droits, écrivez à : **pierre.untas@gmail.com**. Conformément à l'article 12 §3 du RGPD, une réponse vous sera apportée dans un délai d'**un mois à compter de la réception de votre demande**. Ce délai peut être prolongé de deux mois supplémentaires si la complexité ou le nombre de demandes le justifie ; vous en serez alors informé dans le délai initial d'un mois.
+Pour exercer ces droits, écrivez à : **contact@monaeditions.com**. Conformément à l'article 12 §3 du RGPD, une réponse vous sera apportée dans un délai d'**un mois à compter de la réception de votre demande**. Ce délai peut être prolongé de deux mois supplémentaires si la complexité ou le nombre de demandes le justifie ; vous en serez alors informé dans le délai initial d'un mois.
 
 Si vous estimez vos droits non respectés, vous pouvez introduire une réclamation auprès de la **CNIL** : https://www.cnil.fr/fr/plaintes
 

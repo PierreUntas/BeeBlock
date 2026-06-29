@@ -70,7 +70,7 @@ Cette acceptation est matérialisée par une **case dédiée et obligatoire** in
 
 présentée lors du tunnel de souscription, distincte de l'acceptation des présentes CGV. Le moment de cette acceptation est horodaté côté serveur et confirmé par email.
 
-**Modalités d'exercice de la rétractation.** Pour exercer son droit dans le délai de 14 jours, l'Artiste écrit à : **pierre.untas@gmail.com** avec mention « Rétractation Mona Editions », l'email associé à son compte et la date de souscription.
+**Modalités d'exercice de la rétractation.** Pour exercer son droit dans le délai de 14 jours, l'Artiste écrit à : **contact@monaeditions.com** avec mention « Rétractation Mona Editions », l'email associé à son compte et la date de souscription.
 
 Conformément à l'article L.221-25 du Code de la consommation, le remboursement est effectué sous 14 jours via le moyen de paiement utilisé lors de la souscription, le cas échéant **déduction faite des sommes correspondant au service déjà exécuté** (proratisation au jour près).
 
@@ -250,7 +250,7 @@ Conformément aux articles L.612-1 et suivants du Code de la consommation, l'Éd
 
 Dès l'effectivité de cette adhésion, l'Artiste consommateur pourra recourir gratuitement à ce médiateur en cas de litige non résolu avec l'Éditeur. Le coordonnées définitives du médiateur et la procédure de saisine seront publiées sur la page [Mentions légales](https://monaeditions.com/legal/mentions).
 
-Dans l'intervalle, et conformément à l'article L.612-2 du Code de la consommation, l'Artiste consommateur doit tenter au préalable de résoudre le litige amiablement avec l'Éditeur par écrit (email à pierre.untas@gmail.com).
+Dans l'intervalle, et conformément à l'article L.612-2 du Code de la consommation, l'Artiste consommateur doit tenter au préalable de résoudre le litige amiablement avec l'Éditeur par écrit (email à contact@monaeditions.com).
 
 ## Article 14 — Droit applicable et juridiction
 
@@ -261,7 +261,7 @@ Pour les litiges B2B (entre professionnels), compétence exclusive est attribué
 ## Article 15 — Contact
 
 Pour toute question relative aux présentes CGA :
-**Email** : pierre.untas@gmail.com
+**Email** : contact@monaeditions.com
 
 ---
 

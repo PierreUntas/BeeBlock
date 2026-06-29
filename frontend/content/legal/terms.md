@@ -62,7 +62,7 @@ Conformément à l'article L.221-18 du Code de la consommation, l'Artiste consom
 
 **Important** : en cochant la case « J'accepte de commencer à utiliser le service immédiatement » lors de la souscription (le cas échéant), ou en certifiant une première œuvre avant la fin du délai de rétractation, l'Artiste reconnaît expressément avoir demandé l'exécution immédiate du service et renonce à son droit de rétractation pour la partie du service déjà exécutée, conformément à l'article L.221-25 du Code de la consommation.
 
-Pour exercer son droit, l'Artiste écrit à : **pierre.untas@gmail.com** avec mention « Rétractation Mona Editions », l'email associé à son compte, et la date de souscription.
+Pour exercer son droit, l'Artiste écrit à : **contact@monaeditions.com** avec mention « Rétractation Mona Editions », l'email associé à son compte, et la date de souscription.
 
 Le remboursement est effectué sous 14 jours via le moyen de paiement utilisé lors de la souscription.
 
@@ -205,7 +205,7 @@ Conformément aux articles L.612-1 et suivants du Code de la consommation, l'Art
 73 boulevard de Clichy, 75009 Paris
 Site web : https://www.medicys.fr
 
-L'Artiste doit avoir tenté au préalable de résoudre le litige amiablement avec l'Éditeur par écrit (email à pierre.untas@gmail.com) avant de saisir le médiateur.
+L'Artiste doit avoir tenté au préalable de résoudre le litige amiablement avec l'Éditeur par écrit (email à contact@monaeditions.com) avant de saisir le médiateur.
 
 ## Article 14 — Droit applicable et juridiction
 
@@ -216,7 +216,7 @@ Pour les litiges B2B (entre professionnels), compétence exclusive est attribué
 ## Article 15 — Contact
 
 Pour toute question relative aux présentes CGA :
-**Email** : pierre.untas@gmail.com
+**Email** : contact@monaeditions.com
 
 ---
 

@@ -93,7 +93,7 @@ const Footer = () => {
 
                 {/* Contact + Légal — ligne unique */}
                 <div className="flex flex-wrap items-center gap-x-6 gap-y-2 py-6 border-b border-[var(--border)]">
-                    <a href="mailto:pierre.untas@gmail.com" className="text-[12px] font-light text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors no-underline">pierre.untas@gmail.com</a>
+                    <a href="mailto:contact@monaeditions.com" className="text-[12px] font-light text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors no-underline">contact@monaeditions.com</a>
                     <span className="text-[var(--border)]">·</span>
                     <FooterLink href="/contact">{t('contactUs')}</FooterLink>
                     <span className="text-[var(--border)]">·</span>

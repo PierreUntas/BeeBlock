@@ -131,7 +131,7 @@ Activer les promo codes au Checkout :
 | Redirect | Sur monaeditions.com | Page de confirmation, status "Atelier actif" |
 | Webhook Stripe | https://dashboard.stripe.com/webhooks → ton webhook → Events | `customer.subscription.created` en vert (200) |
 | Row DB | Neon SQL Editor : `SELECT * FROM artist_subscriptions WHERE email = 'pierre.untas+artist-test@gmail.com';` | `status='active'`, `plan='atelier'`, `withdrawal_waiver_accepted_at` non NULL, `stripe_customer_id` rempli, `stripe_subscription_id` rempli |
-| Email Welcome | Boîte `pierre.untas+artist-test@gmail.com` | Email "Bienvenue dans l'Atelier" reçu via Resend (vérifier From: `abonnement@monaeditions.com`) |
+| Email Welcome | Boîte `pierre.untas+artist-test@gmail.com` | Email "Bienvenue dans l'Atelier" reçu via Resend (vérifier From: `noreply@monaeditions.com`) |
 | Sentry | https://sentry.io | Aucune nouvelle erreur sur la timeline du test |
 
 ### 3.4 Création d'une œuvre (paywall passé)
@@ -274,7 +274,7 @@ Voir 3.4 ci-dessus.
 
 Vérifier que tous les emails partent bien et arrivent sans atterrir en spam.
 
-### 7.1 Emails Resend (envoyés depuis `abonnement@monaeditions.com`)
+### 7.1 Emails Resend (envoyés depuis `noreply@monaeditions.com`)
 
 | Email | Trigger | Test |
 |---|---|---|
@@ -287,7 +287,7 @@ Vérifier que tous les emails partent bien et arrivent sans atterrir en spam.
 ### 7.2 Email formulaire contact
 
 1. `/fr/contact` → remplir + Send
-2. **Vérifier** : email reçu sur `pierre.untas@gmail.com` avec From `contact@monaeditions.com`, replyTo = email saisi dans le formulaire
+2. **Vérifier** : email reçu sur `contact@monaeditions.com` avec From `contact@monaeditions.com`, replyTo = email saisi dans le formulaire
 
 ### 7.3 Emails Privy magic link
 

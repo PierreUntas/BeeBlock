@@ -129,8 +129,8 @@ export default function ContactPage() {
                 <div className="mt-10 border border-[var(--border)] bg-[var(--bg-card)] p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div>
                         <p className="text-[11px] font-medium tracking-[0.12em] uppercase text-[var(--text-muted)] mb-1">{t('directEmailLabel')}</p>
-                        <a href="mailto:pierre.untas@gmail.com" className="text-[14px] font-light text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors">
-                            pierre.untas@gmail.com
+                        <a href="mailto:contact@monaeditions.com" className="text-[14px] font-light text-[var(--text-primary)] hover:text-[var(--text-secondary)] transition-colors">
+                            contact@monaeditions.com
                         </a>
                     </div>
                     <div className="w-px h-8 bg-[var(--border)] hidden md:block" />

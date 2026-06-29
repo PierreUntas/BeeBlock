@@ -9,7 +9,7 @@
 **Code APE** : 62.01Z — Programmation informatique
 **Adresse postale** : 88 rue Lagrange, 33000 Bordeaux, France
 **Téléphone** : 06 42 48 03 57
-**Email de contact** : pierre.untas@gmail.com
+**Email de contact** : contact@monaeditions.com
 **Directeur de la publication** : Pierre Untas
 **TVA** : non applicable, franchise en base de TVA conformément à l'article 293 B du Code général des impôts
 
@@ -63,7 +63,7 @@ Les présentes mentions sont soumises au droit français. Tout litige relatif à
 ## Contact
 
 Pour toute question relative au site, à la plateforme, ou au présent document :
-**Email** : pierre.untas@gmail.com
+**Email** : contact@monaeditions.com
 
 ---
 
