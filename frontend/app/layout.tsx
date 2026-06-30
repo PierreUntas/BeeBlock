@@ -66,18 +66,24 @@ export const viewport: Viewport = {
  * Without this, the page paints in light mode briefly even for users who
  * chose dark — the dreaded "flash of wrong theme".
  *
- * Falls back to system preference (prefers-color-scheme) on first visit.
+ * Default policy : **dark mode unless the user has explicitly chosen light**.
+ * Mona Editions est une plateforme éditoriale de présentation d'œuvres ; le
+ * dark donne plus de présence aux images. La préférence système est ignorée
+ * — on n'hérite plus du light si l'OS est en clair.
+ *
  * Wrapped in try/catch so a missing localStorage (private mode in some
- * browsers) silently degrades to light mode rather than crashing the boot.
+ * browsers) silently degrades — and in that fallback we still default dark
+ * by adding the .dark class unconditionally before the catch is reached.
  */
 const themeInitScript = `
 (function() {
     try {
         var saved = localStorage.getItem('mona-theme');
-        var systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        var useDark = saved === 'dark' || (saved === null && systemPrefersDark);
+        var useDark = saved !== 'light';
         if (useDark) document.documentElement.classList.add('dark');
-    } catch (e) { /* localStorage unavailable, default to light */ }
+    } catch (e) {
+        document.documentElement.classList.add('dark');
+    }
 })();
 `;
 
