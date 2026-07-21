@@ -313,11 +313,11 @@
     "form": {
       "titleLabel": "Titel des Werks *",
       "yearLabel": "Erstellungsjahr *",
-      "categoryLabel": "Kategorie",
+      "categoryLabel": "Kategorie *",
       "categoryPlaceholder": "Kategorie auswählen",
-      "techniqueLabel": "Technik",
+      "techniqueLabel": "Technik *",
       "techniquePlaceholder": "Z. B.: Öl auf Leinwand, Aquarell, Bronze…",
-      "dimensionsLabel": "Abmessungen",
+      "dimensionsLabel": "Abmessungen *",
       "dimensionsPlaceholder": "Z. B.: 100 × 150 cm",
       "descriptionLabel": "Beschreibung",
       "descriptionPlaceholder": "Beschreiben Sie Ihr Werk…",
@@ -325,6 +325,7 @@
       "addImagesCta": "Bilder hinzufügen (IPFS-Upload)",
       "uploadingImages": "Upload läuft…",
       "minOneImageError": "Sie müssen mindestens ein Bild des Werks behalten.",
+      "missingRequiredFields": "Bitte füllen Sie die Pflichtfelder aus.",
       "uploadError": "Fehler beim Hochladen des Bildes."
     },
     "cancel": "Abbrechen",

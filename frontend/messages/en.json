@@ -322,11 +322,11 @@
     "form": {
       "titleLabel": "Title of the artwork *",
       "yearLabel": "Year of creation *",
-      "categoryLabel": "Category",
+      "categoryLabel": "Category *",
       "categoryPlaceholder": "Select a category",
-      "techniqueLabel": "Technique",
+      "techniqueLabel": "Technique *",
       "techniquePlaceholder": "e.g.: Oil on canvas, Watercolor, Bronze…",
-      "dimensionsLabel": "Dimensions",
+      "dimensionsLabel": "Dimensions *",
       "dimensionsPlaceholder": "e.g.: 100 × 150 cm",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Describe your artwork…",
@@ -334,6 +334,7 @@
       "addImagesCta": "Add images (IPFS upload)",
       "uploadingImages": "Uploading…",
       "minOneImageError": "You must keep at least one image of the artwork.",
+      "missingRequiredFields": "Please fill in the required fields.",
       "uploadError": "Error while uploading the image."
     },
     "cancel": "Cancel",

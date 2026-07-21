@@ -163,6 +163,18 @@ export default function EditEditionPage() {
             await showAlert(t('form.minOneImageError'));
             return;
         }
+        // Filet de sécurité — HTML `required` bloque déjà la soumission,
+        // ce check couvre uniquement les cas où la validation HTML serait
+        // contournée (submit programmatique, browser quirk).
+        if (
+            !editionData.title
+            || !editionData.category
+            || !editionData.technique
+            || !editionData.dimensions
+        ) {
+            await showAlert(t('form.missingRequiredFields'));
+            return;
+        }
 
         setLoadingStates(prev => ({ ...prev, uploading: true }));
         try {
@@ -318,6 +330,7 @@ export default function EditEditionPage() {
                                 value={editionData.category}
                                 onChange={(e) => setEditionData({ ...editionData, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
+                                required
                             >
                                 <option value="">{t('form.categoryPlaceholder')}</option>
                                 {CATEGORIES_EN.map(cat => (
@@ -337,6 +350,7 @@ export default function EditEditionPage() {
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors resize-none overflow-hidden min-h-[60px]"
                                 placeholder={t('form.techniquePlaceholder')}
                                 rows={2}
+                                required
                             />
                         </div>
 
@@ -350,6 +364,7 @@ export default function EditEditionPage() {
                                 onChange={(e) => setEditionData({ ...editionData, dimensions: e.target.value })}
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 placeholder={t('form.dimensionsPlaceholder')}
+                                required
                             />
                         </div>
 

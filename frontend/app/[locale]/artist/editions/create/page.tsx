@@ -350,7 +350,14 @@ export default function CreateEditionPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editionData.title || !amount || !merkleRoot) {
+        if (
+            !editionData.title
+            || !editionData.category
+            || !editionData.technique
+            || !editionData.dimensions
+            || !amount
+            || !merkleRoot
+        ) {
             await showAlert(t('alerts.missingFields'));
             return;
         }
@@ -608,6 +615,7 @@ export default function CreateEditionPage() {
                                 value={editionData.category}
                                 onChange={(e) => setEditionData({ ...editionData, category: e.target.value })}
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
+                                required
                             >
                                 <option value="">{t('form.categoryPlaceholder')}</option>
                                 {CATEGORIES_EN.map(cat => (
@@ -628,6 +636,7 @@ export default function CreateEditionPage() {
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors resize-none overflow-hidden min-h-[60px]"
                                 placeholder={t('form.techniquePlaceholder')}
                                 rows={2}
+                                required
                             />
                         </div>
 
@@ -643,6 +652,7 @@ export default function CreateEditionPage() {
                                 className="w-full px-4 py-3 bg-[var(--bg-page)] border border-[var(--border)] text-[13px] text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:outline-none focus:border-[var(--text-primary)] transition-colors"
                                 placeholder={t('form.dimensionsPlaceholder')}
                                 autoComplete="new-password"
+                                required
                             />
                         </div>
 

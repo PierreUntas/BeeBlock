@@ -313,11 +313,11 @@
     "form": {
       "titleLabel": "Titre de l'œuvre *",
       "yearLabel": "Année de création *",
-      "categoryLabel": "Catégorie",
+      "categoryLabel": "Catégorie *",
       "categoryPlaceholder": "Sélectionner une catégorie",
-      "techniqueLabel": "Technique",
+      "techniqueLabel": "Technique *",
       "techniquePlaceholder": "Ex : Huile sur toile, Aquarelle, Bronze…",
-      "dimensionsLabel": "Dimensions",
+      "dimensionsLabel": "Dimensions *",
       "dimensionsPlaceholder": "Ex : 100 × 150 cm",
       "descriptionLabel": "Description",
       "descriptionPlaceholder": "Décrivez votre œuvre…",
@@ -325,6 +325,7 @@
       "addImagesCta": "Ajouter des images (upload IPFS)",
       "uploadingImages": "Upload en cours…",
       "minOneImageError": "Vous devez conserver au moins une image de l'œuvre.",
+      "missingRequiredFields": "Merci de remplir les champs obligatoires.",
       "uploadError": "Erreur lors de l'upload de l'image."
     },
     "cancel": "Annuler",
