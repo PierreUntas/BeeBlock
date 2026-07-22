@@ -235,11 +235,6 @@ export default function ArtistProfilePage() {
             await refreshSubscription();
         }
 
-        // Enforce visual identity — logo + at least 1 portfolio photo. Without
-        // them, the artist card in /explore/artists renders as an empty placeholder
-        // which degrades the perceived quality of the whole catalogue. `logoPreview`
-        // covers the case where an existing IPFS logo is already loaded (edit flow);
-        // `logoFile` covers a freshly selected file. Same logic for portfolio photos.
         if (!logoFile && !logoPreview) {
             await showAlert(t('form.logoRequired'));
             return;
