@@ -291,7 +291,7 @@ function PersonaCard({
     return (
         <Link
             href={href}
-            className="bg-[var(--bg-card)] p-8 flex flex-col group no-underline hover:bg-[#f0ece6] transition-colors duration-300"
+            className="bg-[var(--bg-card)] p-8 flex flex-col group no-underline hover:bg-[var(--bg-card-alt)] transition-colors duration-300"
         >
             <p className="text-[10px] font-medium tracking-[0.15em] uppercase text-[var(--text-muted)] mb-4">
                 {eyebrow}
@@ -386,7 +386,7 @@ function ArtworkTile({
 
             {eyebrow && (
                 <div className="absolute top-5 left-5 z-10">
-                    <span className="inline-block text-[10px] font-medium tracking-[0.18em] uppercase text-white bg-[var(--bg-inverse)]/80 backdrop-blur-sm px-3 py-1.5">
+                    <span className="inline-block text-[10px] font-medium tracking-[0.18em] uppercase text-white bg-[#1c1917]/80 backdrop-blur-sm px-3 py-1.5">
                         {eyebrow}
                     </span>
                 </div>
